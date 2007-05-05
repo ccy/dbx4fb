@@ -242,7 +242,7 @@ begin
   bIsNull := lInd = 1;
   case uLogType of
     fldZSTRING:    FDSQL.i_SQLDA[ulParameter].SetString(pBuffer, iPrecision, bIsNull);
-    fldDATE:       FDSQL.i_SQLDA[ulParameter].SetDate(pBuffer, bIsNull);
+    fldDATE:       FDSQL.i_SQLDA[ulParameter].SetDate(pBuffer, Length, bIsNull);
     fldBLOB:       Assert(False);
     fldBOOL:       Assert(False);
     fldINT16:      FDSQL.i_SQLDA[ulParameter].SetShort(pBuffer, bIsNull);
@@ -264,7 +264,7 @@ begin
     fldARRAY:      Assert(False);
     fldREF:        Assert(False);
     fldTABLE:      Assert(False);
-    fldDATETIME:   Assert(False);
+    fldDATETIME:   FDSQL.i_SQLDA[ulParameter].SetTimeStamp(pBuffer, bIsNull);
     fldFMTBCD:     Assert(False);
     fldWIDESTRING: Assert(False);
     else
@@ -346,6 +346,7 @@ begin
     SQL_DOUBLE: Result := fldFLOAT;
     SQL_TYPE_DATE: Result := fldDATE;
     SQL_TYPE_TIME: Result := fldTIME;
+    SQL_TIMESTAMP: Result := fldDATETIME;
     else
       raise Exception.CreateFmt('Unsupported data type: %d', [iType]);
   end;

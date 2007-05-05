@@ -264,8 +264,11 @@ end;
 
 function TSQLCursor30_Firebird.getTimeStamp(ColumnNumber: Word; Value: Pointer;
   var IsBlank: LongBool): SQLResult;
+var b: Boolean;
 begin
-  Assert(False);
+  FDSQL.o_SQLDA[ColumnNumber].GetTimeStamp(Value, b);
+  IsBlank := b;
+  Result := DBXERR_NONE;
 end;
 
 function TSQLCursor30_Firebird.getWideString(ColumnNumber: Word;
