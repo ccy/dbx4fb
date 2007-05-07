@@ -2,13 +2,19 @@ unit dbx.common;
 
 interface
 
+uses DBXpress;
+
 type
   TDBXOptions = class(TObject)
   private
+    FRoleName: WideString;
     FSQLDialect: longint;
+    FTransIsolationLevel: TTransIsolationLevel;
     FTrimChar: boolean;
   public
+    property RoleName: WideString read FRoleName write FRoleName;
     property SQLDialect: longint read FSQLDialect write FSQLDialect;
+    property TransIsolationLevel: TTransIsolationLevel read FTransIsolationLevel write FTransIsolationLevel;
     property TrimChar: boolean read FTrimChar write FTrimChar;
   end;
 

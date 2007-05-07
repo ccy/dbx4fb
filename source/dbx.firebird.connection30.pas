@@ -237,10 +237,10 @@ begin
     eConnAutoCommit: Assert(False);
     eConnBlockingMode: Assert(False);
     eConnBlobSize: ; {$Message 'Do not sure what to do here'}
-    eConnRoleName: Assert(False);
+    eConnRoleName: FDBXOptions.RoleName := PWideChar(lValue);
     eConnWaitOnLocks: ; {$Message 'Do not sure what to do here'}
     eConnCommitRetain: ; {$Message 'Do not sure what to do here'}
-    eConnTxnIsoLevel: Assert(False);
+    eConnTxnIsoLevel: FDBXOptions.TransIsolationLevel := TTransIsolationLevel(lValue);  {$Message 'Transaction not sensitive to Isolation yet'} 
     eConnNativeHandle: Assert(False);
     eConnServerVersion: Assert(False);
     eConnCallBack: (FDebuggerListener as IDBXCallBack).SetDBXCallBack(TSQLCallBackEvent(lValue));
@@ -261,7 +261,7 @@ begin
     eConnOnLine: Assert(False);
     eConnTrimChar: FDBXOptions.TrimChar := Boolean(lValue);
     eConnQualifiedName: begin
-      FConnQualifiedName := WideString(PWideChar(lValue)); {$Message 'Do not sure what to do here'}
+      FConnQualifiedName := PWideChar(lValue); {$Message 'Do not sure what to do here'}
     end;
     eConnCatalogName: Assert(False);
     eConnSchemaName: Assert(False);
