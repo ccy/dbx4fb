@@ -58,6 +58,8 @@ type
     procedure Test_Open_Close;
     procedure Test_RecordCount;
     procedure Test_Transaction;
+    procedure Test_Transaction_1;
+    procedure Test_Transaction_2;
   end;
 
   TTestCase_DBX_FieldType = class(TTestCase_DBX)
@@ -277,7 +279,6 @@ procedure TTestCase_DBX_General.Test_RecordCount;
 var pD: ^TSQLDataSet;
     D: TSQLDataSet;
 begin
-Exit;
   New(pD);
   try
     FConnection.Execute('SELECT * FROM RDB$RELATIONS', nil, pD);
@@ -303,6 +304,55 @@ begin
   T.IsolationLevel := xilREADCOMMITTED;
   FConnection.StartTransaction(T);
   FConnection.Rollback(T);
+end;
+
+procedure TTestCase_DBX_General.Test_Transaction_1;
+var T: TTransactionDesc;
+begin
+  ZeroMemory(@T, SizeOf(T));
+  T.TransactionID := 1;
+  T.IsolationLevel := xilREADCOMMITTED;
+  Self.StartExpectingException(EDatabaseError);
+  try
+    FConnection.StartTransaction(T);
+    try
+      FConnection.ExecuteDirect('CREATE TABLE T_TRANSACTION(FIELD INTEGER)');
+      FConnection.ExecuteDirect('INSERT INTO T_TRANSACTION VALUES(123)');
+      FConnection.Commit(T);
+    except
+      FConnection.Rollback(T);
+      raise;
+    end;
+  finally
+    FConnection.ExecuteDirect('DROP TABLE T_TRANSACTION');
+  end;
+end;
+
+procedure TTestCase_DBX_General.Test_Transaction_2;
+var T: TTransactionDesc;
+    pD: ^TSQLDataSet;
+begin
+  ZeroMemory(@T, SizeOf(T));
+  T.TransactionID := 1;
+  T.IsolationLevel := xilREADCOMMITTED;
+
+  FConnection.ExecuteDirect('CREATE TABLE T_TRANSACTION(FIELD INTEGER)');
+  FConnection.ExecuteDirect('INSERT INTO T_TRANSACTION VALUES(123)');
+
+  FConnection.StartTransaction(T);
+  FConnection.ExecuteDirect('INSERT INTO T_TRANSACTION VALUES(456)');
+  FConnection.Rollback(T);
+
+  New(pD);
+  try
+    FConnection.Execute('SELECT COUNT(*) FROM T_TRANSACTION', nil, pD);
+    CheckEquals(1, pD^.Fields[0].AsInteger);
+    pD^.Free;
+  finally
+    Dispose(pD);
+  end;
+
+  FConnection.ExecuteDirect('DROP TABLE T_TRANSACTION');
 end;
 
 procedure TTestCase_DBX_FieldType.Execute;
