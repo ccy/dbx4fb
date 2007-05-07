@@ -73,13 +73,16 @@ type
     procedure TearDown; override;
   published
     procedure Test_BIGINT;
+    procedure Test_BIGINT_Limit;
     procedure Test_CHAR;
     procedure Test_DATE;
     procedure Test_DECIMAL;
+    procedure Test_DECIMAL_Limit;
     procedure Test_DOUBLE_PRECISION;
     procedure Test_FLOAT;
     procedure Test_INTEGER;
     procedure Test_NUMERIC;
+    procedure Test_NUMERIC_Limit;
     procedure Test_SMALLINT;
     procedure Test_TIME;
     procedure Test_TIMESTAMP;
@@ -89,7 +92,7 @@ type
 implementation
 
 uses SysUtils, Classes, DBXpress, SqlConst, Windows, StrUtils, FMTBcd,
-  SqlTimSt, DateUtils;
+  SqlTimSt, DateUtils, Math;
 
 constructor TTestData_SQLConnection.Create(const aName, aLibraryName,
     aGetDriverFunc, aVendorLib: string; const aIsEmbedded: boolean; const
@@ -329,8 +332,11 @@ begin
   else if GetName = 'Test_SMALLINT'         then Result := 'SMALLINT'
   else if GetName = 'Test_INTEGER'          then Result := 'INTEGER'
   else if GetName = 'Test_BIGINT'           then Result := 'BIGINT'
+  else if GetName = 'Test_BIGINT_Limit'     then Result := 'BIGINT'
   else if GetName = 'Test_NUMERIC'          then Result := 'NUMERIC(18, 4)'
+  else if GetName = 'Test_NUMERIC_Limit'    then Result := 'NUMERIC(18, 4)'
   else if GetName = 'Test_DECIMAL'          then Result := 'DECIMAL(18, 4)'
+  else if GetName = 'Test_DECIMAL_Limit'    then Result := 'DECIMAL(18, 4)'
   else if GetName = 'Test_FLOAT'            then Result := 'FLOAT'
   else if GetName = 'Test_DOUBLE_PRECISION' then Result := 'DOUBLE PRECISION'
   else if GetName = 'Test_DATE'             then Result := 'DATE'
@@ -367,23 +373,43 @@ begin
 end;
 
 procedure TTestCase_DBX_FieldType.Test_BIGINT;
-var F: TFMTBCDField;
 begin
   Param.AsFMTBCD := StrToBcd('1234567890');
   Execute;
   CheckEquals(TFMTBCDField, Field.ClassType);
-  F := Field as TFMTBCDField;
-  CheckEquals(SizeOf(TBcd), F.DataSize);
-  CheckEquals(0, F.Size);
-  CheckEquals(19, F.Precision);
+  CheckEquals(SizeOf(TBcd), Field.DataSize);
 
   CheckEquals(Param.AsInteger, Field.AsInteger);
   CheckEquals(Param.AsString, Field.AsString);
   CheckEquals(Param.AsFloat, Field.AsFloat);
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
+  Param.AsCurrency := 12345678;
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsFloat := 123;
+  Execute;
+  CheckEquals('123', Field.AsString);
+
+  Param.AsInteger := 1234567890;
+  Execute;
+  CheckEquals(1234567890, Field.AsInteger);
+
+  Param.AsSmallInt := 12345;
+  Execute;
+  CheckEquals(12345, Field.AsInteger);
+end;
+
+procedure TTestCase_DBX_FieldType.Test_BIGINT_Limit;
+var F: TFMTBCDField;
+begin
   Param.AsFMTBCD := StrToBcd('9223372036854775807');
   Execute;
+  CheckEquals(TFMTBCDField, Field.ClassType);
+  F := Field as TFMTBCDField;
+  CheckEquals(0, F.Size);
+  CheckEquals(19, F.Precision);
   CheckEquals(Param.AsString, Field.AsString);
 
   Param.AsFMTBCD := StrToBcd('-9223372036854775808');
@@ -397,6 +423,8 @@ begin
   Param.AsString := 'CHAR';
   Execute;
   CheckEquals(TStringField, Field.ClassType);
+  CheckEquals(101, Field.DataSize);
+  CheckEquals(100, Field.Size);
 
   if IsTrimChar then
     i := 0
@@ -410,7 +438,13 @@ begin
   Param.AsDate := Date;
   Execute;
   CheckEquals(TDateField, Field.ClassType);
+  CheckEquals(4, Field.DataSize);
+
   CheckEquals(Param.AsDate, Field.AsDateTime);
+  CheckEquals(Param.AsDateTime, Field.AsDateTime);
+  CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsFloat, Field.AsFloat);
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_DECIMAL;
@@ -418,22 +452,73 @@ begin
   Param.AsFMTBCD := StrToBcd('12345678901.2345');
   Execute;
   CheckEquals(TFMTBCDField, Field.ClassType);
+  CheckEquals(SizeOf(TBcd), Field.DataSize);
+  CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+  CheckEquals(Param.AsFloat, Field.AsFloat);
+
+  Param.AsCurrency := 12345678.1234;
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsCurrency := 1234.1234;
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsFloat := 123.123456;
+  Execute;
+  CheckEquals('123.1235', Field.AsString);
+
+  Param.AsFloat := 123.123412;
+  Execute;
+  CheckEquals('123.1234', Field.AsString);
+
+  Param.AsInteger := 1234567890;
+  Execute;
+  CheckEquals(1234567890, Field.AsInteger);
+
+  Param.AsSmallInt := 12345;
+  Execute;
+  CheckEquals(12345, Field.AsInteger);
+end;
+
+procedure TTestCase_DBX_FieldType.Test_DECIMAL_Limit;
+var F: TFMTBCDField;
+begin
+  Param.AsFMTBCD := StrToBcd('922337203685477.5807');
+  Execute;
+  CheckEquals(TFMTBCDField, Field.ClassType);
+  F := Field as TFMTBCDField;
+  CheckEquals(19, F.Precision);
+  CheckEquals(4, F.Size);
+
+  Param.AsFMTBCD := StrToBcd('-922337203685477.5808');
+  Execute;
   CheckEquals(Param.AsString, Field.AsString);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_DOUBLE_PRECISION;
+var F: TFloatField;
 begin
   Param.AsFloat := 1234567.12345678;
   Execute;
   CheckEquals(TFloatField, Field.ClassType);
+  F := Field as TFloatField;
+  CheckEquals(15, F.Precision);
+  
   CheckEquals(Param.AsFloat, Field.AsFloat, 0.00000001);
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_FLOAT;
+var F: TFloatField;
 begin
   Param.AsFloat := 1234.12345678;
   Execute;
   CheckEquals(TFloatField, Field.ClassType);
+  F := Field as TFloatField;
+  CheckEquals(15, F.Precision);
+
   CheckEquals(Param.AsFloat, Field.AsFloat, 0.0001);
 end;
 
@@ -443,6 +528,9 @@ begin
   Execute;
   CheckEquals(TIntegerField, Field.ClassType);
   CheckEquals(Param.AsInteger, Field.AsInteger);
+  CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsFloat, Field.AsFloat);
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_NUMERIC;
@@ -450,6 +538,50 @@ begin
   Param.AsFMTBCD := StrToBcd('12345678901.2345');
   Execute;
   CheckEquals(TFMTBCDField, Field.ClassType);
+  CheckEquals(SizeOf(TBcd), Field.DataSize);
+
+  CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+  CheckEquals(Param.AsFloat, Field.AsFloat);
+
+  Param.AsCurrency := 12345678.1234;
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsCurrency := 1234.1234;
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsFloat := 123.123456;
+  Execute;
+  CheckEquals('123.1235', Field.AsString);
+
+  Param.AsFloat := 123.123412;
+  Execute;
+  CheckEquals('123.1234', Field.AsString);
+
+  Param.AsInteger := 1234567890;
+  Execute;
+  CheckEquals(1234567890, Field.AsInteger);
+
+  Param.AsSmallInt := 12345;
+  Execute;
+  CheckEquals(12345, Field.AsInteger);
+end;
+
+procedure TTestCase_DBX_FieldType.Test_NUMERIC_Limit;
+var F: TFMTBCDField;
+begin
+  Param.AsFMTBCD := StrToBcd('922337203685477.5807');
+  Execute;
+  CheckEquals(TFMTBCDField, Field.ClassType);
+  F := Field as TFMTBCDField;
+  CheckEquals(19, F.Precision);
+  CheckEquals(4, F.Size);
+  CheckEquals(Param.AsString, Field.AsString);
+
+  Param.AsFMTBCD := StrToBcd('-922337203685477.5808');
+  Execute;
   CheckEquals(Param.AsString, Field.AsString);
 end;
 
@@ -458,6 +590,8 @@ begin
   Param.AsSmallInt := 12345;
   Execute;
   CheckEquals(TSmallintField, Field.ClassType);
+  CheckEquals(2, Field.DataSize);
+
   CheckEquals(Param.AsSmallInt, Field.AsInteger);
 end;
 
@@ -466,6 +600,8 @@ begin
   Param.AsTime := RecodeMilliSecond(Time, 0);
   Execute;
   CheckEquals(TTimeField, Field.ClassType);
+  CheckEquals(4, Field.DataSize);
+
   CheckEquals(Param.AsTime, Field.AsDateTime);
 end;
 
@@ -477,14 +613,21 @@ begin
   Param.AsSQLTimeStamp := T;
   Execute;
   CheckEquals(TSQLTimeStampField, Field.ClassType);
+  CheckEquals(16, Field.DataSize);
+
   CheckEquals(Param.AsString, Field.AsString);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_VARCHAR;
+var F: TStringField;
 begin
   Param.AsString := 'VARCHAR';
   Execute;
   CheckEquals(TStringField, Field.ClassType);
+  F := Field as TStringField;
+  CheckEquals(101, F.DataSize);
+  CheckEquals(100, F.Size);
+
   CheckEquals(Param.AsString, Field.AsString);
 end;
 
