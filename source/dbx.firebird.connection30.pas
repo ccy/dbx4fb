@@ -171,7 +171,7 @@ begin
     eConnMaxActiveComm: ;  {$Message 'Do not sure what to do here'}
     eConnServerCharSet: Assert(False);
     eConnSqlDialect: begin
-      word(PropValue^) := FDBXOptions.SQLDialect;
+      longint(PropValue^) := FDBXOptions.SQLDialect;
       Length := MaxLength;
     end;
     eConnRollbackRetain: Assert(False);
