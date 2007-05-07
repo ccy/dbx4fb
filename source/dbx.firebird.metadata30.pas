@@ -5,11 +5,16 @@ interface
 uses IB_Header, firebird.client, DBXpress, dbx.common, firebird.dsql;
 
 type
-  TMetaData_Firebird_getColumns = class(TInterfacedObject, IMetaDataProvider)
+  TMetaData_Firebird_Factory = class abstract
+  public
+    class function New_getColumns(const aTableName: WideString): TFieldColumns;
+    class function New_getIndices(const aTableName: WideString): TFieldColumns;
+  end;
+
+  TMetaDataProvider_Firebird = class(TInterfacedObject, IMetaDataProvider)
   private
     FColumns: TFieldColumns;
     FSQLDA: TXSQLDA;
-    function NewFieldColumns(const aTableName: WideString): TFieldColumns;
   protected
     function GetColumnCount: integer;
     function GetColumnLength(const aColNo: Word): LongWord;
@@ -20,7 +25,7 @@ type
     function GetColumnSubType(const aColNo: Word): Word;
     function IsNullable(const aColNo: Word): boolean;
   public
-    constructor Create(const aTableName: WideString; const aSQLDA: TXSQLDA);
+    constructor Create(const aColumns: TFieldColumns; const aSQLDA: TXSQLDA);
   end;
 
   TSQLMetaData30_Firebird = class(TInterfacedObject, ISQLMetaData30)
@@ -28,6 +33,7 @@ type
     FDBXOptions: TDBXOptions;
     FClient: IFirebirdClient;
     FDBHandle: pisc_db_handle;
+    FTransaction: IFirebirdTransaction;
   private
     FStatusVector: IStatusVector;
     function StatusVector: IStatusVector;
@@ -52,20 +58,139 @@ type
         SQLResult; stdcall;
   public
     constructor Create(const aClientLibrary: IFirebirdClient; const aDBHandle:
-        pisc_db_handle; const aDBXOptions: TDBXOptions);
+        pisc_db_handle; const aTransaction: IFirebirdTransaction; const
+        aDBXOptions: TDBXOptions);
   end;
 
 implementation
 
 uses SysUtils, dbx.firebird.cursor30;
 
+class function TMetaData_Firebird_Factory.New_getColumns(const aTableName: WideString):
+    TFieldColumns;
+var iIndex: integer;
+
+  procedure Add(const aFieldName: string; const aFieldType, aFieldSize: Word);
+  begin
+    with Result[iIndex] do begin
+      Name := aFieldName;
+      FieldType := aFieldType;
+      Size := aFieldSize;
+    end;
+    Inc(iIndex);
+  end;
+
+begin
+  iIndex := 1;
+  Add('RECNO',             fldINT32,     4);
+  Add('CATALOG_NAME',      fldZSTRING,   7);
+  Add('SCHEMA_NAME',       fldZSTRING,   7);
+  Add('TABLE_NAME',        fldZSTRING,   Length(aTableName) + 1);
+  Add('COLUMN_NAME',       fldZSTRING,   32);
+  Add('COLUMN_POSITION',   fldINT16,     2);
+  Add('COLUMN_TYPE',       fldINT16,     2);
+  Add('COLUMN_DATATYPE',   fldINT16,     2);
+  Add('COLUMN_TYPENAME',   fldZSTRING,   32);
+  Add('COLUMN_SUBTYPE',    fldINT16,     2);
+  Add('COLUMN_LENGTH',     fldINT32,     4);
+  Add('COLUMN_PRECISION',  fldINT16,     2);
+  Add('COLUMN_SCALE',      fldINT16,     2);
+  Add('COLUMN_NULLABLE',   fldINT16,     2);
+end;
+
+class function TMetaData_Firebird_Factory.New_getIndices(const aTableName: WideString):
+    TFieldColumns;
+var iIndex: integer;
+
+  procedure Add(const aFieldName: string; const aFieldType, aFieldSize: Word);
+  begin
+    with Result[iIndex] do begin
+      Name := aFieldName;
+      FieldType := aFieldType;
+      Size := aFieldSize;
+    end;
+    Inc(iIndex);
+  end;
+
+begin
+  iIndex := 1;
+  Add('RECNO',             fldINT32,    4);
+  Add('CATALOG_NAME',      fldZSTRING,  7);
+  Add('SCHEMA_NAME',       fldZSTRING,  7);
+  Add('TABLE_NAME',        fldZSTRING,  Length(aTableName) + 1);
+  Add('INDEX_NAME',        fldZSTRING,  31);
+  Add('COLUMN_NAME',       fldZSTRING,  31);
+  Add('COLUMN_POSITION',   fldINT16,    2);
+  Add('PKEY_NAME',         fldZSTRING,  31);
+  Add('INDEX_TYPE',        fldINT32,    4);
+  Add('SORT_ORDER',        fldZSTRING,  2);
+  Add('FILTER',            fldZSTRING,  7);
+end;
+
+constructor TMetaDataProvider_Firebird.Create(const aColumns: TFieldColumns; const
+    aSQLDA: TXSQLDA);
+begin
+  inherited Create;
+  FColumns := aColumns;
+  FSQLDA := aSQLDA;
+end;
+
+function TMetaDataProvider_Firebird.GetColumnCount: integer;
+begin
+  Result := Length(FColumns);
+end;
+
+function TMetaDataProvider_Firebird.GetColumnLength(const aColNo: Word):
+    LongWord;
+begin
+  Result := FColumns[aColNo].Size;
+end;
+
+function TMetaDataProvider_Firebird.GetColumnName(const aColNo: Word):
+    WideString;
+begin
+  Result := FColumns[aColNo].Name;
+end;
+
+function TMetaDataProvider_Firebird.GetColumnPrecision(const aColNo: Word):
+    Smallint;
+begin
+  if FColumns[aColNo].FieldType = fldZSTRING then
+    Result := FColumns[aColNo].Size - 1
+  else
+    Result := 0;
+end;
+
+function TMetaDataProvider_Firebird.GetColumnScale(const aColNo: Word):
+    Smallint;
+begin
+  Result := 0;
+end;
+
+function TMetaDataProvider_Firebird.GetColumnSubType(const aColNo: Word):
+    Word;
+begin
+  Result := 0;
+end;
+
+function TMetaDataProvider_Firebird.GetColumnType(const aColNo: Word): Word;
+begin
+  Result := FColumns[aColNo].FieldType;
+end;
+
+function TMetaDataProvider_Firebird.IsNullable(const aColNo: Word): boolean;
+begin
+  Result := FSQLDA.Vars[aColNo].IsNullable;
+end;
+
 constructor TSQLMetaData30_Firebird.Create(const aClientLibrary:
-    IFirebirdClient; const aDBHandle: pisc_db_handle; const aDBXOptions:
-    TDBXOptions);
+    IFirebirdClient; const aDBHandle: pisc_db_handle; const aTransaction:
+    IFirebirdTransaction; const aDBXOptions: TDBXOptions);
 begin
   inherited Create;
   FClient := aClientLibrary;
   FDBHandle := aDBHandle;
+  FTransaction := aTransaction;
   FDBXOptions := aDBXOptions;
 end;
 
@@ -81,13 +206,13 @@ begin
  Format('WHERE (A.RDB$FIELD_SOURCE = B.RDB$FIELD_NAME) AND (A.RDB$RELATION_NAME = ''%s'') ', [TableName]) +
      'ORDER BY A.RDB$FIELD_POSITION';
 
-  C := TFirebird_DSQL.Create(FClient);
+  C := TFirebird_DSQL.Create(FClient, FTransaction);
   C.Open(StatusVector, FDBHandle);
   C.Prepare(StatusVector, S, FDBXOptions.SQLDialect);
   C.Execute(StatusVector);
   if not StatusVector.CheckResult(Result, DBXERR_SQLERROR) then Exit;
 
-  M := TMetaData_Firebird_getColumns.Create(TableName, C.o_SQLDA);
+  M := TMetaDataProvider_Firebird.Create(TMetaData_Firebird_Factory.New_getColumns(TableName), C.o_SQLDA);
   Cursor := TSQLCursor30_Firebird.Create(FClient, M, C, True);
 
   Result := DBXERR_NONE;
@@ -107,8 +232,29 @@ end;
 
 function TSQLMetaData30_Firebird.getIndices(TableName: PWideChar; IndexType:
     LongWord; out Cursor: ISQLCursor30): SQLResult;
+var M: IMetaDataProvider;
+    S: string;
+    C: IFirebird_DSQL;
 begin
-  Assert(False);
+  S := 'SELECT 0, '''', '''', A.RDB$RELATION_NAME, A.RDB$INDEX_NAME, B.RDB$FIELD_NAME, ' +
+       '       B.RDB$FIELD_POSITION, '''', 0, A.RDB$INDEX_TYPE, '''', A.RDB$UNIQUE_FLAG, C.RDB$CONSTRAINT_NAME, C.RDB$CONSTRAINT_TYPE ' +
+       'FROM RDB$INDICES A, RDB$INDEX_SEGMENTS B FULL OUTER JOIN RDB$RELATION_CONSTRAINTS C ' +
+         'ON A.RDB$RELATION_NAME = C.RDB$RELATION_NAME AND C.RDB$CONSTRAINT_TYPE = ''PRIMARY KEY'' ' +
+      'WHERE (A.RDB$SYSTEM_FLAG <> 1 OR A.RDB$SYSTEM_FLAG IS NULL) ' +
+        'AND (A.RDB$INDEX_NAME = B.RDB$INDEX_NAME) ' +
+ Format('AND (A.RDB$RELATION_NAME = UPPER(''%s'')) ', [TableName]) +
+   'ORDER BY A.RDB$INDEX_NAME';
+
+  C := TFirebird_DSQL.Create(FClient, FTransaction);
+  C.Open(StatusVector, FDBHandle);
+  C.Prepare(StatusVector, S, FDBXOptions.SQLDialect);
+  C.Execute(StatusVector);
+  if not StatusVector.CheckResult(Result, DBXERR_SQLERROR) then Exit;
+
+  M := TMetaDataProvider_Firebird.Create(TMetaData_Firebird_Factory.New_getIndices(TableName), C.o_SQLDA);
+  Cursor := TSQLCursor30_Firebird.Create(FClient, M, C, True);
+
+  Result := DBXERR_NONE;
 end;
 
 function TSQLMetaData30_Firebird.getObjectList(eObjType: TSQLObjectType; out
@@ -192,90 +338,6 @@ begin
   if FStatusVector = nil then
     FStatusVector := TStatusVector.Create;
   Result := FStatusVector;
-end;
-
-constructor TMetaData_Firebird_getColumns.Create(const aTableName: WideString;
-    const aSQLDA: TXSQLDA);
-begin
-  inherited Create;
-  FColumns := NewFieldColumns(aTableName);
-  FSQLDA := aSQLDA;
-end;
-
-function TMetaData_Firebird_getColumns.GetColumnCount: integer;
-begin
-  Result := Length(FColumns);
-end;
-
-function TMetaData_Firebird_getColumns.GetColumnLength(const aColNo: Word): LongWord;
-begin
-  Result := FColumns[aColNo].Size;
-end;
-
-function TMetaData_Firebird_getColumns.GetColumnName(const aColNo: Word): WideString;
-begin
-  Result := FColumns[aColNo].Name;
-end;
-
-function TMetaData_Firebird_getColumns.GetColumnPrecision(const aColNo: Word): Smallint;
-begin
-  if FColumns[aColNo].FieldType = fldZSTRING then
-    Result := FColumns[aColNo].Size - 1
-  else
-    Result := 0;
-end;
-
-function TMetaData_Firebird_getColumns.GetColumnScale(const aColNo: Word): Smallint;
-begin
-  Result := 0;
-end;
-
-function TMetaData_Firebird_getColumns.GetColumnSubType(const aColNo: Word): Word;
-begin
-  Result := 0;
-end;
-
-function TMetaData_Firebird_getColumns.GetColumnType(const aColNo: Word): Word;
-begin
-  Result := FColumns[aColNo].FieldType;
-end;
-
-function TMetaData_Firebird_getColumns.IsNullable(const aColNo: Word): boolean;
-begin
-  Result := FSQLDA.Vars[aColNo].IsNullable;
-end;
-
-function TMetaData_Firebird_getColumns.NewFieldColumns(const aTableName:
-    WideString): TFieldColumns;
-
-var iIndex: integer;
-
-  procedure Add(const aFieldName: string; const aFieldType, aFieldSize: Word);
-  begin
-    with Result[iIndex] do begin
-      Name := aFieldName;
-      FieldType := aFieldType;
-      Size := aFieldSize;
-    end;
-    Inc(iIndex);
-  end;
-
-begin
-  iIndex := 1;
-  Add('RECNO',             fldINT32,     4);
-  Add('CATALOG_NAME',      fldZSTRING,   7);
-  Add('SCHEMA_NAME',       fldZSTRING,   7);
-  Add('TABLE_NAME',        fldZSTRING,   Length(aTableName) + 1);
-  Add('COLUMN_NAME',       fldZSTRING,   32);
-  Add('COLUMN_POSITION',   fldINT16,     2);
-  Add('COLUMN_TYPE',       fldINT16,     2);
-  Add('COLUMN_DATATYPE',   fldINT16,     2);
-  Add('COLUMN_TYPENAME',   fldZSTRING,   32);
-  Add('COLUMN_SUBTYPE',    fldINT16,     2);
-  Add('COLUMN_LENGTH',     fldINT32,     4);
-  Add('COLUMN_PRECISION',  fldINT16,     2);
-  Add('COLUMN_SCALE',      fldINT16,     2);
-  Add('COLUMN_NULLABLE',   fldINT16,     2);
 end;
 
 end.
