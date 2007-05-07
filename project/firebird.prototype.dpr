@@ -393,23 +393,14 @@ var TPB: AnsiString;
     hTR: isc_tr_handle;
 var SQL: string;
     iFetch: word;
-    iCount: integer;
     oSQLDA: TXSQLDA;
-    S: string;
-    iLen: word;
-    iSegs, iSize, iMaxSize: integer;
-    Ptr: pointer;
     hBlob: isc_blob_handle;
     lBlobSegment: PChar;
-    lActualLen: integer;
+    lActualLen: word;
     lBlobID: ISC_QUAD;
     lBlobStat: integer;
-var CurPos: LongInt;
-    BytesRead, SegLen: word;
-    lSQLCode: LongInt;
-    lBuffer: PAnsiChar;
-    iBlobType: short;
-    F: TFileStream;
+    lData: pointer;
+    M: TMemoryStream;
 begin
   {$region 'Load Library'}
   hFB := LoadLibrary('C:\Project\Factory\System\Resource\bin\fbclient.1.5.3.dll');
@@ -453,47 +444,47 @@ begin
   SQL := 'SELECT Photo FROM HR_EMP WHERE CODE=''A001''';
   lFB.isc_dsql_prepare(Status.pValue, @hTR, @hStmt, Length(SQL), pAnsiChar(SQL), SQL_DIALECT_CURRENT, oSQLDA.XSQLDA);
   CheckStatus(Status, lFB);
-  if oSQLDA.sqld > oSQLDA.sqln then begin
-    oSQLDA.Count := oSQLDA.sqld;
-    lFB.isc_dsql_describe(Status.pValue, @hStmt, oSQLDA.Version, oSQLDA.XSQLDA);
-    CheckStatus(Status, lFB);
-  end;
+  oSQLDA.Prepare;
   {$endregion}
   {$region 'Execute'}
   lFB.isc_dsql_execute(Status.pValue, @hTR, @hStmt, oSQLDA.Version, nil);
   CheckStatus(Status, lFB);
   {$endregion}
   {$region 'Fetch'}
-  oSQLDA.Prepare;
-  oSQLDA.XSQLDA.sqlvar[0].sqldata := @lBlobID;
-  oSQLDA.XSQLDA.sqlvar[0].sqltype := SQL_Blob + 1;
-  oSQLDA.XSQLDA.sqlvar[0].sqllen := SizeOf(ISC_QUAD);
-
-  lBlobSegment := GetMemory(1024);
-  lBuffer := GetMemory(1024);
-  F := TFileStream.Create('C:\car1.jpg', fmCreate);
+  GetMem(lBlobSegment, 1024);
+  M := TMemoryStream.Create;
   try
     hBlob := 0;
     repeat
       iFetch := lFB.isc_dsql_fetch(Status.pValue, @hStmt, 1, oSQLDA.XSQLDA);
+      CheckStatus(Status, lFB);
+      if iFetch = 100 then Break;
+      
+      lData := oSQLDA.Vars[1].sqldata;
+      Move(lData^, lBlobID, 8);
 
       lFB.isc_open_blob2(Status.pValue, @hDB, @hTR, @hBlob, @lBlobID, 0, nil);
-      lBlobStat := lFB.isc_get_segment(Status.pValue, @hBlob, PWord(lActualLen), SizeOf(lBlobSegment), lBlobSegment);
-      while (lBlobStat = 0) or (Status.pValue[1] = isc_segment) do begin
-        lBlobStat := lFB.isc_get_segment(Status.pValue, @hBlob, PWord(lActualLen), SizeOf(lBlobSegment), lBlobSegment);
-        if lBlobStat = 0 then
-          F.WriteBuffer(oSQLDA.XSQLDA.sqlvar[0].sqldata, lActualLen);
+      CheckStatus(Status, lFB);
+      lActualLen := 0;
+      lBlobStat := lFB.isc_get_segment(Status.pValue, @hBlob, @lActualLen, 1024, lBlobSegment);
+      CheckStatus(Status, lFB);
+      M.WriteBuffer(lBlobSegment^, lActualLen);
+      while (lActualLen < 1024) or (Status.pValue[1] = isc_segment) do begin
+        lBlobStat := lFB.isc_get_segment(Status.pValue, @hBlob, @lActualLen, 1024, lBlobSegment);
+        CheckStatus(Status, lFB);
+        M.WriteBuffer(lBlobSegment^, lActualLen);
+        if lActualLen < 1024 then
+          Break;
       end;
     until iFetch <> 0;
+    M.SaveToFile('C:\car1.jpg');
     if iFetch <> 100 then begin
       //EOF
     end;
   finally
-    FreeMemory(lBlobSegment);
-    FreeMemory(lBuffer);
-    F.Free;
-  end;
-
+    FreeMem(lBlobSegment);
+    M.Free;
+  end;   
   {$endregion}
   {$region 'Close Blob'}
   lFB.isc_close_blob(Status.pValue, @hBlob);
