@@ -15,8 +15,9 @@ type
   end;
 
   TTestData_SQLConnection = class(TInterfacedObject, ITestData)
-  strict private
+  private
     FName: string;
+    FDriverName: string;
     FLibraryName: string;
     FGetDriverFunc: string;
     FVendorLib: string;
@@ -26,8 +27,8 @@ type
     function GetIsEmbedded: boolean;
     function GetName: string;
   public
-    constructor Create(const aName, aLibraryName, aGetDriverFunc, aVendorLib:
-        string; const aIsEmbedded: boolean; const aParams: WideString);
+    constructor Create(const aName, aDriverName, aLibraryName, aGetDriverFunc,
+        aVendorLib: string; const aIsEmbedded: boolean; const aParams: string);
     procedure Setup(const aConnection: TSQLConnection);
   end;
 
@@ -96,12 +97,13 @@ implementation
 uses SysUtils, Classes, DBXpress, SqlConst, Windows, StrUtils, FMTBcd,
   SqlTimSt, DateUtils, Math;
 
-constructor TTestData_SQLConnection.Create(const aName, aLibraryName,
-    aGetDriverFunc, aVendorLib: string; const aIsEmbedded: boolean; const
-    aParams: WideString);
+constructor TTestData_SQLConnection.Create(const aName, aDriverName,
+    aLibraryName, aGetDriverFunc, aVendorLib: string; const aIsEmbedded:
+    boolean; const aParams: string);
 begin
   inherited Create;
   FName := aName;
+  FDriverName := aName;
   FLibraryName := aLibraryName;
   FGetDriverFunc := aGetDriverFunc;
   FVendorLib := aVendorLib;
@@ -121,7 +123,7 @@ end;
 
 procedure TTestData_SQLConnection.Setup(const aConnection: TSQLConnection);
 begin
-  aConnection.DriverName := FName;
+  aConnection.DriverName := FDriverName;
   aConnection.ConnectionName := Self.ClassName;
   aConnection.LibraryName := FLibraryName;
   aConnection.GetDriverFunc := FGetDriverFunc;
@@ -694,42 +696,49 @@ procedure xxx(const aParams: WideString);
 var P: WideString;
     T: ITestSuite;
     C: ITestData;
+    S: WideString;
 begin
+  S := SQLDIALECT_KEY + '=3'
+       + #13#10 + szUSERNAME + '=SYSDBA'
+       + #13#10 + szPASSWORD + '=masterkey'
+       + #13#10 + ROLENAME_KEY + '=RoleName'
+       + #13#10 + 'ServerCharSet='
+       + #13#10 + 'BlobSize=-1'
+       + #13#10 + 'CommitRetain=False'
+       + #13#10 + 'LocaleCode=0000'
+       + #13#10 + 'Interbase TransIsolation=ReadCommited'
+       ;
+
   T := TTestSuite.Create('TSQLConnection: ' + StringReplace(aParams, #13#10, ' , ', [rfReplaceAll]));
 
-  P := Format('Database=localhost:%sserver.15.fdb', [ExtractFilePath(ParamStr(0))]) +
-       #13#10 + SQLDIALECT_KEY + '=3' +
-       #13#10 + szUSERNAME + '=SYSDBA' +
-       #13#10 + szPASSWORD + '=masterkey' +
-       #13#10 + 'RoleName=' +
-       #13#10 + aParams;
+  P := Format('Database=localhost:%sserver.15.fdb', [ExtractFilePath(ParamStr(0))])
+       + #13#10 + S
+       + #13#10 + aParams
+       ;
 
-  C := TTestData_SQLConnection.Create('Borland DBX Interbase Driver (Server)', 'g:\bin\dbxint30.dll', 'getSQLDriverINTERBASE', 'g:\bin\fbclient.1.5.3.dll', False, P);
+  C := TTestData_SQLConnection.Create('Borland DBX Interbase Driver (Server)', 'INTERBASE', 'g:\bin\dbxint30.dll', 'getSQLDriverINTERBASE', 'g:\bin\fbclient.1.5.3.dll', False, P);
   T.AddSuite(MySuite(C));
 
-  C := TTestData_SQLConnection.Create('Upscene DBX Firebird Driver (Server)', 'g:\bin\dbxup_fb.dll', 'getSQLDriverFB', 'g:\bin\fbclient.1.5.3.dll', False, P);
+  C := TTestData_SQLConnection.Create('Upscene DBX Firebird Driver (Server)', 'INTERBASE', 'g:\bin\dbxup_fb.dll', 'getSQLDriverFB', 'g:\bin\fbclient.1.5.3.dll', False, P);
   T.AddSuite(MySuite(C));
 
-  C := TTestData_SQLConnection.Create('TeamOO DBX Firebird Driver (Server))', 'dbxfb.dll', 'getSQLDriverFIREBIRD', 'g:\bin\fbclient.1.5.3.dll', False, P);
+  C := TTestData_SQLConnection.Create('TeamOO DBX Firebird Driver (Server))', 'INTERBASE', 'dbxfb.dll', 'getSQLDriverFIREBIRD', 'g:\bin\fbclient.1.5.3.dll', False, P);
   T.AddSuite(MySuite(C));
 
-  P := Format('Database=%sembed.15.fdb', [ExtractFilePath(ParamStr(0))]) +
-       #13#10 + SQLDIALECT_KEY + '=3' +
-       #13#10 + szUSERNAME + '=SYSDBA' +
-       #13#10 + szPASSWORD + '=masterkey' +
-       #13#10 + 'RoleName=' +
-       #13#10 + aParams;
+  P := Format('Database=%sembed.15.fdb', [ExtractFilePath(ParamStr(0))])
+       + #13#10 + S
+       + #13#10 + aParams
+       ;
 
-  C := TTestData_SQLConnection.Create('TeamOO DBX Firebird Driver (Embedded, ODS 10.1)', 'dbxfb.dll', 'getSQLDriverFIREBIRD', Format('%sfbembed.10.1\fbembed.dll', [ExtractFilePath(ParamStr(0))]), True, P);
+  C := TTestData_SQLConnection.Create('TeamOO DBX Firebird Driver (Embedded, ODS 10.1)', 'INTERBASE', 'dbxfb.dll', 'getSQLDriverFIREBIRD', Format('%sfbembed.10.1\fbembed.dll', [ExtractFilePath(ParamStr(0))]), True, P);
   T.AddSuite(MySuite(C));
 
-  P := Format('Database=%sembed.20.fdb', [ExtractFilePath(ParamStr(0))]) +
-       #13#10 + SQLDIALECT_KEY + '=3' +
-       #13#10 + szUSERNAME + '=SYSDBA' +
-       #13#10 + szPASSWORD + '=masterkey' +
-       #13#10 + aParams;
+  P := Format('Database=%sembed.20.fdb', [ExtractFilePath(ParamStr(0))])
+       + #13#10 + S
+       + #13#10 + aParams
+       ;
 
-  C := TTestData_SQLConnection.Create('TeamOO DBX Firebird Driver (Embedded, ODS 11.0)', 'dbxfb.dll', 'getSQLDriverFIREBIRD', Format('%sfbembed.11.0\fbembed.dll', [ExtractFilePath(ParamStr(0))]), True, P);
+  C := TTestData_SQLConnection.Create('TeamOO DBX Firebird Driver (Embedded, ODS 11.0)', 'INTERBASE', 'dbxfb.dll', 'getSQLDriverFIREBIRD', Format('%sfbembed.11.0\fbembed.dll', [ExtractFilePath(ParamStr(0))]), True, P);
   T.AddSuite(MySuite(C));
 
 //  TestFrameWork.RegisterTest(TRepeatedTest.Create(T, 1));
@@ -740,13 +749,13 @@ var P: WideString;
 
 initialization
   P := 'CommitRetain=False'
-       + #13#10 + 'WaitOnLocks=False'
+       + #13#10 + WAITONLOCKS_KEY + '=False'
        + #13#10 + 'Trim Char=False'
        ;
   xxx(P);
 
   P := 'CommitRetain=False'
-       + #13#10 + 'WaitOnLocks=False'
+       + #13#10 + WAITONLOCKS_KEY + '=False'
        + #13#10 + 'Trim Char=True'
        ;
 //  xxx(P);
