@@ -54,6 +54,7 @@ type
     procedure Test_Execute;
     procedure Test_ExecuteDirect;
     procedure Test_GetFieldNames;
+    procedure Test_GetTableNames;
     procedure Test_Invalid_Login;
     procedure Test_Invalid_VendorLib;
     procedure Test_Open_Close;
@@ -61,6 +62,7 @@ type
     procedure Test_Transaction;
     procedure Test_Transaction_1;
     procedure Test_Transaction_2;
+    procedure Test_GetIndexNames;
   end;
 
   TTestCase_DBX_FieldType = class(TTestCase_DBX)
@@ -77,6 +79,7 @@ type
   published
     procedure Test_BIGINT;
     procedure Test_BIGINT_Limit;
+    procedure Test_BLOB;
     procedure Test_CHAR;
     procedure Test_DATE;
     procedure Test_DECIMAL;
@@ -90,6 +93,14 @@ type
     procedure Test_TIME;
     procedure Test_TIMESTAMP;
     procedure Test_VARCHAR;
+  end;
+
+  TTestCase_DBX_TSQLDataSet = class(TTestCase_DBX)
+  published
+    procedure Test1;
+    procedure Test2;
+    procedure Test_GetRowsAffected;
+    procedure Test_Field_ReadOnly;
   end;
 
 implementation
@@ -254,6 +265,35 @@ begin
   end;
 end;
 
+procedure TTestCase_DBX_General.Test_GetIndexNames;
+var L: TStringList;
+begin
+  L := TStringList.Create;
+  try
+    FConnection.GetIndexNames('RDB$RELATIONS', L);
+    CheckEquals('', L.Text);
+  finally
+    L.Free;
+  end;
+end;
+
+procedure TTestCase_DBX_General.Test_GetTableNames;
+var L: TStringList;
+    iSystem: integer;
+begin
+  L := TStringList.Create;
+  try
+    FConnection.GetTableNames(L, True);
+    iSystem := L.Count;
+    CheckTrue(iSystem > 10);
+
+    FConnection.GetTableNames(L, False);
+    CheckTrue(iSystem >= 0);
+  finally
+    L.Free;
+  end;
+end;
+
 procedure TTestCase_DBX_General.Test_Invalid_Login;
 begin
   FConnection.Close;
@@ -366,7 +406,7 @@ begin
   FConnection.Execute(S, nil);
 
   S := 'INSERT INTO T_FIELD (FIELD) VALUES (:VALUE)';
-  FConnection.Execute(S, FParams);
+  CheckEquals(1, FConnection.Execute(S, FParams));
 
   S := 'SELECT * FROM T_FIELD';
   FConnection.Execute(S, nil, @FDataSet);
@@ -394,6 +434,7 @@ begin
   else if GetName = 'Test_DATE'             then Result := 'DATE'
   else if GetName = 'Test_TIME'             then Result := 'TIME'
   else if GetName = 'Test_TIMESTAMP'        then Result := 'TIMESTAMP'
+  else if GetName = 'Test_BLOB'             then Result := 'BLOB'
   else
     raise Exception.CreateFmt('Field type not found for test %s', [GetName]);
 end;
@@ -451,6 +492,10 @@ begin
   Param.AsSmallInt := 12345;
   Execute;
   CheckEquals(12345, Field.AsInteger);
+
+  Param.AsString := '1234567890';
+  Execute;
+  CheckEquals(1234567890, Field.AsInteger);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_BIGINT_Limit;
@@ -467,6 +512,18 @@ begin
   Param.AsFMTBCD := StrToBcd('-9223372036854775808');
   Execute;
   CheckEquals(Param.AsString, Field.AsString);
+end;
+
+procedure TTestCase_DBX_FieldType.Test_BLOB;
+begin
+  Param.LoadFromFile('c:\windows\notepad.exe', ftBlob);
+  Execute;
+  CheckEquals(TBlobField, Field.ClassType);
+  CheckEquals(Param.AsString, Field.AsString);
+
+  Param.Clear;
+  Execute;
+  CheckTrue(Field.IsNull);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_CHAR;
@@ -583,6 +640,10 @@ begin
   CheckEquals(Param.AsString, Field.AsString);
   CheckEquals(Param.AsFloat, Field.AsFloat);
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsString := '1290345678';
+  Execute;
+  CheckEquals(Param.AsInteger, Field.AsInteger);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_NUMERIC;
@@ -645,6 +706,10 @@ begin
   CheckEquals(2, Field.DataSize);
 
   CheckEquals(Param.AsSmallInt, Field.AsInteger);
+
+  Param.AsString := '32145';
+  Execute;
+  CheckEquals(Param.AsSmallInt, Field.AsInteger);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_TIME;
@@ -689,6 +754,7 @@ begin
   S := TTestSuite.Create(aTestData.Name);
   S.AddSuite(TTestCase_DBX_General.NewSuite(aTestData));
   S.AddSuite(TTestCase_DBX_FieldType.NewSuite(aTestData));
+  S.AddSuite(TTestCase_DBX_TSQLDataSet.NewSuite(aTestData));
   Result := S as ITestSuite;
 end;
 
@@ -745,18 +811,86 @@ begin
   TestFrameWork.RegisterTest(T);
 end;
 
-var P: WideString;
+procedure TTestCase_DBX_TSQLDataSet.Test1;
+var D: TSQLDataSet;
+begin
+  D := TSQLDataSet.Create(nil);
+  try
+    D.SQLConnection := FConnection;
+    D.CommandType := ctTable;
+    D.CommandText := 'RDB$RELATIONS';
+    D.Open;
+    CheckTrue(D.Active);
+    D.Close;
+  finally
+    D.Free;
+  end;
+end;
+
+procedure TTestCase_DBX_TSQLDataSet.Test2;
+var D: TSQLDataSet;
+    L: TStringList;
+begin
+  D := TSQLDataSet.Create(nil);
+  L := TStringList.Create;
+  try
+    D.SQLConnection := FConnection;
+    D.CommandType := ctTable;
+    D.CommandText := 'SY_REGISTRY';
+    D.Open;
+  finally
+    D.Free;
+    L.Free;
+  end;
+end;
+
+procedure TTestCase_DBX_TSQLDataSet.Test_GetRowsAffected;
+var D: TSQLDataSet;
+    L: TStringList;
+begin
+  D := TSQLDataSet.Create(nil);
+  L := TStringList.Create;
+  try
+    D.SQLConnection := FConnection;
+    D.CommandType := ctTable;
+    D.CommandText := 'SY_REGISTRY';
+    D.Open;
+    D.Prepared := False;
+    D.Close;
+  finally
+    D.Free;
+    L.Free;
+  end;
+end;
+
+procedure TTestCase_DBX_TSQLDataSet.Test_Field_ReadOnly;
+var D: TSQLDataSet;
+    L: TStringList;
+begin
+  D := TSQLDataSet.Create(nil);
+  L := TStringList.Create;
+  try
+    D.SQLConnection := FConnection;
+    D.CommandType := ctTable;
+    D.CommandText := 'SY_REGISTRY';
+    D.Open;
+    CheckFalse(D.Fields[0].ReadOnly);
+    D.Close;
+  finally
+    D.Free;
+    L.Free;
+  end;
+end;
 
 initialization
-  P := 'CommitRetain=False'
+  xxx('CommitRetain=False'
        + #13#10 + WAITONLOCKS_KEY + '=False'
        + #13#10 + 'Trim Char=False'
-       ;
-  xxx(P);
+  );
 
-  P := 'CommitRetain=False'
-       + #13#10 + WAITONLOCKS_KEY + '=False'
-       + #13#10 + 'Trim Char=True'
-       ;
-//  xxx(P);
+//  xxx('CommitRetain=False'
+//       + #13#10 + WAITONLOCKS_KEY + '=False'
+//       + #13#10 + 'Trim Char=True'
+//  );
+
 end.
