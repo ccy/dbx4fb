@@ -71,11 +71,14 @@ type
     FParams: TParams;
     procedure Execute;
     function Field: TField;
-    function GetFieldType: string;
     function Param: TParam;
   protected
+    FRequired: boolean;
+    function GetFieldType: string; virtual;
     procedure SetUp; override;
     procedure TearDown; override;
+  public
+    procedure Test_Required;
   published
     procedure Test_BIGINT;
     procedure Test_BIGINT_Limit;
@@ -93,6 +96,11 @@ type
     procedure Test_TIME;
     procedure Test_TIMESTAMP;
     procedure Test_VARCHAR;
+  end;
+
+  TTest_DBX_FieldType_NOT_NULL = class(TTestCase_DBX_FieldType)
+  protected
+    function GetFieldType: string; override;
   end;
 
   TTestCase_DBX_TSQLDataSet = class(TTestCase_DBX)
@@ -419,6 +427,8 @@ end;
 
 function TTestCase_DBX_FieldType.GetFieldType: string;
 begin
+  FRequired := False;
+
        if GetName = 'Test_CHAR'             then Result := 'CHAR(100)'
   else if GetName = 'Test_VARCHAR'          then Result := 'VARCHAR(100)'
   else if GetName = 'Test_SMALLINT'         then Result := 'SMALLINT'
@@ -434,7 +444,7 @@ begin
   else if GetName = 'Test_DATE'             then Result := 'DATE'
   else if GetName = 'Test_TIME'             then Result := 'TIME'
   else if GetName = 'Test_TIMESTAMP'        then Result := 'TIMESTAMP'
-  else if GetName = 'Test_BLOB'             then Result := 'BLOB'
+  else if GetName = 'Test_BLOB'             then Result := 'BLOB SUB_TYPE 0 SEGMENT SIZE 512'
   else
     raise Exception.CreateFmt('Field type not found for test %s', [GetName]);
 end;
@@ -446,8 +456,18 @@ end;
 
 procedure TTestCase_DBX_FieldType.SetUp;
 var S: string;
+    L: TStringList;
 begin
   inherited;
+  L := TStringList.Create;
+  try
+    FConnection.GetTableNames(L, False);
+    if L.IndexOf('T_FIELD') <> -1 then
+      FConnection.ExecuteDirect('DROP TABLE T_FIELD');
+  finally
+    L.Free;
+  end;
+
   S := 'CREATE TABLE T_FIELD( ' +
        '   FIELD ' + GetFieldType +
        ')';
@@ -459,9 +479,9 @@ end;
 
 procedure TTestCase_DBX_FieldType.TearDown;
 begin
-  FConnection.ExecuteDirect('DROP TABLE T_FIELD');
-  FParams.Free;
   if Assigned(FDataSet) then FreeAndNil(FDataSet);
+  FParams.Free;
+  FConnection.ExecuteDirect('DROP TABLE T_FIELD');
   inherited;
 end;
 
@@ -496,6 +516,8 @@ begin
   Param.AsString := '1234567890';
   Execute;
   CheckEquals(1234567890, Field.AsInteger);
+
+  Test_Required;
 end;
 
 procedure TTestCase_DBX_FieldType.Test_BIGINT_Limit;
@@ -521,9 +543,7 @@ begin
   CheckEquals(TBlobField, Field.ClassType);
   CheckEquals(Param.AsString, Field.AsString);
 
-  Param.Clear;
-  Execute;
-  CheckTrue(Field.IsNull);
+  Test_Required;
 end;
 
 procedure TTestCase_DBX_FieldType.Test_CHAR;
@@ -540,6 +560,8 @@ begin
   else
     i := 96;
   CheckEquals(Param.AsString + DupeString(' ', i), Field.AsString);
+
+  Test_Required;
 end;
 
 procedure TTestCase_DBX_FieldType.Test_DATE;
@@ -554,6 +576,8 @@ begin
   CheckEquals(Param.AsString, Field.AsString);
   CheckEquals(Param.AsFloat, Field.AsFloat);
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Test_Required;
 end;
 
 procedure TTestCase_DBX_FieldType.Test_DECIMAL;
@@ -589,6 +613,8 @@ begin
   Param.AsSmallInt := 12345;
   Execute;
   CheckEquals(12345, Field.AsInteger);
+
+  Test_Required;
 end;
 
 procedure TTestCase_DBX_FieldType.Test_DECIMAL_Limit;
@@ -617,6 +643,8 @@ begin
   
   CheckEquals(Param.AsFloat, Field.AsFloat, 0.00000001);
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Test_Required;
 end;
 
 procedure TTestCase_DBX_FieldType.Test_FLOAT;
@@ -629,6 +657,8 @@ begin
   CheckEquals(15, F.Precision);
 
   CheckEquals(Param.AsFloat, Field.AsFloat, 0.0001);
+
+  Test_Required;
 end;
 
 procedure TTestCase_DBX_FieldType.Test_INTEGER;
@@ -644,6 +674,8 @@ begin
   Param.AsString := '1290345678';
   Execute;
   CheckEquals(Param.AsInteger, Field.AsInteger);
+
+  Test_Required;
 end;
 
 procedure TTestCase_DBX_FieldType.Test_NUMERIC;
@@ -680,6 +712,8 @@ begin
   Param.AsSmallInt := 12345;
   Execute;
   CheckEquals(12345, Field.AsInteger);
+
+  Test_Required;
 end;
 
 procedure TTestCase_DBX_FieldType.Test_NUMERIC_Limit;
@@ -698,6 +732,14 @@ begin
   CheckEquals(Param.AsString, Field.AsString);
 end;
 
+procedure TTestCase_DBX_FieldType.Test_Required;
+begin
+  if FRequired then StartExpectingException(EDatabaseError);
+  Param.Clear;
+  Execute;
+  CheckTrue(Field.IsNull);
+end;
+
 procedure TTestCase_DBX_FieldType.Test_SMALLINT;
 begin
   Param.AsSmallInt := 12345;
@@ -710,6 +752,8 @@ begin
   Param.AsString := '32145';
   Execute;
   CheckEquals(Param.AsSmallInt, Field.AsInteger);
+
+  Test_Required;
 end;
 
 procedure TTestCase_DBX_FieldType.Test_TIME;
@@ -720,6 +764,8 @@ begin
   CheckEquals(4, Field.DataSize);
 
   CheckEquals(Param.AsTime, Field.AsDateTime);
+
+  Test_Required;
 end;
 
 procedure TTestCase_DBX_FieldType.Test_TIMESTAMP;
@@ -733,6 +779,8 @@ begin
   CheckEquals(16, Field.DataSize);
 
   CheckEquals(Param.AsString, Field.AsString);
+
+  Test_Required;
 end;
 
 procedure TTestCase_DBX_FieldType.Test_VARCHAR;
@@ -746,6 +794,8 @@ begin
   CheckEquals(100, F.Size);
 
   CheckEquals(Param.AsString, Field.AsString);
+
+  Test_Required;
 end;
 
 function MySuite(const aTestData: ITestData): ITestSuite;
@@ -754,6 +804,7 @@ begin
   S := TTestSuite.Create(aTestData.Name);
   S.AddSuite(TTestCase_DBX_General.NewSuite(aTestData));
   S.AddSuite(TTestCase_DBX_FieldType.NewSuite(aTestData));
+  S.AddSuite(TTest_DBX_FieldType_NOT_NULL.NewSuite(aTestData));
   S.AddSuite(TTestCase_DBX_TSQLDataSet.NewSuite(aTestData));
   Result := S as ITestSuite;
 end;
@@ -880,6 +931,12 @@ begin
     D.Free;
     L.Free;
   end;
+end;
+
+function TTest_DBX_FieldType_NOT_NULL.GetFieldType: string;
+begin
+  Result := inherited GetFieldType + ' NOT NULL';
+  FRequired := True;
 end;
 
 initialization
