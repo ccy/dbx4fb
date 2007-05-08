@@ -92,7 +92,7 @@ begin
   if not StatusVector.CheckResult(Result, DBXERR_SQLERROR) then Exit;
 
   M := TMetaData_Firebird.Create(FDSQL.o_SQLDA);
-  Cursor := TSQLCursor30_Firebird.Create(FClient, M, FDSQL, FDBXOptions.TrimChar);
+  Cursor := TSQLCursor30_Firebird.Create(FClient, FDBHandle, M, FDSQL, FDBXOptions.TrimChar, False);
   Result := DBXERR_NONE;
 end;
 
@@ -213,7 +213,7 @@ begin
     eCommCursorName: Assert(False);
     eCommStoredProc: FIsStoredProc := boolean(ulValue);
     eCommSQLDialect: Assert(False);
-    eCommTransactionID: Assert(False);
+    eCommTransactionID: ; {$Message 'Do not sure what to do here'}
     eCommPackageName: Assert(False);
     eCommTrimChar: Assert(False);
     eCommQualifiedName: Assert(False);
@@ -239,7 +239,10 @@ begin
   case uLogType of
     fldZSTRING:    FDSQL.i_SQLDA[ulParameter].SetString(pBuffer, iPrecision, bIsNull);
     fldDATE:       FDSQL.i_SQLDA[ulParameter].SetDate(pBuffer, Length, bIsNull);
-    fldBLOB:       Assert(False);
+    fldBLOB:       begin
+      FDSQL.i_SQLDA[ulParameter].SetBlob(StatusVector, FDBHandle, FTransaction, pBuffer, Length, bIsNull);
+      StatusVector.CheckResult(Result, DBXERR_INVALIDPARAM);
+    end;
     fldBOOL:       Assert(False);
     fldINT16:      FDSQL.i_SQLDA[ulParameter].SetShort(pBuffer, bIsNull);
     fldINT32:      FDSQL.i_SQLDA[ulParameter].SetInteger(pBuffer, bIsNull);

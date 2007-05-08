@@ -9,10 +9,11 @@ type
   public
     class function New_getColumns(const aTableName: WideString): TFieldColumns;
     class function New_getIndices(const aTableName: WideString): TFieldColumns;
+    class function New_getTables: TFieldColumns;
   end;
 
   TMetaDataProvider_Firebird = class(TInterfacedObject, IMetaDataProvider)
-  private
+  strict private
     FColumns: TFieldColumns;
     FSQLDA: TXSQLDA;
   protected
@@ -81,7 +82,8 @@ var iIndex: integer;
   end;
 
 begin
-  iIndex := 1;
+  SetLength(Result, 14);
+  iIndex := 0;
   Add('RECNO',             fldINT32,     4);
   Add('CATALOG_NAME',      fldZSTRING,   7);
   Add('SCHEMA_NAME',       fldZSTRING,   7);
@@ -113,7 +115,8 @@ var iIndex: integer;
   end;
 
 begin
-  iIndex := 1;
+  SetLength(Result, 11);
+  iIndex := 0;
   Add('RECNO',             fldINT32,    4);
   Add('CATALOG_NAME',      fldZSTRING,  7);
   Add('SCHEMA_NAME',       fldZSTRING,  7);
@@ -125,6 +128,29 @@ begin
   Add('INDEX_TYPE',        fldINT32,    4);
   Add('SORT_ORDER',        fldZSTRING,  2);
   Add('FILTER',            fldZSTRING,  7);
+end;
+
+class function TMetaData_Firebird_Factory.New_getTables: TFieldColumns;
+var iIndex: integer;
+
+  procedure Add(const aFieldName: string; const aFieldType, aFieldSize: Word);
+  begin
+    with Result[iIndex] do begin
+      Name := aFieldName;
+      FieldType := aFieldType;
+      Size := aFieldSize;
+    end;
+    Inc(iIndex);
+  end;
+
+begin
+  SetLength(Result, 5);
+  iIndex := 0;
+  Add('RECNO',             fldINT32,    4);
+  Add('CATALOG_NAME',      fldZSTRING,  7);
+  Add('SCHEMA_NAME',       fldZSTRING,  7);
+  Add('TABLE_NAME',        fldZSTRING,  32);
+  Add('TABLE_TYPE',        fldINT32,    4);
 end;
 
 constructor TMetaDataProvider_Firebird.Create(const aColumns: TFieldColumns; const
@@ -143,20 +169,20 @@ end;
 function TMetaDataProvider_Firebird.GetColumnLength(const aColNo: Word):
     LongWord;
 begin
-  Result := FColumns[aColNo].Size;
+  Result := FColumns[aColNo - 1].Size;
 end;
 
 function TMetaDataProvider_Firebird.GetColumnName(const aColNo: Word):
     WideString;
 begin
-  Result := FColumns[aColNo].Name;
+  Result := FColumns[aColNo - 1].Name;
 end;
 
 function TMetaDataProvider_Firebird.GetColumnPrecision(const aColNo: Word):
     Smallint;
 begin
-  if FColumns[aColNo].FieldType = fldZSTRING then
-    Result := FColumns[aColNo].Size - 1
+  if FColumns[aColNo - 1].FieldType = fldZSTRING then
+    Result := FColumns[aColNo - 1].Size - 1
   else
     Result := 0;
 end;
@@ -175,7 +201,7 @@ end;
 
 function TMetaDataProvider_Firebird.GetColumnType(const aColNo: Word): Word;
 begin
-  Result := FColumns[aColNo].FieldType;
+  Result := FColumns[aColNo - 1].FieldType;
 end;
 
 function TMetaDataProvider_Firebird.IsNullable(const aColNo: Word): boolean;
@@ -213,7 +239,7 @@ begin
   if not StatusVector.CheckResult(Result, DBXERR_SQLERROR) then Exit;
 
   M := TMetaDataProvider_Firebird.Create(TMetaData_Firebird_Factory.New_getColumns(TableName), C.o_SQLDA);
-  Cursor := TSQLCursor30_Firebird.Create(FClient, M, C, True);
+  Cursor := TSQLCursor30_Firebird.Create(FClient, FDBHandle, M, C, True, True);
 
   Result := DBXERR_NONE;
 end;
@@ -221,13 +247,15 @@ end;
 function TSQLMetaData30_Firebird.getErrorMessage(
   Error: PWideChar): SQLResult;
 begin
-  Assert(False);
+  StatusVector.GetLastError.GetMessage(Error);
+  Result := DBXERR_NONE;
 end;
 
 function TSQLMetaData30_Firebird.getErrorMessageLen(out ErrorLen: SmallInt):
     SQLResult;
 begin
-  Assert(False);
+  ErrorLen := StatusVector.GetError(FClient).GetLength;
+  Result := DBXERR_NONE;
 end;
 
 function TSQLMetaData30_Firebird.getIndices(TableName: PWideChar; IndexType:
@@ -238,12 +266,12 @@ var M: IMetaDataProvider;
 begin
   S := 'SELECT 0, '''', '''', A.RDB$RELATION_NAME, A.RDB$INDEX_NAME, B.RDB$FIELD_NAME, ' +
        '       B.RDB$FIELD_POSITION, '''', 0, A.RDB$INDEX_TYPE, '''', A.RDB$UNIQUE_FLAG, C.RDB$CONSTRAINT_NAME, C.RDB$CONSTRAINT_TYPE ' +
-       'FROM RDB$INDICES A, RDB$INDEX_SEGMENTS B FULL OUTER JOIN RDB$RELATION_CONSTRAINTS C ' +
-         'ON A.RDB$RELATION_NAME = C.RDB$RELATION_NAME AND C.RDB$CONSTRAINT_TYPE = ''PRIMARY KEY'' ' +
-      'WHERE (A.RDB$SYSTEM_FLAG <> 1 OR A.RDB$SYSTEM_FLAG IS NULL) ' +
-        'AND (A.RDB$INDEX_NAME = B.RDB$INDEX_NAME) ' +
- Format('AND (A.RDB$RELATION_NAME = UPPER(''%s'')) ', [TableName]) +
-   'ORDER BY A.RDB$INDEX_NAME';
+         'FROM RDB$INDICES A, RDB$INDEX_SEGMENTS B FULL OUTER JOIN RDB$RELATION_CONSTRAINTS C ' +
+           'ON A.RDB$RELATION_NAME = C.RDB$RELATION_NAME AND C.RDB$CONSTRAINT_TYPE = ''PRIMARY KEY'' ' +
+        'WHERE (A.RDB$SYSTEM_FLAG <> 1 OR A.RDB$SYSTEM_FLAG IS NULL) ' +
+          'AND (A.RDB$INDEX_NAME = B.RDB$INDEX_NAME) ' +
+   Format('AND (A.RDB$RELATION_NAME = UPPER(''%s'')) ', [TableName]) +
+     'ORDER BY A.RDB$INDEX_NAME';
 
   C := TFirebird_DSQL.Create(FClient, FTransaction);
   C.Open(StatusVector, FDBHandle);
@@ -252,7 +280,7 @@ begin
   if not StatusVector.CheckResult(Result, DBXERR_SQLERROR) then Exit;
 
   M := TMetaDataProvider_Firebird.Create(TMetaData_Firebird_Factory.New_getIndices(TableName), C.o_SQLDA);
-  Cursor := TSQLCursor30_Firebird.Create(FClient, M, C, True);
+  Cursor := TSQLCursor30_Firebird.Create(FClient, FDBHandle, M, C, True, True);
 
   Result := DBXERR_NONE;
 end;
@@ -303,8 +331,39 @@ end;
 
 function TSQLMetaData30_Firebird.getTables(TableName: PWideChar; TableType:
     LongWord; out Cursor: ISQLCursor30): SQLResult;
+var M: IMetaDataProvider;
+    S: string;
+    C: IFirebird_DSQL;
+    sFlag: string;
 begin
-  Assert(False);
+  {$Message 'TableType of eSQLView not implement yet'}
+
+  if TableType and (eSQLSystemTable + eSQLTable) = eSQLSystemTable + eSQLTable then
+    sFlag := ' '
+  else if TableType and eSQLSystemTable > 0 then
+    sFlag := 'AND (A.RDB$SYSTEM_FLAG = 1) '
+  else if TableType and eSQLTable > 0 then
+    sFlag := 'AND (A.RDB$SYSTEM_FLAG = 0) '
+  else
+    sFlag := ' ';
+
+  S := 'SELECT 0, '''', A.RDB$OWNER_NAME, A.RDB$RELATION_NAME, A.RDB$SYSTEM_FLAG ' +
+         'FROM RDB$RELATIONS A ' +
+        'WHERE (A.RDB$VIEW_SOURCE IS NULL) ' +
+          sFlag +
+          'AND A.RDB$OWNER_NAME = ''SYSDBA'' '+
+     'ORDER BY A.RDB$RELATION_NAME';
+
+  C := TFirebird_DSQL.Create(FClient, FTransaction);
+  C.Open(StatusVector, FDBHandle);
+  C.Prepare(StatusVector, S, FDBXOptions.SQLDialect);
+  C.Execute(StatusVector);
+  if not StatusVector.CheckResult(Result, DBXERR_SQLERROR) then Exit;
+
+  M := TMetaDataProvider_Firebird.Create(TMetaData_Firebird_Factory.New_getTables, C.o_SQLDA);
+  Cursor := TSQLCursor30_Firebird.Create(FClient, FDBHandle, M, C, True, True);
+
+  Result := DBXERR_NONE;
 end;
 
 function TSQLMetaData30_Firebird.SetOption(eDOption: TSQLMetaDataOption;

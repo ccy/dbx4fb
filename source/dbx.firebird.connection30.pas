@@ -26,7 +26,6 @@ type
   strict private
     FDBHandle: isc_db_handle;
   private
-    FConnQualifiedName: WideString;
     FDebuggerListener: IFirebirdClientDebuggerListener;
     FDBXOptions: TDBXOptions;
   private
@@ -185,10 +184,13 @@ begin
       Length := 0;
     end;
     eConnObjectName: begin
-      WStrPLCopy(PWideChar(PropValue), FConnQualifiedName, MaxLength);
-      Length := System.Length(FConnQualifiedName) * SizeOf(WideChar);
+      WStrPLCopy(PWideChar(PropValue), FDBXOptions.ConnQualifiedName, MaxLength);
+      Length := System.Length(FDBXOptions.ConnQualifiedName) * SizeOf(WideChar);
     end;
-    eConnQuotedObjectName: Assert(False);
+    eConnQuotedObjectName: begin
+      WStrPLCopy(PWideChar(PropValue), FDBXOptions.ConnQuotedObjectName, MaxLength);
+      Length := System.Length(FDBXOptions.ConnQuotedObjectName) * SizeOf(WideChar);
+    end;
     eConnCustomInfo: Assert(False);
     eConnTimeOut: Assert(False);
     eConnConnectionString: Assert(False);
@@ -236,7 +238,7 @@ begin
   case eConnectOption of
     eConnAutoCommit: Assert(False);
     eConnBlockingMode: Assert(False);
-    eConnBlobSize: ; {$Message 'Do not sure what to do here'}
+    eConnBlobSize: FDBXOptions.BlobSize := lValue; 
     eConnRoleName: FDBXOptions.RoleName := PWideChar(lValue);
     eConnWaitOnLocks: ; {$Message 'Do not sure what to do here'}
     eConnCommitRetain: ; {$Message 'Do not sure what to do here'}
@@ -260,9 +262,7 @@ begin
     eConnServerPort: Assert(False);
     eConnOnLine: Assert(False);
     eConnTrimChar: FDBXOptions.TrimChar := Boolean(lValue);
-    eConnQualifiedName: begin
-      FConnQualifiedName := PWideChar(lValue); {$Message 'Do not sure what to do here'}
-    end;
+    eConnQualifiedName: FDBXOptions.ConnQualifiedName := PWideChar(lValue);
     eConnCatalogName: Assert(False);
     eConnSchemaName: Assert(False);
     eConnObjectName: Assert(False);

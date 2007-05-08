@@ -11,8 +11,10 @@ type
     function StatusVector: IStatusVector;
   private
     FClient: IFirebirdClient;
+    FDBHandle: pisc_db_handle;
     FMetaData: IMetaDataProvider;
     FDSQL: IFirebird_DSQL;
+    FReadOnly: boolean;
     FTrimChar: boolean;
   protected
     function getBcd(ColumnNumber: Word; Value: Pointer; var IsBlank: LongBool):
@@ -72,8 +74,9 @@ type
     function SetOption(eOption: TSQLCursorOption; PropValue: LongInt): SQLResult;
         stdcall;
   public
-    constructor Create(const aClientLibrary: IFirebirdClient; const aMetaData:
-        IMetaDataProvider; const aDSQL: IFirebird_DSQL; const aTrimChar: boolean);
+    constructor Create(const aClientLibrary: IFirebirdClient; const aDBHandle:
+        pisc_db_handle; const aMetaData: IMetaDataProvider; const aDSQL:
+        IFirebird_DSQL; const aTrimChar, aReadOnly: boolean);
     procedure BeforeDestruction; override;
   end;
 
@@ -88,14 +91,16 @@ begin
 end;
 
 constructor TSQLCursor30_Firebird.Create(const aClientLibrary: IFirebirdClient;
-    const aMetaData: IMetaDataProvider; const aDSQL: IFirebird_DSQL; const
-    aTrimChar: boolean);
+    const aDBHandle: pisc_db_handle; const aMetaData: IMetaDataProvider; const
+    aDSQL: IFirebird_DSQL; const aTrimChar, aReadOnly: boolean);
 begin
   inherited Create;
   FClient := aClientLibrary;
+  FDBHandle := aDBHandle;
   FMetaData := aMetaData;
   FDSQL := aDSQL;
   FTrimChar := aTrimChar;
+  FReadOnly := aReadOnly;
 end;
 
 function TSQLCursor30_Firebird.getBcd(ColumnNumber: Word; Value: Pointer;
@@ -109,14 +114,20 @@ end;
 
 function TSQLCursor30_Firebird.getBlob(ColumnNumber: Word; Value: Pointer;
   var IsBlank: LongBool; Length: LongWord): SQLResult;
+var b: Boolean;
 begin
-  Assert(False);
+  FDSQL.o_SQLDA[ColumnNumber].GetBlob(StatusVector, FDBHandle, FDSQL.Transaction, Value, b);
+  IsBlank := b;
+  Result := DBXERR_NONE;
 end;
 
 function TSQLCursor30_Firebird.getBlobSize(ColumnNumber: Word;
   var Length: LongWord; var IsBlank: LongBool): SQLResult;
+var b: boolean;
 begin
-  Assert(False);
+  Result := FDSQL.o_SQLDA[ColumnNumber].GetBlobSize(StatusVector, FDBHandle, FDSQL.Transaction, Length, b);
+  IsBlank := b;
+  Result := DBXERR_NONE;
 end;
 
 function TSQLCursor30_Firebird.getBytes(ColumnNumber: Word; Value: Pointer;
@@ -224,7 +235,11 @@ function TSQLCursor30_Firebird.GetOption(eOption: TSQLCursorOption;
   PropValue: Pointer; MaxLength: SmallInt;
   out Length: SmallInt): SQLResult;
 begin
-  Assert(False);
+  case eOption of
+    eCurObjectAttrName: Assert(False);
+    eCurObjectTypeName: Assert(False);
+    eCurParentFieldID: Assert(False);
+  end;
 end;
 
 function TSQLCursor30_Firebird.getShort(ColumnNumber: Word; Value: Pointer;
@@ -299,7 +314,7 @@ end;
 function TSQLCursor30_Firebird.isReadOnly(ColumnNumber: Word;
   var ReadOnly: LongBool): SQLResult;
 begin
-  ReadOnly := True;  {$Message 'How to determine the value of ReadOnly'}
+  ReadOnly := FReadOnly;  {$Message 'How to determine the value of ReadOnly'}
   Result := DBXERR_NONE;
 end;
 
@@ -319,7 +334,11 @@ end;
 function TSQLCursor30_Firebird.SetOption(eOption: TSQLCursorOption;
   PropValue: Integer): SQLResult;
 begin
-  Assert(False);
+  case eOption of
+    eCurObjectAttrName: Assert(False);
+    eCurObjectTypeName: Assert(False);
+    eCurParentFieldID: Assert(False);
+  end;
 end;
 
 function TSQLCursor30_Firebird.StatusVector: IStatusVector;

@@ -7,11 +7,17 @@ uses DBXpress;
 type
   TDBXOptions = class(TObject)
   private
+    FBlobSize: integer;
+    FConnQualifiedName: WideString;
     FRoleName: WideString;
     FSQLDialect: longint;
     FTransIsolationLevel: TTransIsolationLevel;
     FTrimChar: boolean;
+    function GetConnQuotedObjectName: WideString;
   public
+    property BlobSize: integer read FBlobSize write FBlobSize;
+    property ConnQualifiedName: WideString read FConnQualifiedName write FConnQualifiedName;
+    property ConnQuotedObjectName: WideString read GetConnQuotedObjectName;
     property RoleName: WideString read FRoleName write FRoleName;
     property SQLDialect: longint read FSQLDialect write FSQLDialect;
     property TransIsolationLevel: TTransIsolationLevel read FTransIsolationLevel write FTransIsolationLevel;
@@ -24,7 +30,7 @@ type
     Size: word;
   end;
 
-  TFieldColumns = array[1..14] of TFieldColumn;
+  TFieldColumns = array of TFieldColumn;
 
   IMetaDataProvider = interface(IInterface)
   ['{DD1D1CA9-D72A-48E3-B5C5-F32846FE805D}']
@@ -39,5 +45,12 @@ type
   end;
 
 implementation
+
+{ TDBXOptions }
+
+function TDBXOptions.GetConnQuotedObjectName: WideString;
+begin
+  Result := '"' + FConnQualifiedName + '"';
+end;
 
 end.
