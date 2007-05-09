@@ -296,8 +296,8 @@ function TMetaData_Firebird.GetColumnName(const aColNo: Word): WideString;
 var S: string;
     P: TIB_Identifier;
 begin
-  P := FSQLDA.Vars[aColNo].sqlname;
-  SetString(S, P, FSQLDA.Vars[aColNo].sqlname_length);
+  P := FSQLDA.Vars[aColNo].aliasname;
+  SetString(S, P, FSQLDA.Vars[aColNo].aliasname_length);
   Result := S;
 end;
 
