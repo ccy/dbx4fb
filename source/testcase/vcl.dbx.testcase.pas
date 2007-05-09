@@ -86,11 +86,14 @@ type
     procedure Test_CHAR;
     procedure Test_DATE;
     procedure Test_DECIMAL;
+    procedure Test_DECIMAL_LONG;
     procedure Test_DECIMAL_Limit;
     procedure Test_DOUBLE_PRECISION;
     procedure Test_FLOAT;
     procedure Test_INTEGER;
     procedure Test_NUMERIC;
+    procedure Test_NUMERIC_SHORT;
+    procedure Test_NUMERIC_LONG;
     procedure Test_NUMERIC_Limit;
     procedure Test_SMALLINT;
     procedure Test_TIME;
@@ -437,8 +440,11 @@ begin
   else if GetName = 'Test_BIGINT'           then Result := 'BIGINT'
   else if GetName = 'Test_BIGINT_Limit'     then Result := 'BIGINT'
   else if GetName = 'Test_NUMERIC'          then Result := 'NUMERIC(18, 4)'
+  else if GetName = 'Test_NUMERIC_SHORT'    then Result := 'NUMERIC(4, 2)'
+  else if GetName = 'Test_NUMERIC_LONG'     then Result := 'NUMERIC(9, 2)'
   else if GetName = 'Test_NUMERIC_Limit'    then Result := 'NUMERIC(18, 4)'
   else if GetName = 'Test_DECIMAL'          then Result := 'DECIMAL(18, 4)'
+  else if GetName = 'Test_DECIMAL_LONG'     then Result := 'DECIMAL(9, 2)'
   else if GetName = 'Test_DECIMAL_Limit'    then Result := 'DECIMAL(18, 4)'
   else if GetName = 'Test_FLOAT'            then Result := 'FLOAT'
   else if GetName = 'Test_DOUBLE_PRECISION' then Result := 'DOUBLE PRECISION'
@@ -633,6 +639,14 @@ begin
   CheckEquals(Param.AsString, Field.AsString);
 end;
 
+procedure TTestCase_DBX_FieldType.Test_DECIMAL_LONG;
+begin
+  Param.AsFMTBCD := StrToBcd('234.56');
+  Execute;
+  CheckEquals(TFMTBCDField, Field.ClassType);
+  CheckEquals(Param.AsString, Field.AsString);
+end;
+
 procedure TTestCase_DBX_FieldType.Test_DOUBLE_PRECISION;
 var F: TFloatField;
 begin
@@ -735,6 +749,19 @@ begin
   Param.AsFMTBCD := StrToBcd('-922337203685477.5808');
   Execute;
   CheckEquals(Param.AsString, Field.AsString);
+end;
+
+procedure TTestCase_DBX_FieldType.Test_NUMERIC_LONG;
+begin
+
+end;
+
+procedure TTestCase_DBX_FieldType.Test_NUMERIC_SHORT;
+begin
+  Param.AsFMTBCD := StrToBcd('12.34');
+  Execute;
+  CheckEquals(TFMTBCDField, Field.ClassType);
+  CheckEquals(Param.AsSmallInt, Field.AsInteger);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_Required;
