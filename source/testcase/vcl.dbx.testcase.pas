@@ -672,6 +672,10 @@ begin
   CheckEquals(Param.AsFloat, Field.AsFloat);
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
+  Param.AsSmallInt := 12345;
+  Execute;
+  CheckEquals(Param.AsInteger, Field.AsInteger);
+
   Param.AsString := '1290345678';
   Execute;
   CheckEquals(Param.AsInteger, Field.AsInteger);
@@ -748,6 +752,10 @@ begin
   CheckEquals(TSmallintField, Field.ClassType);
   CheckEquals(2, Field.DataSize);
 
+  CheckEquals(Param.AsSmallInt, Field.AsInteger);
+
+  Param.AsInteger := 23451;
+  Execute;
   CheckEquals(Param.AsSmallInt, Field.AsInteger);
 
   Param.AsString := '32145';
