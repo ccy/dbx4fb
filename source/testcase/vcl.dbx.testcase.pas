@@ -109,6 +109,7 @@ type
     procedure Test2;
     procedure Test_GetRowsAffected;
     procedure Test_Field_ReadOnly;
+    procedure Test4;
   end;
 
 implementation
@@ -889,6 +890,25 @@ begin
     D.CommandType := ctTable;
     D.CommandText := 'SY_REGISTRY';
     D.Open;
+  finally
+    D.Free;
+    L.Free;
+  end;
+end;
+
+procedure TTestCase_DBX_TSQLDataSet.Test4;
+var D: TSQLDataSet;
+    L: TStringList;
+begin
+  D := TSQLDataSet.Create(nil);
+  L := TStringList.Create;
+  try
+    D.SQLConnection := FConnection;
+    D.CommandType := ctQuery;
+    D.CommandText := 'SELECT RNAME AS Field1 FROM SY_REGISTRY';
+    D.Open;
+    CheckTrue(Assigned(D.FindField('Field1')));
+    D.Close;
   finally
     D.Free;
     L.Free;
