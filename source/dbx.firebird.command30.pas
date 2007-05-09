@@ -244,8 +244,8 @@ begin
       StatusVector.CheckResult(Result, DBXERR_INVALIDPARAM);
     end;
     fldBOOL:       Assert(False);
-    fldINT16:      FDSQL.i_SQLDA[ulParameter].SetShort(pBuffer, bIsNull);
-    fldINT32:      FDSQL.i_SQLDA[ulParameter].SetInteger(pBuffer, bIsNull);
+    fldINT16:      FDSQL.i_SQLDA[ulParameter].SetShort(pBuffer, Length, bIsNull);
+    fldINT32:      FDSQL.i_SQLDA[ulParameter].SetInteger(pBuffer, Length, bIsNull);
     fldFLOAT:      FDSQL.i_SQLDA[ulParameter].SetDouble(pBuffer, Length, bIsNull);
     fldBCD:        FDSQL.i_SQLDA[ulParameter].SetBCD(pBuffer, iScale, bIsNull);
     fldBYTES:      Assert(False);
@@ -307,7 +307,7 @@ var V: TXSQLVAR;
 begin
   V := FSQLDA.Vars[aColNo];
   if V.CheckType(SQL_INT64) then begin
-    Result := 19;
+    Result := 19
   end else
     Result := v.sqllen;
 end;
