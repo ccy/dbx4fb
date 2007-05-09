@@ -306,9 +306,13 @@ function TMetaData_Firebird.GetColumnPrecision(
 var V: TXSQLVAR;
 begin
   V := FSQLDA.Vars[aColNo];
-  if V.CheckType(SQL_INT64) then begin
+  if V.CheckType(SQL_INT64) then
     Result := 19
-  end else
+  else if V.CheckType(SQL_LONG) and (V.sqlscale <> 0) then
+    Result := 9
+  else if V.CheckType(SQL_SHORT) and (V.sqlscale <> 0) then
+    Result := 4
+  else
     Result := v.sqllen;
 end;
 
@@ -330,14 +334,18 @@ begin
   iScale := FSQLDA.Vars[aColNo].sqlscale;
   case iType of
     SQL_SHORT: begin
-      Assert(iScale = 0);
-      Result := fldINT16;
+      if iScale = 0 then
+        Result := fldINT16
+      else
+        Result := fldFMTBCD;
     end;
     SQL_TEXT: Result := fldZSTRING;
     SQL_VARYING: Result := fldZSTRING;
     SQL_LONG: begin
-      Assert(iScale = 0);
-      Result := fldINT32;
+      if iScale = 0 then
+        Result := fldINT32
+      else
+        Result := fldFMTBCD;
     end;
     SQL_BLOB: Result := fldBLOB;
     SQL_INT64: Result := fldFMTBCD;
