@@ -59,11 +59,18 @@ type
     procedure Test_Invalid_VendorLib;
     procedure Test_Open_Close;
     procedure Test_RecordCount;
+    procedure Test_GetIndexNames;
+  end;
+
+  TTestCase_DBX_Transaction = class(TTestCase_DBX)
+  published
     procedure Test_Transaction;
+    procedure Test_Invalid_TransactionID;
+    procedure Test_Duplicate_TransactionID;
     procedure Test_Transaction_1;
     procedure Test_Transaction_2;
     procedure Test_Transaction_RepeatableRead;
-    procedure Test_GetIndexNames;
+    procedure Test_Transaction_ReadCommitted;
   end;
 
   TTestCase_DBX_FieldType = class(TTestCase_DBX)
@@ -342,106 +349,6 @@ begin
     D.Free;
   finally
     Dispose(pD);
-  end;
-end;
-
-procedure TTestCase_DBX_General.Test_Transaction;
-var T: TTransactionDesc;
-begin
-  ZeroMemory(@T, SizeOf(T));
-  T.TransactionID := 1;
-  T.IsolationLevel := xilREADCOMMITTED;
-  FConnection.StartTransaction(T);
-  FConnection.Commit(T);
-
-  ZeroMemory(@T, SizeOf(T));
-  T.TransactionID := 1;
-  T.IsolationLevel := xilREADCOMMITTED;
-  FConnection.StartTransaction(T);
-  FConnection.Rollback(T);
-end;
-
-procedure TTestCase_DBX_General.Test_Transaction_1;
-var T: TTransactionDesc;
-begin
-  ZeroMemory(@T, SizeOf(T));
-  T.TransactionID := 1;
-  T.IsolationLevel := xilREADCOMMITTED;
-  Self.StartExpectingException(EDatabaseError);
-  try
-    FConnection.StartTransaction(T);
-    try
-      FConnection.ExecuteDirect('CREATE TABLE T_TRANSACTION(FIELD INTEGER)');
-      FConnection.ExecuteDirect('INSERT INTO T_TRANSACTION VALUES(123)');
-      FConnection.Commit(T);
-    except
-      FConnection.Rollback(T);
-      raise;
-    end;
-  finally
-    FConnection.ExecuteDirect('DROP TABLE T_TRANSACTION');
-  end;
-end;
-
-procedure TTestCase_DBX_General.Test_Transaction_2;
-var T: TTransactionDesc;
-    pD: ^TSQLDataSet;
-begin
-  ZeroMemory(@T, SizeOf(T));
-  T.TransactionID := 1;
-  T.IsolationLevel := xilREADCOMMITTED;
-
-  FConnection.ExecuteDirect('CREATE TABLE T_TRANSACTION(FIELD INTEGER)');
-  FConnection.ExecuteDirect('INSERT INTO T_TRANSACTION VALUES(123)');
-
-  FConnection.StartTransaction(T);
-  FConnection.ExecuteDirect('INSERT INTO T_TRANSACTION VALUES(456)');
-  FConnection.Rollback(T);
-
-  New(pD);
-  try
-    FConnection.Execute('SELECT COUNT(*) FROM T_TRANSACTION', nil, pD);
-    CheckEquals(1, pD^.Fields[0].AsInteger);
-    pD^.Free;
-  finally
-    Dispose(pD);
-  end;
-
-  FConnection.ExecuteDirect('DROP TABLE T_TRANSACTION');
-end;
-
-procedure TTestCase_DBX_General.Test_Transaction_RepeatableRead;
-var T1, T2: TTransactionDesc;
-    D: ^TSQLDataSet;
-    V1, V2: string;
-begin
-  FConnection.ExecuteDirect('CREATE TABLE T_REPEAT(FIELD1 VARCHAR(10), FIELD2 INTEGER)');
-  FConnection.ExecuteDirect('INSERT INTO T_REPEAT VALUES(''ITEM-01'', 1)');
-
-  New(D);
-  try
-    T1.TransactionID := 1;
-    T1.IsolationLevel := xilREPEATABLEREAD;
-    FConnection.StartTransaction(T1);
-    FConnection.Execute('SELECT * FROM T_REPEAT', nil, D);
-    V1 := D^.Fields[0].AsString;
-    D^.Free;
-
-    T2.TransactionID := 2;
-    T2.IsolationLevel := xilREPEATABLEREAD;
-    FConnection.StartTransaction(T2);
-    FConnection.ExecuteDirect('UPDATE T_REPEAT SET FIELD1=''ITEM-02''');
-    FConnection.Commit(T2);
-
-    FConnection.Execute('SELECT * FROM T_REPEAT', nil, D);
-    V2 := D^.Fields[0].AsString;
-    D^.Free;
-    FConnection.Commit(T1);
-
-    CheckEquals(V1, V2);
-  finally
-    Dispose(D);
-    FConnection.ExecuteDirect('DROP TABLE T_REPEAT');
   end;
 end;
 
@@ -875,6 +782,7 @@ var S: TTestSuite;
 begin
   S := TTestSuite.Create(aTestData.Name);
   S.AddSuite(TTestCase_DBX_General.NewSuite(aTestData));
+  S.AddSuite(TTestCase_DBX_Transaction.NewSuite(aTestData));
   S.AddSuite(TTestCase_DBX_FieldType.NewSuite(aTestData));
   S.AddSuite(TTest_DBX_FieldType_NOT_NULL.NewSuite(aTestData));
   S.AddSuite(TTestCase_DBX_TSQLDataSet.NewSuite(aTestData));
@@ -1028,6 +936,164 @@ function TTest_DBX_FieldType_NOT_NULL.GetFieldType: string;
 begin
   Result := inherited GetFieldType + ' NOT NULL';
   FRequired := True;
+end;
+
+procedure TTestCase_DBX_Transaction.Test_Duplicate_TransactionID;
+var T1, T2: TTransactionDesc;
+begin
+  T1.TransactionID := 1;
+  T1.IsolationLevel := xilREADCOMMITTED;
+  FConnection.StartTransaction(T1);
+
+  T2.TransactionID := 1;
+  T2.IsolationLevel := xilREADCOMMITTED;
+  StartExpectingException(EDatabaseError);
+  FConnection.StartTransaction(T2);
+end;
+
+procedure TTestCase_DBX_Transaction.Test_Invalid_TransactionID;
+var T: TTransactionDesc;
+begin
+  StartExpectingException(EDatabaseError);
+  T.TransactionID := 0;
+  T.IsolationLevel := xilREADCOMMITTED;
+  FConnection.StartTransaction(T);
+end;
+
+procedure TTestCase_DBX_Transaction.Test_Transaction;
+var T: TTransactionDesc;
+begin
+  ZeroMemory(@T, SizeOf(T));
+  T.TransactionID := 1;
+  T.IsolationLevel := xilREADCOMMITTED;
+  FConnection.StartTransaction(T);
+  FConnection.Commit(T);
+
+  ZeroMemory(@T, SizeOf(T));
+  T.TransactionID := 1;
+  T.IsolationLevel := xilREADCOMMITTED;
+  FConnection.StartTransaction(T);
+  FConnection.Rollback(T);
+end;
+
+procedure TTestCase_DBX_Transaction.Test_Transaction_1;
+var T: TTransactionDesc;
+begin
+  ZeroMemory(@T, SizeOf(T));
+  T.TransactionID := 1;
+  T.IsolationLevel := xilREADCOMMITTED;
+  Self.StartExpectingException(EDatabaseError);
+  try
+    FConnection.StartTransaction(T);
+    try
+      FConnection.ExecuteDirect('CREATE TABLE T_TRANSACTION(FIELD INTEGER)');
+      FConnection.ExecuteDirect('INSERT INTO T_TRANSACTION VALUES(123)');
+      FConnection.Commit(T);
+    except
+      FConnection.Rollback(T);
+      raise;
+    end;
+  finally
+    FConnection.ExecuteDirect('DROP TABLE T_TRANSACTION');
+  end;
+end;
+
+procedure TTestCase_DBX_Transaction.Test_Transaction_2;
+var T: TTransactionDesc;
+    pD: ^TSQLDataSet;
+begin
+  ZeroMemory(@T, SizeOf(T));
+  T.TransactionID := 1;
+  T.IsolationLevel := xilREADCOMMITTED;
+
+  FConnection.ExecuteDirect('CREATE TABLE T_TRANSACTION(FIELD INTEGER)');
+  FConnection.ExecuteDirect('INSERT INTO T_TRANSACTION VALUES(123)');
+
+  FConnection.StartTransaction(T);
+  FConnection.ExecuteDirect('INSERT INTO T_TRANSACTION VALUES(456)');
+  FConnection.Rollback(T);
+
+  New(pD);
+  try
+    FConnection.Execute('SELECT COUNT(*) FROM T_TRANSACTION', nil, pD);
+    CheckEquals(1, pD^.Fields[0].AsInteger);
+    pD^.Free;
+  finally
+    Dispose(pD);
+  end;
+
+  FConnection.ExecuteDirect('DROP TABLE T_TRANSACTION');
+end;
+
+procedure TTestCase_DBX_Transaction.Test_Transaction_ReadCommitted;
+var T1, T2: TTransactionDesc;
+    D: ^TSQLDataSet;
+    V1, V2: string;
+begin
+  FConnection.ExecuteDirect('CREATE TABLE T_REPEAT(FIELD1 VARCHAR(10), FIELD2 INTEGER)');
+  FConnection.ExecuteDirect('INSERT INTO T_REPEAT VALUES(''ITEM-01'', 1)');
+
+  New(D);
+  try
+    T1.TransactionID := 1;
+    T1.IsolationLevel := xilREADCOMMITTED;
+    FConnection.StartTransaction(T1);
+    FConnection.Execute('SELECT * FROM T_REPEAT', nil, D);
+    V1 := D^.Fields[0].AsString;
+    D^.Free;
+
+    T2.TransactionID := 2;
+    T2.IsolationLevel := xilREADCOMMITTED;
+    FConnection.StartTransaction(T2);
+    FConnection.ExecuteDirect('UPDATE T_REPEAT SET FIELD1=''ITEM-02''');
+    FConnection.Commit(T2);
+
+    FConnection.Execute('SELECT * FROM T_REPEAT', nil, D);
+    V2 := D^.Fields[0].AsString;
+    D^.Free;
+    FConnection.Commit(T1);
+
+    CheckEquals('ITEM-01', V1);
+    CheckEquals('ITEM-02', V2);
+  finally
+    Dispose(D);
+    FConnection.ExecuteDirect('DROP TABLE T_REPEAT');
+  end;
+end;
+
+procedure TTestCase_DBX_Transaction.Test_Transaction_RepeatableRead;
+var T1, T2: TTransactionDesc;
+    D: ^TSQLDataSet;
+    V1, V2: string;
+begin
+  FConnection.ExecuteDirect('CREATE TABLE T_REPEAT(FIELD1 VARCHAR(10), FIELD2 INTEGER)');
+  FConnection.ExecuteDirect('INSERT INTO T_REPEAT VALUES(''ITEM-01'', 1)');
+
+  New(D);
+  try
+    T1.TransactionID := 1;
+    T1.IsolationLevel := xilREPEATABLEREAD;
+    FConnection.StartTransaction(T1);
+    FConnection.Execute('SELECT * FROM T_REPEAT', nil, D);
+    V1 := D^.Fields[0].AsString;
+    D^.Free;
+
+    T2.TransactionID := 2;
+    T2.IsolationLevel := xilREPEATABLEREAD;
+    FConnection.StartTransaction(T2);
+    FConnection.ExecuteDirect('UPDATE T_REPEAT SET FIELD1=''ITEM-02''');
+    FConnection.Commit(T2);
+
+    FConnection.Execute('SELECT * FROM T_REPEAT', nil, D);
+    V2 := D^.Fields[0].AsString;
+    D^.Free;
+    FConnection.Commit(T1);
+
+    CheckEquals(V1, V2);
+  finally
+    Dispose(D);
+    FConnection.ExecuteDirect('DROP TABLE T_REPEAT');
+  end;
 end;
 
 initialization
