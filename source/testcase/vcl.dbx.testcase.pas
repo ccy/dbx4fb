@@ -62,6 +62,7 @@ type
     procedure Test_Transaction;
     procedure Test_Transaction_1;
     procedure Test_Transaction_2;
+    procedure Test_Transaction_RepeatableRead;
     procedure Test_GetIndexNames;
   end;
 
@@ -407,6 +408,41 @@ begin
   end;
 
   FConnection.ExecuteDirect('DROP TABLE T_TRANSACTION');
+end;
+
+procedure TTestCase_DBX_General.Test_Transaction_RepeatableRead;
+var T1, T2: TTransactionDesc;
+    D: ^TSQLDataSet;
+    V1, V2: string;
+begin
+  FConnection.ExecuteDirect('CREATE TABLE T_REPEAT(FIELD1 VARCHAR(10), FIELD2 INTEGER)');
+  FConnection.ExecuteDirect('INSERT INTO T_REPEAT VALUES(''ITEM-01'', 1)');
+
+  New(D);
+  try
+    T1.TransactionID := 1;
+    T1.IsolationLevel := xilREPEATABLEREAD;
+    FConnection.StartTransaction(T1);
+    FConnection.Execute('SELECT * FROM T_REPEAT', nil, D);
+    V1 := D^.Fields[0].AsString;
+    D^.Free;
+
+    T2.TransactionID := 2;
+    T2.IsolationLevel := xilREPEATABLEREAD;
+    FConnection.StartTransaction(T2);
+    FConnection.ExecuteDirect('UPDATE T_REPEAT SET FIELD1=''ITEM-02''');
+    FConnection.Commit(T2);
+
+    FConnection.Execute('SELECT * FROM T_REPEAT', nil, D);
+    V2 := D^.Fields[0].AsString;
+    D^.Free;
+    FConnection.Commit(T1);
+
+    CheckEquals(V1, V2);
+  finally
+    Dispose(D);
+    FConnection.ExecuteDirect('DROP TABLE T_REPEAT');
+  end;
 end;
 
 procedure TTestCase_DBX_FieldType.Execute;
@@ -1000,9 +1036,9 @@ initialization
        + #13#10 + 'Trim Char=False'
   );
 
-//  xxx('CommitRetain=False'
-//       + #13#10 + WAITONLOCKS_KEY + '=False'
-//       + #13#10 + 'Trim Char=True'
-//  );
+  xxx('CommitRetain=False'
+       + #13#10 + WAITONLOCKS_KEY + '=False'
+       + #13#10 + 'Trim Char=True'
+  );
 
 end.
