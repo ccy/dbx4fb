@@ -27,7 +27,8 @@ type
     FDBXOptions: TDBXOptions;
     FClient: IFirebirdClient;
     FDBHandle: pisc_db_handle;
-    FTransaction: IFirebirdTransaction;
+    FTransactionID: LongWord;
+    FTransactionPool: TFirebirdTransactionPool;
     FDSQL: IFirebird_DSQL;
   private
     FIsStoredProc: boolean;
@@ -55,7 +56,7 @@ type
     function getErrorMessageLen(out ErrorLen: SmallInt): SQLResult; stdcall;
   public
     constructor Create(const aClientLibrary: IFirebirdClient; const aDBHandle:
-        pisc_db_handle; const aTransaction: IFirebirdTransaction; const
+        pisc_db_handle; const aTransactionPool: TFirebirdTransactionPool; const
         aDBXOptions: TDBXOptions);
   end;
 
@@ -64,14 +65,14 @@ implementation
 uses Windows, SysUtils, FMTBcd;
 
 constructor TSQLCommand30_Firebird.Create(const aClientLibrary:
-    IFirebirdClient; const aDBHandle: pisc_db_handle; const aTransaction:
-    IFirebirdTransaction; const aDBXOptions: TDBXOptions);
+    IFirebirdClient; const aDBHandle: pisc_db_handle; const aTransactionPool:
+    TFirebirdTransactionPool; const aDBXOptions: TDBXOptions);
 begin
   inherited Create;
   FClient := aClientLibrary;
   FDBHandle := aDBHandle;
   FDBXOptions := aDBXOptions;
-  FTransaction := aTransaction;
+  FTransactionPool := aTransactionPool;
 end;
 
 function TSQLCommand30_Firebird.close: SQLResult;
@@ -98,21 +99,31 @@ end;
 
 function TSQLCommand30_Firebird.executeImmediate(SQL: PWideChar; var Cursor:
     ISQLCursor30): SQLResult;
-var A: boolean;
+var T: IFirebirdTransaction;
+    bManage: boolean;
 begin
   Cursor := nil;
 
-  A := FTransaction.Active;
-  if not A then
-    FTransaction.Start(StatusVector);
+  T := FTransactionPool.CurrentTransaction;
+  bManage := T = nil;
+  if bManage then begin
+    T := FTransactionPool.Add;
+    T.Start(StatusVector);
+  end;
 
-  FClient.isc_dsql_execute_immediate(StatusVector.pValue, FDBHandle, FTransaction.TransactionHandle, 0, PAnsiChar(AnsiString(SQL)), FDBXOptions.SQLDialect, nil);
+  FClient.isc_dsql_execute_immediate(StatusVector.pValue, FDBHandle, T.TransactionHandle, 0, PAnsiChar(AnsiString(SQL)), FDBXOptions.SQLDialect, nil);
 
   if StatusVector.CheckResult(Result, DBXERR_SQLERROR) then begin
-    if not A then FTransaction.Commit(StatusVector);
+    if bManage then begin
+      FTransactionPool.Commit(StatusVector, T.ID);
+      T := nil;
+    end;
     StatusVector.CheckResult(Result, DBXERR_NOTIMPLEMENT);
   end else begin
-    if not A then FTransaction.Rollback(StatusVector);
+    if bManage then begin
+      FTransactionPool.RollBack(StatusVector, T.ID);
+      T := nil;
+    end;
     StatusVector.CheckResult(Result, DBXERR_NOTIMPLEMENT);
   end;
 end;
@@ -191,9 +202,9 @@ end;
 function TSQLCommand30_Firebird.prepare(SQL: PWideChar; ParamCount: Word):
     SQLResult;
 begin
-  FDSQL := TFirebird_DSQL.Create(FClient, FTransaction);
+  FDSQL := TFirebird_DSQL.Create(FClient, FTransactionPool);
 
-  FDSQL.Open(StatusVector, FDBHandle);
+  FDSQL.Open(StatusVector, FDBHandle, FTransactionPool.Get(FTransactionID));
   if not StatusVector.CheckResult(Result, DBXERR_SQLERROR) then Exit;
 
   FDSQL.Prepare(StatusVector, SQL, FDBXOptions.SQLDialect, ParamCount);
@@ -216,7 +227,7 @@ begin
       Assert(not FIsStoredProc);
     end;
     eCommSQLDialect: Assert(False);
-    eCommTransactionID: ; {$Message 'Do not sure what to do here'}
+    eCommTransactionID: FTransactionID := ulValue;
     eCommPackageName: Assert(False);
     eCommTrimChar: Assert(False);
     eCommQualifiedName: Assert(False);
@@ -243,7 +254,7 @@ begin
     fldZSTRING:    FDSQL.i_SQLDA[ulParameter].SetString(pBuffer, iPrecision, bIsNull);
     fldDATE:       FDSQL.i_SQLDA[ulParameter].SetDate(pBuffer, Length, bIsNull);
     fldBLOB:       begin
-      FDSQL.i_SQLDA[ulParameter].SetBlob(StatusVector, FDBHandle, FTransaction, pBuffer, Length, bIsNull);
+      FDSQL.i_SQLDA[ulParameter].SetBlob(StatusVector, FDBHandle, FDSQL.Transaction, pBuffer, Length, bIsNull);
       StatusVector.CheckResult(Result, DBXERR_INVALIDPARAM);
     end;
     fldBOOL:       Assert(False);

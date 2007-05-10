@@ -31,8 +31,7 @@ type
   private
     FClient: IFirebirdClient;
     FStatusVector: IStatusVector;
-    FTransaction: IFirebirdTransaction;
-    function GetTransaction: IFirebirdTransaction;
+    FTransactionPool: TFirebirdTransactionPool;
   protected
     function GetDBHandle: pisc_db_handle;
     function StatusVector: IStatusVector;
@@ -79,18 +78,33 @@ begin
 end;
 
 function TSqlConnection30_Firebird.beginTransaction(TranID: LongWord): SQLResult;
+var T: TTransactionDesc;
+    N: IFirebirdTransaction;
 begin
   {$Message 'Unable to find isc_start_transaction header translation in pascal'}
   {$Message 'Implement various transaction behavior via Transaction Parameter Block (tpb)'}
   {$Message 'Study the support of multiple transaction'}
 
-  GetTransaction.Start(StatusVector);
+  T := pTTransactionDesc(TranID)^;
+  if T.TransactionID = 0 then begin
+    Result := DBXERR_INVALIDTXNID;
+    Exit;
+  end;
+
+  try
+    N := FTransactionPool.Add(T);
+  except
+    Result := DBXERR_DUPLICATETXNID;
+    Exit;
+  end;
+
+  N.Start(StatusVector);
   StatusVector.CheckResult(Result, DBXERR_CONNECTIONFAILED);
 end;
 
 function TSqlConnection30_Firebird.commit(TranID: LongWord): SQLResult;
 begin
-  GetTransaction.Commit(StatusVector);
+  FTransactionPool.Commit(StatusVector, pTTransactionDesc(TranID)^.TransactionID);
   StatusVector.CheckResult(Result, DBXERR_NOTIMPLEMENT);
 end;
 
@@ -112,10 +126,15 @@ begin
   FDBHandle := 0;
   FClient.isc_attach_database(StatusVector.pValue, Length(sServerName), PAnsiChar(sServerName), GetDBHandle, Length(DPB), PAnsiChar(DPB));
   StatusVector.CheckResult(Result, DBXERR_CONNECTIONFAILED);
+
+  FTransactionPool.Free;
+  FTransactionPool := TFirebirdTransactionPool.Create(FClient, GetDBHandle);
 end;
 
 function TSqlConnection30_Firebird.disconnect: SQLResult;
 begin
+  FTransactionPool.Free;
+
   FClient.isc_detach_database(StatusVector.pValue, GetDBHandle);
   StatusVector.CheckResult(Result, DBXERR_CONNECTIONFAILED);
 end;
@@ -208,27 +227,20 @@ end;
 function TSqlConnection30_Firebird.getSQLCommand(out pComm: ISQLCommand30):
     SQLResult;
 begin
-  pComm := TSQLCommand30_Firebird.Create(FClient, GetDBHandle, GetTransaction, FDBXOptions);
+  pComm := TSQLCommand30_Firebird.Create(FClient, GetDBHandle, FTransactionPool, FDBXOptions);
   Result := DBXERR_NONE;
 end;
 
 function TSqlConnection30_Firebird.getSQLMetaData(out pMetaData: ISQLMetaData30):
     SQLResult;
 begin
-  pMetaData := TSQLMetaData30_Firebird.Create(FClient, GetDBHandle, GetTransaction, FDBXOptions);
+  pMetaData := TSQLMetaData30_Firebird.Create(FClient, GetDBHandle, FTransactionPool, FDBXOptions);
   Result := DBXERR_NONE;
-end;
-
-function TSqlConnection30_Firebird.GetTransaction: IFirebirdTransaction;
-begin
-  if FTransaction = nil then
-    FTransaction := TFirebirdTransaction.Create(FClient, GetDBHandle);
-  Result := FTransaction;
 end;
 
 function TSqlConnection30_Firebird.rollback(TranID: LongWord): SQLResult;
 begin
-  GetTransaction.Rollback(StatusVector);
+  FTransactionPool.RollBack(StatusVector, pTTransactionDesc(TranID)^.TransactionID);
   StatusVector.CheckResult(Result, DBXERR_NOTIMPLEMENT);
 end;
 

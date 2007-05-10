@@ -33,7 +33,7 @@ type
     FDBXOptions: TDBXOptions;
     FClient: IFirebirdClient;
     FDBHandle: pisc_db_handle;
-    FTransaction: IFirebirdTransaction;
+    FTransactionPool: TFirebirdTransactionPool;
   private
     FStatusVector: IStatusVector;
     function StatusVector: IStatusVector;
@@ -58,7 +58,7 @@ type
         SQLResult; stdcall;
   public
     constructor Create(const aClientLibrary: IFirebirdClient; const aDBHandle:
-        pisc_db_handle; const aTransaction: IFirebirdTransaction; const
+        pisc_db_handle; const aTransactionPool: TFirebirdTransactionPool; const
         aDBXOptions: TDBXOptions);
   end;
 
@@ -207,13 +207,13 @@ begin
 end;
 
 constructor TSQLMetaData30_Firebird.Create(const aClientLibrary:
-    IFirebirdClient; const aDBHandle: pisc_db_handle; const aTransaction:
-    IFirebirdTransaction; const aDBXOptions: TDBXOptions);
+    IFirebirdClient; const aDBHandle: pisc_db_handle; const aTransactionPool:
+    TFirebirdTransactionPool; const aDBXOptions: TDBXOptions);
 begin
   inherited Create;
   FClient := aClientLibrary;
   FDBHandle := aDBHandle;
-  FTransaction := aTransaction;
+  FTransactionPool := aTransactionPool;
   FDBXOptions := aDBXOptions;
 end;
 
@@ -229,8 +229,8 @@ begin
  Format('WHERE (A.RDB$FIELD_SOURCE = B.RDB$FIELD_NAME) AND (A.RDB$RELATION_NAME = ''%s'') ', [TableName]) +
      'ORDER BY A.RDB$FIELD_POSITION';
 
-  C := TFirebird_DSQL.Create(FClient, FTransaction);
-  C.Open(StatusVector, FDBHandle);
+  C := TFirebird_DSQL.Create(FClient, FTransactionPool);
+  C.Open(StatusVector, FDBHandle, nil);
   C.Prepare(StatusVector, S, FDBXOptions.SQLDialect);
   C.Execute(StatusVector);
   if not StatusVector.CheckResult(Result, DBXERR_SQLERROR) then Exit;
@@ -354,8 +354,8 @@ begin
           'AND A.RDB$OWNER_NAME = ''SYSDBA'' '+
      'ORDER BY A.RDB$RELATION_NAME';
 
-  C := TFirebird_DSQL.Create(FClient, FTransaction);
-  C.Open(StatusVector, FDBHandle);
+  C := TFirebird_DSQL.Create(FClient, FTransactionPool);
+  C.Open(StatusVector, FDBHandle, nil);
   C.Prepare(StatusVector, S, FDBXOptions.SQLDialect);
   C.Execute(StatusVector);
   if not StatusVector.CheckResult(Result, DBXERR_SQLERROR) then Exit;
