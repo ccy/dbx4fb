@@ -261,7 +261,7 @@ begin
     fldINT16:      FDSQL.i_SQLDA[ulParameter].SetShort(pBuffer, Length, bIsNull);
     fldINT32:      FDSQL.i_SQLDA[ulParameter].SetInteger(pBuffer, Length, bIsNull);
     fldFLOAT:      FDSQL.i_SQLDA[ulParameter].SetDouble(pBuffer, Length, bIsNull);
-    fldBCD:        FDSQL.i_SQLDA[ulParameter].SetBCD(pBuffer, iScale, bIsNull);
+    fldBCD:        FDSQL.i_SQLDA[ulParameter].SetBCD(pBuffer, bIsNull);
     fldBYTES:      Assert(False);
     fldTIME:       FDSQL.i_SQLDA[ulParameter].SetTime(pBuffer, bIsNull);
     fldTIMESTAMP:  Assert(False);
