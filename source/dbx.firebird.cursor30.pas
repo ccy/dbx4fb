@@ -87,7 +87,7 @@ uses Windows, SysUtils;
 procedure TSQLCursor30_Firebird.BeforeDestruction;
 begin
   inherited;
-  FDSQL.Close(StatusVector);
+  if Assigned(FDSQL) then FDSQL.Close(StatusVector);
 end;
 
 constructor TSQLCursor30_Firebird.Create(const aClientLibrary: IFirebirdClient;
@@ -326,7 +326,10 @@ end;
 
 function TSQLCursor30_Firebird.next: SQLResult;
 begin
-  Result := FDSQL.Fetch(StatusVector);
+  if Assigned(FDSQL) then
+    Result := FDSQL.Fetch(StatusVector)
+  else
+    Result := 100;
   if (Result <> 0) and (Result <> 100) then
     StatusVector.CheckResult(Result, DBXERR_SQLERROR);
 end;

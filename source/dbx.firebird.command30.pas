@@ -211,7 +211,10 @@ begin
     eCommParamCount: Assert(False);
     eCommNativeHandle: Assert(False);
     eCommCursorName: Assert(False);
-    eCommStoredProc: FIsStoredProc := boolean(ulValue);
+    eCommStoredProc: begin
+      FIsStoredProc := boolean(ulValue);
+      Assert(not FIsStoredProc);
+    end;
     eCommSQLDialect: Assert(False);
     eCommTransactionID: ; {$Message 'Do not sure what to do here'}
     eCommPackageName: Assert(False);
