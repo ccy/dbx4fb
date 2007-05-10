@@ -540,6 +540,10 @@ begin
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
   CheckEquals(Param.AsFloat, Field.AsFloat);
 
+  Param.AsFMTBCD := StrToBcd('8000');
+  Execute;
+  CheckEquals(Param.AsString, Field.AsString);
+
   Param.AsCurrency := 12345678.1234;
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
@@ -587,6 +591,10 @@ begin
   Param.AsFMTBCD := StrToBcd('234.56');
   Execute;
   CheckEquals(TFMTBCDField, Field.ClassType);
+  CheckEquals(Param.AsString, Field.AsString);
+
+  Param.AsFMTBCD := StrToBcd('2');
+  Execute;
   CheckEquals(Param.AsString, Field.AsString);
 end;
 
@@ -651,6 +659,10 @@ begin
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
   CheckEquals(Param.AsFloat, Field.AsFloat);
 
+  Param.AsFMTBCD := StrToBcd('8000');
+  Execute;
+  CheckEquals(Param.AsString, Field.AsString);
+
   Param.AsCurrency := 12345678.1234;
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
@@ -696,7 +708,14 @@ end;
 
 procedure TTestCase_DBX_FieldType.Test_NUMERIC_LONG;
 begin
+  Param.AsFMTBCD := StrToBcd('234.56');
+  Execute;
+  CheckEquals(TFMTBCDField, Field.ClassType);
+  CheckEquals(Param.AsString, Field.AsString);
 
+  Param.AsFMTBCD := StrToBcd('2');
+  Execute;
+  CheckEquals(Param.AsString, Field.AsString);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_NUMERIC_SHORT;
@@ -705,6 +724,10 @@ begin
   Execute;
   CheckEquals(TFMTBCDField, Field.ClassType);
   CheckEquals(Param.AsSmallInt, Field.AsInteger);
+
+  Param.AsFMTBCD := StrToBcd('2');
+  Execute;
+  CheckEquals(Param.AsString, Field.AsString);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_Required;
