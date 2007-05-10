@@ -82,8 +82,6 @@ var T: TTransactionDesc;
     N: IFirebirdTransaction;
 begin
   {$Message 'Unable to find isc_start_transaction header translation in pascal'}
-  {$Message 'Implement various transaction behavior via Transaction Parameter Block (tpb)'}
-  {$Message 'Study the support of multiple transaction'}
 
   T := pTTransactionDesc(TranID)^;
   if T.TransactionID = 0 then begin
