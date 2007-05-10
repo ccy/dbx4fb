@@ -819,7 +819,7 @@ begin
   C := TTestData_SQLConnection.Create('Upscene DBX Firebird Driver (Server)', 'INTERBASE', 'g:\bin\dbxup_fb.dll', 'getSQLDriverFB', 'g:\bin\fbclient.1.5.3.dll', False, P);
   T.AddSuite(MySuite(C));
 
-  C := TTestData_SQLConnection.Create('TeamOO DBX Firebird Driver (Server))', 'INTERBASE', 'dbxfb.dll', 'getSQLDriverFIREBIRD', 'g:\bin\fbclient.1.5.3.dll', False, P);
+  C := TTestData_SQLConnection.Create('TeamOO DBX Firebird Driver (Server))', 'INTERBASE', 'dbxbyfb30.dll', 'getSQLDriverFIREBIRD', 'g:\bin\fbclient.1.5.3.dll', False, P);
   T.AddSuite(MySuite(C));
 
   P := Format('Database=%sembed.15.fdb', [ExtractFilePath(ParamStr(0))])
@@ -827,7 +827,7 @@ begin
        + #13#10 + aParams
        ;
 
-  C := TTestData_SQLConnection.Create('TeamOO DBX Firebird Driver (Embedded, ODS 10.1)', 'INTERBASE', 'dbxfb.dll', 'getSQLDriverFIREBIRD', Format('%sfbembed.10.1\fbembed.dll', [ExtractFilePath(ParamStr(0))]), True, P);
+  C := TTestData_SQLConnection.Create('TeamOO DBX Firebird Driver (Embedded, ODS 10.1)', 'INTERBASE', 'dbxbyfb30.dll', 'getSQLDriverFIREBIRD', Format('%sfbembed.10.1\fbembed.dll', [ExtractFilePath(ParamStr(0))]), True, P);
   T.AddSuite(MySuite(C));
 
   P := Format('Database=%sembed.20.fdb', [ExtractFilePath(ParamStr(0))])
@@ -835,7 +835,7 @@ begin
        + #13#10 + aParams
        ;
 
-  C := TTestData_SQLConnection.Create('TeamOO DBX Firebird Driver (Embedded, ODS 11.0)', 'INTERBASE', 'dbxfb.dll', 'getSQLDriverFIREBIRD', Format('%sfbembed.11.0\fbembed.dll', [ExtractFilePath(ParamStr(0))]), True, P);
+  C := TTestData_SQLConnection.Create('TeamOO DBX Firebird Driver (Embedded, ODS 11.0)', 'INTERBASE', 'dbxbyfb30.dll', 'getSQLDriverFIREBIRD', Format('%sfbembed.11.0\fbembed.dll', [ExtractFilePath(ParamStr(0))]), True, P);
   T.AddSuite(MySuite(C));
 
 //  TestFrameWork.RegisterTest(TRepeatedTest.Create(T, 1));
