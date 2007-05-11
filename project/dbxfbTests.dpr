@@ -16,8 +16,11 @@ uses
 {$R *.RES}
 
 begin
+  {$if CompilerVersion>=18}
   if not IsConsole then
     ReportMemoryLeaksOnShutdown := True;
+  {$ifend}
+  
   Application.Initialize;
   if IsConsole then
     TextTestRunner.RunRegisteredTests
