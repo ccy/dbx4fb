@@ -13,11 +13,15 @@ type
     FSQLDialect: longint;
     FTransIsolationLevel: TTransIsolationLevel;
     FTrimChar: boolean;
+    FDBXCallBackEvent: TSQLCallBackEvent;
+    FDBXCallBackInfo: integer;
     function GetConnQuotedObjectName: WideString;
   public
     property BlobSize: integer read FBlobSize write FBlobSize;
     property ConnQualifiedName: WideString read FConnQualifiedName write FConnQualifiedName;
     property ConnQuotedObjectName: WideString read GetConnQuotedObjectName;
+    property DBXCallBackEvent: TSQLCallBackEvent read FDBXCallBackEvent write FDBXCallBackEvent;
+    property DBXCallBackInfo: integer read FDBXCallBackInfo write FDBXCallBackInfo;
     property RoleName: WideString read FRoleName write FRoleName;
     property SQLDialect: longint read FSQLDialect write FSQLDialect;
     property TransIsolationLevel: TTransIsolationLevel read FTransIsolationLevel write FTransIsolationLevel;

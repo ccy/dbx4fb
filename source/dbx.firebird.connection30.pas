@@ -5,20 +5,13 @@ interface
 uses IB_Header, DBXpress, firebird.client, dbx.common;
 
 type
-  IDBXCallBack = interface(IInterface)
-  ['{C4C44DCD-8440-4066-80B1-3B508A5772A2}']
-    procedure SetDBXCallBack(const aEvent: TSQLCallBackEvent);
-    procedure SetDBXCallBackInfo(const aInfo: integer);
-  end;
-
-  TFirebirdClientDebuggerListener_DBXCallBack = class(TInterfacedObject, IFirebirdClientDebuggerListener, IDBXCallBack)
+  TFirebirdClientDebuggerListener_DBXCallBack = class(TInterfacedObject, IFirebirdClientDebuggerListener)
   private
-    FDBXCallBack: TSQLCallBackEvent;
-    FDBXCallBackInfo: integer;
+    FDBXOptions: TDBXOptions;
   protected
     procedure Update(const aDebugStr: string);
-    procedure SetDBXCallBack(const aEvent: TSQLCallBackEvent);
-    procedure SetDBXCallBackInfo(const aInfo: integer);
+  public
+    constructor Create(aDBXOptions: TDBXOptions);
   end;
 
   TSqlConnection30_Firebird = class(TInterfacedObject, ISQLConnection,
@@ -32,6 +25,7 @@ type
     FClient: IFirebirdClient;
     FStatusVector: IStatusVector;
     FTransactionPool: TFirebirdTransactionPool;
+    procedure CheckDebugger;
   protected
     function GetDBHandle: pisc_db_handle;
     function StatusVector: IStatusVector;
@@ -65,10 +59,7 @@ constructor TSqlConnection30_Firebird.Create(const aClient: IFirebirdClient);
 begin
   inherited Create;
   FDBXOptions := TDBXOptions.Create;
-
   FClient := aClient;
-  FDebuggerListener := TFirebirdClientDebuggerListener_DBXCallBack.Create;
-  (FClient as IFirebirdClientDebugger).Add(FDebuggerListener);
 end;
 
 procedure TSqlConnection30_Firebird.BeforeDestruction;
@@ -98,6 +89,17 @@ begin
 
   N.Start(StatusVector);
   StatusVector.CheckResult(Result, DBXERR_CONNECTIONFAILED);
+end;
+
+procedure TSqlConnection30_Firebird.CheckDebugger;
+begin
+  if Assigned(FDebuggerListener) then
+    (FClient as IFirebirdClientDebugger).Remove(FDebuggerListener);
+  FDebuggerListener := nil;
+  if Assigned(FDBXOptions.DBXCallBackEvent) and (FDBXOptions.DBXCallBackInfo <> 0) then begin
+    FDebuggerListener := TFirebirdClientDebuggerListener_DBXCallBack.Create(FDBXOptions);
+    (FClient as IFirebirdClientDebugger).Add(FDebuggerListener);
+  end;
 end;
 
 function TSqlConnection30_Firebird.commit(TranID: LongWord): SQLResult;
@@ -255,10 +257,16 @@ begin
     eConnTxnIsoLevel: FDBXOptions.TransIsolationLevel := TTransIsolationLevel(lValue);  {$Message 'Transaction not sensitive to Isolation yet'} 
     eConnNativeHandle: Assert(False);
     eConnServerVersion: Assert(False);
-    eConnCallBack: (FDebuggerListener as IDBXCallBack).SetDBXCallBack(TSQLCallBackEvent(lValue));
+    eConnCallBack: begin
+      FDBXOptions.DBXCallBackEvent := TSQLCallBackEvent(lValue);
+      CheckDebugger;
+    end;
     eConnHostName: Assert(False);
     eConnDatabaseName: Assert(False);
-    eConnCallBackInfo: (FDebuggerListener as IDBXCallBack).SetDBXCallBackInfo(lValue);
+    eConnCallBackInfo: begin
+      FDBXOptions.DBXCallBackInfo := lValue;
+      CheckDebugger;
+    end;
     eConnObjectMode: Assert(False);
     eConnMaxActiveComm: Assert(False);
     eConnServerCharSet: Assert(False);
@@ -298,16 +306,10 @@ begin
   Result := FStatusVector;
 end;
 
-procedure TFirebirdClientDebuggerListener_DBXCallBack.SetDBXCallBack(
-  const aEvent: TSQLCallBackEvent);
+constructor TFirebirdClientDebuggerListener_DBXCallBack.Create(aDBXOptions: TDBXOptions);
 begin
-  FDBXCallBack := aEvent;
-end;
-
-procedure TFirebirdClientDebuggerListener_DBXCallBack.SetDBXCallBackInfo(
-  const aInfo: integer);
-begin
-  FDBXCallBackInfo := aInfo;
+  inherited Create;
+  FDBXOptions := aDBXOptions;
 end;
 
 procedure TFirebirdClientDebuggerListener_DBXCallBack.Update(const aDebugStr: string);
@@ -321,13 +323,13 @@ type
 var D: SQLTRACEDesc30;
     W: WideString;
 begin
-  if Assigned(FDBXCallBack) then begin 
+  if Assigned(FDBXOptions.DBXCallBackEvent) then begin
     W := aDebugStr;
     WStrPLCopy(D.pszTrace, W, Length(D.pszTrace));
     D.eTraceCat := 0; {$Message 'Should find a way to specify the trace category'}
-    D.ClientData := FDBXCallBackInfo;
+    D.ClientData := FDBXOptions.DBXCallBackInfo;
     D.uTotalMsgLen := WStrLen(D.pszTrace);
-    FDBXCallBack(integer(traceTRANSACT), @D);
+    FDBXOptions.DBXCallBackEvent(integer(traceTRANSACT), @D);
   end;
 end;
 
