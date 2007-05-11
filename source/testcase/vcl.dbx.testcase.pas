@@ -1121,14 +1121,14 @@ begin
 
   Result.Add(
     TTestData_SQLConnection.Create(
-      'TeamOO DBX Firebird Driver (Server))', 'INTERBASE', 'dbxbyfb30.dll',
+      'TeamOO DBX Firebird Driver (Server))', 'INTERBASE', 'g:\bin\dbxbyfb30.dll',
       'getSQLDriverFIREBIRD', 'g:\bin\fbclient.1.5.3.dll', False, S
     )
   );
 
   Result.Add(
     TTestData_SQLConnection.Create(
-      'TeamOO DBX Firebird Driver (Embedded, ODS 10.1)', 'INTERBASE', 'dbxbyfb30.dll',
+      'TeamOO DBX Firebird Driver (Embedded, ODS 10.1)', 'INTERBASE', 'g:\bin\dbxbyfb30.dll',
       'getSQLDriverFIREBIRD', 'g:\bin\fbembed.10.1\fbembed.dll', True,
       GetParams(Format('%sembed.15.fdb', [ExtractFilePath(ParamStr(0))]), aParams)
     )
@@ -1136,7 +1136,7 @@ begin
 
   Result.Add(
     TTestData_SQLConnection.Create(
-      'TeamOO DBX Firebird Driver (Embedded, ODS 11.0)', 'INTERBASE', 'dbxbyfb30.dll',
+      'TeamOO DBX Firebird Driver (Embedded, ODS 11.0)', 'INTERBASE', 'g:\bin\dbxbyfb30.dll',
       'getSQLDriverFIREBIRD', 'g:\bin\fbembed.11.0\fbembed.dll', True,
       GetParams(Format('%sembed.20.fdb', [ExtractFilePath(ParamStr(0))]), aParams)
     )
