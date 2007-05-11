@@ -119,12 +119,16 @@ type
   end;
 
   TTestCase_DBX_TSQLDataSet = class(TTestCase_DBX)
+  private
+    FDataSet: TSQLDataSet;
+  protected
+    procedure SetUp; override;
+    procedure TearDown; override;
   published
-    procedure Test1;
-    procedure Test2;
+    procedure Test_ctTable;
     procedure Test_GetRowsAffected;
     procedure Test_Field_ReadOnly;
-    procedure Test4;
+    procedure Test_ctQuery;
   end;
 
   TTestSuite_DBX_Factory = class
@@ -815,92 +819,86 @@ begin
   Test_Required;
 end;
 
-procedure TTestCase_DBX_TSQLDataSet.Test1;
-var D: TSQLDataSet;
-begin
-  D := TSQLDataSet.Create(nil);
-  try
-    D.SQLConnection := FConnection;
-    D.CommandType := ctTable;
-    D.CommandText := 'RDB$RELATIONS';
-    D.Open;
-    CheckTrue(D.Active);
-    D.Close;
-  finally
-    D.Free;
-  end;
-end;
-
-procedure TTestCase_DBX_TSQLDataSet.Test2;
-var D: TSQLDataSet;
+procedure TTestCase_DBX_TSQLDataSet.SetUp;
+var S: string;
     L: TStringList;
 begin
-  D := TSQLDataSet.Create(nil);
+  inherited;
   L := TStringList.Create;
   try
-    D.SQLConnection := FConnection;
-    D.CommandType := ctTable;
-    D.CommandText := 'SY_REGISTRY';
-    D.Open;
+    FConnection.GetTableNames(L, False);
+    if L.IndexOf('T_DATASET') <> -1 then
+      FConnection.ExecuteDirect('DROP TABLE T_DATASET');
   finally
-    D.Free;
     L.Free;
   end;
+
+  S := 'CREATE TABLE T_DATASET( ' +
+       '   FIELD VARCHAR(100)' +
+       ')';
+  FConnection.ExecuteDirect(S);
+
+  FDataSet := TSQLDataSet.Create(nil);
+  FDataSet.SQLConnection := FConnection;
 end;
 
-procedure TTestCase_DBX_TSQLDataSet.Test4;
-var D: TSQLDataSet;
-    L: TStringList;
+procedure TTestCase_DBX_TSQLDataSet.TearDown;
 begin
-  D := TSQLDataSet.Create(nil);
+  FDataSet.Free;
+  FConnection.ExecuteDirect('DROP TABLE T_DATASET');
+  inherited;
+end;
+
+procedure TTestCase_DBX_TSQLDataSet.Test_ctTable;
+begin
+  FDataSet.CommandType := ctTable;
+  FDataSet.CommandText := 'T_DATASET';
+  FDataSet.Open;
+  CheckTrue(FDataSet.Active);
+  FDataSet.Close;
+end;
+
+procedure TTestCase_DBX_TSQLDataSet.Test_ctQuery;
+var L: TStringList;
+begin
   L := TStringList.Create;
   try
-    D.SQLConnection := FConnection;
-    D.CommandType := ctQuery;
-    D.CommandText := 'SELECT RNAME AS Field1 FROM SY_REGISTRY';
-    D.Open;
-    CheckTrue(Assigned(D.FindField('Field1')));
-    D.Close;
+    FDataSet.CommandType := ctQuery;
+    FDataSet.CommandText := 'SELECT FIELD AS Field1 FROM T_DATASET';
+    FDataSet.Open;
+    CheckTrue(Assigned(FDataSet.FindField('Field1')));
+    FDataSet.Close;
   finally
-    D.Free;
     L.Free;
   end;
 end;
 
 procedure TTestCase_DBX_TSQLDataSet.Test_GetRowsAffected;
-var D: TSQLDataSet;
-    L: TStringList;
+var L: TStringList;
 begin
-  D := TSQLDataSet.Create(nil);
   L := TStringList.Create;
   try
-    D.SQLConnection := FConnection;
-    D.CommandType := ctTable;
-    D.CommandText := 'SY_REGISTRY';
-    D.Open;
-    D.Prepared := False;
-    D.Close;
+    FDataSet.CommandType := ctTable;
+    FDataSet.CommandText := 'T_DATASET';
+    FDataSet.Open;
+    FDataSet.Prepared := False;
+    FDataSet.Close;
   finally
-    D.Free;
     L.Free;
   end;
 end;
 
 procedure TTestCase_DBX_TSQLDataSet.Test_Field_ReadOnly;
-var D: TSQLDataSet;
-    L: TStringList;
+var L: TStringList;
 begin
-  D := TSQLDataSet.Create(nil);
   L := TStringList.Create;
   try
-    D.SQLConnection := FConnection;
-    D.CommandType := ctTable;
-    D.CommandText := 'SY_REGISTRY';
-    D.Open;
-    CheckFalse(D.Fields[0].ReadOnly);
-    D.Close;
+    FDataSet.CommandType := ctTable;
+    FDataSet.CommandText := 'T_DATASET';
+    FDataSet.Open;
+    CheckFalse(FDataSet.Fields[0].ReadOnly);
+    FDataSet.Close;
   finally
-    D.Free;
     L.Free;
   end;
 end;
@@ -1099,36 +1097,31 @@ end;
 
 class function TTestSuite_DBX_Factory.NewTestDataList(const aParams: string):
     IInterfaceList;
-var S: string;
+var S, sDriver: string;
 begin
   Result := TInterfaceList.Create;
 
   S := GetParams(Format('localhost:%sserver.15.fdb', [ExtractFilePath(ParamStr(0))]), aParams);
 
+  sDriver := {$if CompilerVersion=15}'g:\bin\dbexpint.dll'{$else}'g:\bin\dbxint30.dll'{$ifend};
   Result.Add(
     TTestData_SQLConnection.Create(
-      'Borland DBX Interbase Driver (Server)', 'INTERBASE', 'g:\bin\dbxint30.dll',
+      'Borland DBX Interbase Driver (Server)', 'INTERBASE', sDriver,
       'getSQLDriverINTERBASE', 'g:\bin\fbclient.1.5.3.dll', False, S
     )
   );
 
+  sDriver := {$if CompilerVersion=15}'g:\bin\dbxbyfb30.dll'{$else}'g:\bin\dbxbyfb30.dll'{$ifend};
   Result.Add(
     TTestData_SQLConnection.Create(
-      'Upscene DBX Firebird Driver (Server)', 'INTERBASE', 'g:\bin\dbxup_fb.dll',
-      'getSQLDriverFB', 'g:\bin\fbclient.1.5.3.dll', False, S
-    )
-  );
-
-  Result.Add(
-    TTestData_SQLConnection.Create(
-      'TeamOO DBX Firebird Driver (Server))', 'INTERBASE', 'g:\bin\dbxbyfb30.dll',
+      'TeamOO DBX Firebird Driver (Server))', 'INTERBASE', sDriver,
       'getSQLDriverFIREBIRD', 'g:\bin\fbclient.1.5.3.dll', False, S
     )
   );
 
   Result.Add(
     TTestData_SQLConnection.Create(
-      'TeamOO DBX Firebird Driver (Embedded, ODS 10.1)', 'INTERBASE', 'g:\bin\dbxbyfb30.dll',
+      'TeamOO DBX Firebird Driver (Embedded, ODS 10.1)', 'INTERBASE', sDriver,
       'getSQLDriverFIREBIRD', 'g:\bin\fbembed.10.1\fbembed.dll', True,
       GetParams(Format('%sembed.15.fdb', [ExtractFilePath(ParamStr(0))]), aParams)
     )
@@ -1136,9 +1129,16 @@ begin
 
   Result.Add(
     TTestData_SQLConnection.Create(
-      'TeamOO DBX Firebird Driver (Embedded, ODS 11.0)', 'INTERBASE', 'g:\bin\dbxbyfb30.dll',
+      'TeamOO DBX Firebird Driver (Embedded, ODS 11.0)', 'INTERBASE', sDriver,
       'getSQLDriverFIREBIRD', 'g:\bin\fbembed.11.0\fbembed.dll', True,
       GetParams(Format('%sembed.20.fdb', [ExtractFilePath(ParamStr(0))]), aParams)
+    )
+  );
+
+  Result.Add(
+    TTestData_SQLConnection.Create(
+      'Upscene DBX Firebird Driver (Server)', 'INTERBASE', 'g:\bin\dbxup_fb.dll',
+      'getSQLDriverFB', 'g:\bin\fbclient.1.5.3.dll', False, S
     )
   );
 end;
