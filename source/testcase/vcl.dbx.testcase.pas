@@ -280,22 +280,22 @@ begin
   L2 := TStringList.Create;
   try
     FConnection.GetFieldNames('RDB$RELATIONS', L1);
-    L2.Add('RDB$DBKEY_LENGTH');
-    L2.Add('RDB$DEFAULT_CLASS');
-    L2.Add('RDB$DESCRIPTION');
-    L2.Add('RDB$EXTERNAL_DESCRIPTION');
-    L2.Add('RDB$EXTERNAL_FILE');
-    L2.Add('RDB$FIELD_ID');
-    L2.Add('RDB$FLAGS');
-    L2.Add('RDB$FORMAT');
-    L2.Add('RDB$OWNER_NAME');
-    L2.Add('RDB$RELATION_ID');
-    L2.Add('RDB$RELATION_NAME');
-    L2.Add('RDB$RUNTIME');
-    L2.Add('RDB$SECURITY_CLASS');
-    L2.Add('RDB$SYSTEM_FLAG');
     L2.Add('RDB$VIEW_BLR');
     L2.Add('RDB$VIEW_SOURCE');
+    L2.Add('RDB$DESCRIPTION');
+    L2.Add('RDB$RELATION_ID');
+    L2.Add('RDB$SYSTEM_FLAG');
+    L2.Add('RDB$DBKEY_LENGTH');
+    L2.Add('RDB$FORMAT');
+    L2.Add('RDB$FIELD_ID');
+    L2.Add('RDB$RELATION_NAME');
+    L2.Add('RDB$SECURITY_CLASS');
+    L2.Add('RDB$EXTERNAL_FILE');
+    L2.Add('RDB$RUNTIME');
+    L2.Add('RDB$EXTERNAL_DESCRIPTION');
+    L2.Add('RDB$OWNER_NAME');
+    L2.Add('RDB$DEFAULT_CLASS');
+    L2.Add('RDB$FLAGS');
 
     CheckEquals(L2.Text, L1.Text);
   finally
