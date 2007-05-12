@@ -2,7 +2,7 @@ unit vcl.dbx.testcase;
 
 interface
 
-uses Classes, TestFrameWork, TestExtensions, DB, SqlExpr;
+uses Classes, TestFrameWork, TestExtensions, DB, SqlExpr, Provider, DBClient;
 
 type
   ITestData = interface(IInterface)
@@ -129,6 +129,18 @@ type
     procedure Test_GetRowsAffected;
     procedure Test_Field_ReadOnly;
     procedure Test_ctQuery;
+  end;
+
+  TTestCase_DBX_DataSnap = class(TTestCase_DBX)
+  private
+    FDataSet: TSQLDataSet;
+    FDSP: TDataSetProvider;
+    FCDS: TClientDataSet;
+  protected
+    procedure SetUp; override;
+    procedure TearDown; override;
+  published
+    procedure Test_Repeated_Open;
   end;
 
   TTestSuite_DBX_Factory = class
@@ -1079,6 +1091,7 @@ begin
   S.AddSuite(TTestCase_DBX_FieldType.NewSuite(aTestData));
   S.AddSuite(TTest_DBX_FieldType_NOT_NULL.NewSuite(aTestData));
   S.AddSuite(TTestCase_DBX_TSQLDataSet.NewSuite(aTestData));
+  S.AddSuite(TTestCase_DBX_DataSnap.NewSuite(aTestData));
   Result := S as ITestSuite;
 end;
 
@@ -1169,6 +1182,56 @@ begin
     + #13#10 + WAITONLOCKS_KEY + '=False'
     + #13#10 + 'Trim Char=True'
   );
+end;
+
+procedure TTestCase_DBX_DataSnap.SetUp;
+var S: string;
+    L: TStringList;
+begin
+  inherited;
+  L := TStringList.Create;
+  try
+    FConnection.GetTableNames(L, False);
+    if L.IndexOf('T_DATASET') <> -1 then
+      FConnection.ExecuteDirect('DROP TABLE T_DATASET');
+  finally
+    L.Free;
+  end;
+
+  S := 'CREATE TABLE T_DATASET( ' +
+       '   FIELD VARCHAR(100)' +
+       ')';
+  FConnection.ExecuteDirect(S);
+
+  FDataSet := TSQLDataSet.Create(nil);
+  FDataSet.SQLConnection := FConnection;
+  FDataSet.CommandType := ctTable;
+  FDataSet.CommandText := 'T_DATASET';
+
+  FDSP := TDataSetProvider.Create(nil);
+  FDSP.DataSet := FDataSet;
+
+  FCDS := TClientDataSet.Create(nil);
+end;
+
+procedure TTestCase_DBX_DataSnap.TearDown;
+begin
+  FDSP.Free;
+  FCDS.Free;
+  FDataSet.Free;
+  FConnection.ExecuteDirect('DROP TABLE T_DATASET');
+  inherited;
+end;
+
+procedure TTestCase_DBX_DataSnap.Test_Repeated_Open;
+begin
+  FCDS.SetProvider(FDSP);
+  FCDS.Open;
+  CheckTrue(FCDS.Active);
+  FCDS.Close;
+  CheckFalse(FCDS.Active);
+  FCDS.SetProvider(FDSP);
+  FCDS.Open;
 end;
 
 initialization
