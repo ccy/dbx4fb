@@ -296,7 +296,8 @@ begin
     L2.Add('RDB$OWNER_NAME');
     L2.Add('RDB$DEFAULT_CLASS');
     L2.Add('RDB$FLAGS');
-
+    L2.Sorted := True;
+    
     CheckEquals(L2.Text, L1.Text);
   finally
     L1.Free;
