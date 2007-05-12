@@ -5,17 +5,7 @@ interface
 uses IB_Header, DBXpress, firebird.client, dbx.common;
 
 type
-  TFirebirdClientDebuggerListener_DBXCallBack = class(TInterfacedObject, IFirebirdClientDebuggerListener)
-  private
-    FDBXOptions: TDBXOptions;
-  protected
-    procedure Update(const aDebugStr: string);
-  public
-    constructor Create(aDBXOptions: TDBXOptions);
-  end;
-
-  TSqlConnection30_Firebird = class(TInterfacedObject, ISQLConnection,
-      ISQLConnection30)
+  TSQLConnection_Firebird_30 = class(TInterfacedObject, ISQLConnection, ISQLConnection30)
   strict private
     FDBHandle: isc_db_handle;
   private
@@ -52,23 +42,23 @@ type
 
 implementation
 
-uses Windows, dbx.firebird.command30, dbx.firebird.metadata30,
-     WideStrUtils;
+uses SysUtils, Windows, dbx.firebird.command30, dbx.firebird.metadata30,
+     WideStrUtils, dbx.firebird;
 
-constructor TSqlConnection30_Firebird.Create(const aClient: IFirebirdClient);
+constructor TSQLConnection_Firebird_30.Create(const aClient: IFirebirdClient);
 begin
   inherited Create;
   FDBXOptions := TDBXOptions.Create;
   FClient := aClient;
 end;
 
-procedure TSqlConnection30_Firebird.BeforeDestruction;
+procedure TSQLConnection_Firebird_30.BeforeDestruction;
 begin
   inherited;
   FDBXOptions.Free;
 end;
 
-function TSqlConnection30_Firebird.beginTransaction(TranID: LongWord): SQLResult;
+function TSQLConnection_Firebird_30.beginTransaction(TranID: LongWord): SQLResult;
 var T: TTransactionDesc;
     N: IFirebirdTransaction;
 begin
@@ -91,29 +81,29 @@ begin
   StatusVector.CheckResult(Result, DBXERR_CONNECTIONFAILED);
 end;
 
-procedure TSqlConnection30_Firebird.CheckDebugger;
+procedure TSQLConnection_Firebird_30.CheckDebugger;
 begin
   if Assigned(FDebuggerListener) then
     (FClient as IFirebirdClientDebugger).Remove(FDebuggerListener);
   FDebuggerListener := nil;
   if Assigned(FDBXOptions.DBXCallBackEvent) and (FDBXOptions.DBXCallBackInfo <> 0) then begin
-    FDebuggerListener := TFirebirdClientDebuggerListener_DBXCallBack.Create(FDBXOptions);
+    FDebuggerListener := TDBX_Firebird.Factory.NewDebuggerListener(FDBXOptions);
     (FClient as IFirebirdClientDebugger).Add(FDebuggerListener);
   end;
 end;
 
-function TSqlConnection30_Firebird.commit(TranID: LongWord): SQLResult;
+function TSQLConnection_Firebird_30.commit(TranID: LongWord): SQLResult;
 begin
   FTransactionPool.Commit(StatusVector, pTTransactionDesc(TranID)^.TransactionID);
   StatusVector.CheckResult(Result, DBXERR_NOTIMPLEMENT);
 end;
 
-function TSqlConnection30_Firebird.connect: SQLResult;
+function TSQLConnection_Firebird_30.connect: SQLResult;
 begin
   Assert(False);
 end;
 
-function TSqlConnection30_Firebird.connect(ServerName: PWideChar; UserName:
+function TSQLConnection_Firebird_30.connect(ServerName: PWideChar; UserName:
     PWideChar; Password: PWideChar): SQLResult;
 var DPB, sServerName: AnsiString;
 begin
@@ -131,7 +121,7 @@ begin
   FTransactionPool := TFirebirdTransactionPool.Create(FClient, GetDBHandle);
 end;
 
-function TSqlConnection30_Firebird.disconnect: SQLResult;
+function TSQLConnection_Firebird_30.disconnect: SQLResult;
 begin
   FTransactionPool.Free;
 
@@ -139,25 +129,25 @@ begin
   StatusVector.CheckResult(Result, DBXERR_CONNECTIONFAILED);
 end;
 
-function TSqlConnection30_Firebird.GetDBHandle: pisc_db_handle;
+function TSQLConnection_Firebird_30.GetDBHandle: pisc_db_handle;
 begin
   Result := @FDBHandle;
 end;
 
-function TSqlConnection30_Firebird.getErrorMessage(Error: PWideChar): SQLResult;
+function TSQLConnection_Firebird_30.getErrorMessage(Error: PWideChar): SQLResult;
 begin
   StatusVector.GetLastError.GetMessage(Error);
   Result := DBXERR_NONE;
 end;
 
-function TSqlConnection30_Firebird.getErrorMessageLen(out ErrorLen: SmallInt):
+function TSQLConnection_Firebird_30.getErrorMessageLen(out ErrorLen: SmallInt):
     SQLResult;
 begin
   ErrorLen := StatusVector.GetError(FClient).GetLength;
   Result := DBXERR_NONE;
 end;
 
-function TSqlConnection30_Firebird.GetOption(eDOption: TSQLConnectionOption;
+function TSQLConnection_Firebird_30.GetOption(eDOption: TSQLConnectionOption;
     PropValue: Pointer; MaxLength: SmallInt; out Length: SmallInt): SQLResult;
 begin
   case eDOption of
@@ -203,12 +193,12 @@ begin
       Length := 0;
     end;
     eConnObjectName: begin
-      WStrPLCopy(PWideChar(PropValue), FDBXOptions.ConnQualifiedName, MaxLength);
-      Length := System.Length(FDBXOptions.ConnQualifiedName) * SizeOf(WideChar);
+      WStrPCopy(PWideChar(PropValue), FDBXOptions.ConnQualifiedName);
+      Length := System.Length(FDBXOptions.ConnQualifiedName);
     end;
     eConnQuotedObjectName: begin
-      WStrPLCopy(PWideChar(PropValue), FDBXOptions.ConnQuotedObjectName, MaxLength);
-      Length := System.Length(FDBXOptions.ConnQuotedObjectName) * SizeOf(WideChar);
+      WStrPCopy(PWideChar(PropValue), FDBXOptions.ConnQuotedObjectName);
+      Length := System.Length(FDBXOptions.ConnQuotedObjectName);
     end;
     eConnCustomInfo: Assert(False);
     eConnTimeOut: Assert(False);
@@ -224,27 +214,31 @@ begin
   Result := DBXERR_NONE;
 end;
 
-function TSqlConnection30_Firebird.getSQLCommand(out pComm: ISQLCommand30):
+function TSQLConnection_Firebird_30.getSQLCommand(out pComm: ISQLCommand30):
     SQLResult;
+var C: ISQLCommand;
 begin
-  pComm := TSQLCommand30_Firebird.Create(FClient, GetDBHandle, FTransactionPool, FDBXOptions);
+  C := TSQLCommand_Firebird_30.Create(FClient, GetDBHandle, FTransactionPool, FDBXOptions);
+  ISQLCommand(pComm) := TDBX_Firebird.Factory.NewCommand(C);
   Result := DBXERR_NONE;
 end;
 
-function TSqlConnection30_Firebird.getSQLMetaData(out pMetaData: ISQLMetaData30):
+function TSQLConnection_Firebird_30.getSQLMetaData(out pMetaData: ISQLMetaData30):
     SQLResult;
+var M: ISQLMetaData;
 begin
-  pMetaData := TSQLMetaData30_Firebird.Create(FClient, GetDBHandle, FTransactionPool, FDBXOptions);
+  M := TSQLMetaData_Firebird_30.Create(FClient, GetDBHandle, FTransactionPool, FDBXOptions);
+  ISQLMetaData(pMetaData) := TDBX_Firebird.Factory.NewMetaData(M);
   Result := DBXERR_NONE;
 end;
 
-function TSqlConnection30_Firebird.rollback(TranID: LongWord): SQLResult;
+function TSQLConnection_Firebird_30.rollback(TranID: LongWord): SQLResult;
 begin
   FTransactionPool.RollBack(StatusVector, pTTransactionDesc(TranID)^.TransactionID);
   StatusVector.CheckResult(Result, DBXERR_NOTIMPLEMENT);
 end;
 
-function TSqlConnection30_Firebird.SetOption(eConnectOption:
+function TSQLConnection_Firebird_30.SetOption(eConnectOption:
     TSQLConnectionOption; lValue: LongInt): SQLResult;
 begin
   case eConnectOption of
@@ -299,38 +293,12 @@ begin
   Result := DBXERR_NONE;
 end;
 
-function TSqlConnection30_Firebird.StatusVector: IStatusVector;
+function TSQLConnection_Firebird_30.StatusVector: IStatusVector;
 begin
   if FStatusVector = nil then
     FStatusVector := TStatusVector.Create;
   Result := FStatusVector;
 end;
 
-constructor TFirebirdClientDebuggerListener_DBXCallBack.Create(aDBXOptions: TDBXOptions);
-begin
-  inherited Create;
-  FDBXOptions := aDBXOptions;
-end;
-
-procedure TFirebirdClientDebuggerListener_DBXCallBack.Update(const aDebugStr: string);
-type
-  SQLTRACEDesc30 = packed record
-    pszTrace        : array [0..1023] of WideChar;
-    eTraceCat       : TRACECat;
-    ClientData      : Integer;
-    uTotalMsgLen    : Word;
-  end;
-var D: SQLTRACEDesc30;
-    W: WideString;
-begin
-  if Assigned(FDBXOptions.DBXCallBackEvent) then begin
-    W := aDebugStr;
-    WStrPLCopy(D.pszTrace, W, Length(D.pszTrace));
-    D.eTraceCat := 0; {$Message 'Should find a way to specify the trace category'}
-    D.ClientData := FDBXOptions.DBXCallBackInfo;
-    D.uTotalMsgLen := WStrLen(D.pszTrace);
-    FDBXOptions.DBXCallBackEvent(integer(traceTRANSACT), @D);
-  end;
-end;
 
 end.

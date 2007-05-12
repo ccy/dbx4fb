@@ -5,7 +5,7 @@ interface
 uses DBXpress;
 
 type
-  TSQLDriver30_Firebird = class(TInterfacedObject, ISQLDriver)
+  TSQLDriver_Firebird = class(TInterfacedObject, ISQLDriver)
   private
     FVendorLibHandle: THandle;
   protected
@@ -21,9 +21,10 @@ type
 
 implementation
 
-uses SysUtils, Windows, firebird.client, dbx.firebird.connection30;
+uses SysUtils, Windows, firebird.client, dbx.firebird.connection30,
+  dbx.firebird;
 
-procedure TSQLDriver30_Firebird.BeforeDestruction;
+procedure TSQLDriver_Firebird.BeforeDestruction;
 begin
   inherited;
   Sleep(1); {$Message 'In firebird embedded, this delay will make the FreeLibrary safer and won't cause unexpected error for massive LoadLibrary / FreeLibrary calls'}
@@ -31,13 +32,13 @@ begin
     GetLastError;
 end;
 
-constructor TSQLDriver30_Firebird.Create(const aVendorHandle: THandle);
+constructor TSQLDriver_Firebird.Create(const aVendorHandle: THandle);
 begin
   inherited Create;
   FVendorLibHandle := aVendorHandle;
 end;
 
-function TSQLDriver30_Firebird.GetOption(eDOption: TSQLDriverOption; PropValue:
+function TSQLDriver_Firebird.GetOption(eDOption: TSQLDriverOption; PropValue:
     Pointer; MaxLength: SmallInt; out Length: SmallInt): SQLResult;
 begin
   case eDOption of
@@ -54,19 +55,23 @@ begin
   Result := DBXERR_NONE;
 end;
 
-function TSQLDriver30_Firebird.getSQLConnection(out pConn: ISQLConnection):
+function TSQLDriver_Firebird.getSQLConnection(out pConn: ISQLConnection):
     SQLResult;
 var L: IFirebirdClient;
+    C: ISQLConnection;
 begin
   L := TFirebirdClientFactory.New(FVendorLibHandle);
-  ISQLConnection(pConn) := TSqlConnection30_Firebird.Create(L);
+  if TDBX_Firebird.Factory = nil then
+    TDBX_Firebird.SetDriverVersion('2.5');
+  C := TSQLConnection_Firebird_30.Create(L);
+  ISQLConnection(pConn) := TDBX_Firebird.Factory.NewConnection(C);
   if Assigned(L) then
     Result := DBXERR_NONE
   else
     Result := DBXERR_DRIVERINITFAILED;
 end;
 
-function TSQLDriver30_Firebird.SetOption(eDOption: TSQLDriverOption; PropValue:
+function TSQLDriver_Firebird.SetOption(eDOption: TSQLDriverOption; PropValue:
     LongInt): SQLResult;
 begin
   case eDOption of
@@ -75,7 +80,7 @@ begin
     eDrvCallBackInfo: Assert(False);
     eDrvRestrict: ; {$Message 'Do not sure what to do here'}
     eDrvVersion: Assert(False);
-    eDrvProductVersion: ; {$Message 'Do not sure what to do here'}
+    eDrvProductVersion: TDBX_Firebird.SetDriverVersion(PChar(PropValue));
   end;
   Result := DBXERR_NONE;
 end;

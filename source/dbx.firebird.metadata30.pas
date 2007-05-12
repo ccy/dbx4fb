@@ -19,6 +19,7 @@ type
     function GetColumnCount: integer;
     function GetColumnLength(const aColNo: Word): LongWord;
     function GetColumnName(const aColNo: Word): WideString;
+    function GetColumnNameLength(const aColNo: Word): Word;
     function GetColumnPrecision(const aColNo: Word): Smallint;
     function GetColumnScale(const aColNo: Word): Smallint;
     function GetColumnType(const aColNo: Word): Word;
@@ -28,7 +29,7 @@ type
     constructor Create(const aColumns: TFieldColumns);
   end;
 
-  TSQLMetaData30_Firebird = class(TInterfacedObject, ISQLMetaData30)
+  TSQLMetaData_Firebird_30 = class(TInterfacedObject, ISQLMetaData, ISQLMetaData30)
   strict private
     FDBXOptions: TDBXOptions;
     FClient: IFirebirdClient;
@@ -64,7 +65,7 @@ type
 
 implementation
 
-uses SysUtils, dbx.firebird.cursor30;
+uses SysUtils, dbx.firebird.cursor30, dbx.firebird;
 
 class function TMetaData_Firebird_Factory.New_getColumns(const aTableName: WideString):
     TFieldColumns;
@@ -175,6 +176,12 @@ begin
   Result := FColumns[aColNo - 1].Name;
 end;
 
+function TMetaDataProvider_Firebird.GetColumnNameLength(
+  const aColNo: Word): Word;
+begin
+  Result := Length(FColumns[aColNo - 1].Name);
+end;
+
 function TMetaDataProvider_Firebird.GetColumnPrecision(const aColNo: Word):
     Smallint;
 begin
@@ -206,7 +213,7 @@ begin
   Result := True;
 end;
 
-constructor TSQLMetaData30_Firebird.Create(const aClientLibrary:
+constructor TSQLMetaData_Firebird_30.Create(const aClientLibrary:
     IFirebirdClient; const aDBHandle: pisc_db_handle; const aTransactionPool:
     TFirebirdTransactionPool; const aDBXOptions: TDBXOptions);
 begin
@@ -217,11 +224,12 @@ begin
   FDBXOptions := aDBXOptions;
 end;
 
-function TSQLMetaData30_Firebird.getColumns(TableName: PWideChar; ColumnName:
+function TSQLMetaData_Firebird_30.getColumns(TableName: PWideChar; ColumnName:
     PWideChar; ColType: LongWord; Out Cursor: ISQLCursor30): SQLResult;
 var M: IMetaDataProvider;
     S: string;
     C: IFirebird_DSQL;
+    R: ISQLCursor;
 begin
   S := 'SELECT 0, '''', '''', A.RDB$RELATION_NAME, A.RDB$FIELD_NAME, A.RDB$FIELD_POSITION, 0, B.RDB$FIELD_TYPE, '''', ' +
               'B.RDB$FIELD_SUB_TYPE, B.RDB$FIELD_LENGTH, 0, B.RDB$FIELD_SCALE, A.RDB$NULL_FLAG ' +
@@ -236,29 +244,32 @@ begin
   if not StatusVector.CheckResult(Result, DBXERR_SQLERROR) then Exit;
 
   M := TMetaDataProvider_Firebird.Create(TMetaData_Firebird_Factory.New_getColumns(TableName));
-  Cursor := TSQLCursor30_Firebird.Create(FClient, FDBHandle, M, C, True, True);
+
+  R := TSQLCursor_Firebird_30.Create(FClient, FDBHandle, M, C, True, True);
+  ISQLCursor(Cursor) := TDBX_Firebird.Factory.NewCursor(R);
 
   Result := DBXERR_NONE;
 end;
 
-function TSQLMetaData30_Firebird.getErrorMessage(
+function TSQLMetaData_Firebird_30.getErrorMessage(
   Error: PWideChar): SQLResult;
 begin
   StatusVector.GetLastError.GetMessage(Error);
   Result := DBXERR_NONE;
 end;
 
-function TSQLMetaData30_Firebird.getErrorMessageLen(out ErrorLen: SmallInt):
+function TSQLMetaData_Firebird_30.getErrorMessageLen(out ErrorLen: SmallInt):
     SQLResult;
 begin
   ErrorLen := StatusVector.GetError(FClient).GetLength;
   Result := DBXERR_NONE;
 end;
 
-function TSQLMetaData30_Firebird.getIndices(TableName: PWideChar; IndexType:
+function TSQLMetaData_Firebird_30.getIndices(TableName: PWideChar; IndexType:
     LongWord; out Cursor: ISQLCursor30): SQLResult;
 var M: IMetaDataProvider;
     S: string;
+    R: ISQLCursor;
 //    C: IFirebird_DSQL;
 begin
   {$Message 'Do not sure how getIndices works. It seems like we do not need to fetch data from the SQL'}
@@ -280,18 +291,19 @@ begin
 //  if not StatusVector.CheckResult(Result, DBXERR_SQLERROR) then Exit;
 
   M := TMetaDataProvider_Firebird.Create(TMetaData_Firebird_Factory.New_getIndices(TableName));
-  Cursor := TSQLCursor30_Firebird.Create(FClient, FDBHandle, M, nil, True, True);
+  R := TSQLCursor_Firebird_30.Create(FClient, FDBHandle, M, nil, True, True);
+  ISQLCursor(Cursor) := TDBX_Firebird.Factory.NewCursor(R);
 
   Result := DBXERR_NONE;
 end;
 
-function TSQLMetaData30_Firebird.getObjectList(eObjType: TSQLObjectType; out
+function TSQLMetaData_Firebird_30.getObjectList(eObjType: TSQLObjectType; out
     Cursor: ISQLCursor30): SQLResult;
 begin
   Assert(False);
 end;
 
-function TSQLMetaData30_Firebird.GetOption(eDOption: TSQLMetaDataOption;
+function TSQLMetaData_Firebird_30.GetOption(eDOption: TSQLMetaDataOption;
     PropValue: Pointer; MaxLength: SmallInt; out Length: SmallInt): SQLResult;
 begin
   case eDOption of
@@ -317,24 +329,25 @@ begin
   Result := DBXERR_NONE;
 end;
 
-function TSQLMetaData30_Firebird.getProcedureParams(ProcName: PWideChar;
+function TSQLMetaData_Firebird_30.getProcedureParams(ProcName: PWideChar;
     ParamName: PWideChar; out Cursor: ISQLCursor30): SQLResult;
 begin
   Assert(False);
 end;
 
-function TSQLMetaData30_Firebird.getProcedures(ProcedureName: PWideChar;
+function TSQLMetaData_Firebird_30.getProcedures(ProcedureName: PWideChar;
     ProcType: LongWord; out Cursor: ISQLCursor30): SQLResult;
 begin
   Assert(False);
 end;
 
-function TSQLMetaData30_Firebird.getTables(TableName: PWideChar; TableType:
+function TSQLMetaData_Firebird_30.getTables(TableName: PWideChar; TableType:
     LongWord; out Cursor: ISQLCursor30): SQLResult;
 var M: IMetaDataProvider;
     S: string;
     C: IFirebird_DSQL;
     sFlag: string;
+    R: ISQLCursor;
 begin
   {$Message 'TableType of eSQLView not implement yet'}
 
@@ -361,12 +374,13 @@ begin
   if not StatusVector.CheckResult(Result, DBXERR_SQLERROR) then Exit;
 
   M := TMetaDataProvider_Firebird.Create(TMetaData_Firebird_Factory.New_getTables);
-  Cursor := TSQLCursor30_Firebird.Create(FClient, FDBHandle, M, C, True, True);
+  R := TSQLCursor_Firebird_30.Create(FClient, FDBHandle, M, C, True, True);
+  ISQLCursor(Cursor) := TDBX_Firebird.Factory.NewCursor(R);
 
   Result := DBXERR_NONE;
 end;
 
-function TSQLMetaData30_Firebird.SetOption(eDOption: TSQLMetaDataOption;
+function TSQLMetaData_Firebird_30.SetOption(eDOption: TSQLMetaDataOption;
     PropValue: LongInt): SQLResult;
 begin
   case eDOption of
@@ -392,7 +406,7 @@ begin
   Result := DBXERR_NONE;
 end;
 
-function TSQLMetaData30_Firebird.StatusVector: IStatusVector;
+function TSQLMetaData_Firebird_30.StatusVector: IStatusVector;
 begin
   if FStatusVector = nil then
     FStatusVector := TStatusVector.Create;

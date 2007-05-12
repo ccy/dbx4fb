@@ -26,11 +26,18 @@ uses
   firebird.client.debug in '..\..\core\source\rtl\firebird.client.debug.pas',
   firebird.dsql in '..\..\core\source\rtl\firebird.dsql.pas',
   dbx.common in '..\source\dbx.common.pas',
+  dbx.firebird in '..\source\dbx.firebird.pas',
   dbx.firebird.driver30 in '..\source\dbx.firebird.driver30.pas',
   dbx.firebird.metadata30 in '..\source\dbx.firebird.metadata30.pas',
   dbx.firebird.cursor30 in '..\source\dbx.firebird.cursor30.pas',
   dbx.firebird.command30 in '..\source\dbx.firebird.command30.pas',
-  dbx.firebird.connection30 in '..\source\dbx.firebird.connection30.pas';
+  dbx.firebird.connection30 in '..\source\dbx.firebird.connection30.pas',
+  dbx.firebird.factory30 in '..\source\dbx.firebird.factory30.pas',
+  dbx.firebird.metadata25 in '..\source\dbx.firebird.metadata25.pas',
+  dbx.firebird.connection25 in '..\source\dbx.firebird.connection25.pas',
+  dbx.firebird.factory25 in '..\source\dbx.firebird.factory25.pas',
+  dbx.firebird.command25 in '..\source\dbx.firebird.command25.pas',
+  dbx.firebird.cursor25 in '..\source\dbx.firebird.cursor25.pas';
 
 {$R *.res}
 
@@ -49,7 +56,7 @@ begin
     if H = 0 then
       Result := DBXERR_DRIVERINITFAILED
     else begin
-      ISQLDriver(Obj) := TSQLDriver30_Firebird.Create(H);
+      ISQLDriver(Obj) := TSQLDriver_Firebird.Create(H);
       Result := DBXERR_NONE;
     end;
   finally

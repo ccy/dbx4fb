@@ -5,7 +5,7 @@ interface
 uses IB_Header, firebird.client, firebird.dsql, DBXpress, dbx.common;
 
 type
-  TSQLCursor30_Firebird = class(TInterfacedObject, ISQLCursor30)
+  TSQLCursor_Firebird_30 = class(TInterfacedObject, ISQLCursor, ISQLCursor30)
   private
     FStatusVector: IStatusVector;
     function StatusVector: IStatusVector;
@@ -84,13 +84,13 @@ implementation
 
 uses Windows, SysUtils;
 
-procedure TSQLCursor30_Firebird.BeforeDestruction;
+procedure TSQLCursor_Firebird_30.BeforeDestruction;
 begin
   inherited;
   if Assigned(FDSQL) then FDSQL.Close(StatusVector);
 end;
 
-constructor TSQLCursor30_Firebird.Create(const aClientLibrary: IFirebirdClient;
+constructor TSQLCursor_Firebird_30.Create(const aClientLibrary: IFirebirdClient;
     const aDBHandle: pisc_db_handle; const aMetaData: IMetaDataProvider; const
     aDSQL: IFirebird_DSQL; const aTrimChar, aReadOnly: boolean);
 begin
@@ -103,7 +103,7 @@ begin
   FReadOnly := aReadOnly;
 end;
 
-function TSQLCursor30_Firebird.getBcd(ColumnNumber: Word; Value: Pointer;
+function TSQLCursor_Firebird_30.getBcd(ColumnNumber: Word; Value: Pointer;
   var IsBlank: LongBool): SQLResult;
 var b: Boolean;
 begin
@@ -112,7 +112,7 @@ begin
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.getBlob(ColumnNumber: Word; Value: Pointer;
+function TSQLCursor_Firebird_30.getBlob(ColumnNumber: Word; Value: Pointer;
   var IsBlank: LongBool; Length: LongWord): SQLResult;
 var b: Boolean;
 begin
@@ -121,7 +121,7 @@ begin
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.getBlobSize(ColumnNumber: Word;
+function TSQLCursor_Firebird_30.getBlobSize(ColumnNumber: Word;
   var Length: LongWord; var IsBlank: LongBool): SQLResult;
 var b: boolean;
 begin
@@ -130,54 +130,54 @@ begin
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.getBytes(ColumnNumber: Word; Value: Pointer;
+function TSQLCursor_Firebird_30.getBytes(ColumnNumber: Word; Value: Pointer;
   var IsBlank: LongBool): SQLResult;
 begin
   Assert(False);
 end;
 
-function TSQLCursor30_Firebird.getColumnCount(var pColumns: Word): SQLResult;
+function TSQLCursor_Firebird_30.getColumnCount(var pColumns: Word): SQLResult;
 begin
   pColumns := FMetaData.GetColumnCount;
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.getColumnLength(ColumnNumber: Word;
+function TSQLCursor_Firebird_30.getColumnLength(ColumnNumber: Word;
   var pLength: LongWord): SQLResult;
 begin
   pLength := FMetaData.GetColumnLength(ColumnNumber);
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.getColumnName(ColumnNumber: Word;
+function TSQLCursor_Firebird_30.getColumnName(ColumnNumber: Word;
   pColumnName: PWideChar): SQLResult;
 begin
   lstrcpyW(pColumnName, PWideChar(FMetaData.GetColumnName(ColumnNumber)));
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.getColumnNameLength(ColumnNumber: Word;
+function TSQLCursor_Firebird_30.getColumnNameLength(ColumnNumber: Word;
   var pLen: Word): SQLResult;
 begin
-  pLen := FMetaData.GetColumnLength(ColumnNumber);
+  pLen := FMetaData.GetColumnNameLength(ColumnNumber);
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.getColumnPrecision(ColumnNumber: Word;
+function TSQLCursor_Firebird_30.getColumnPrecision(ColumnNumber: Word;
   var piPrecision: SmallInt): SQLResult;
 begin
   piPrecision := FMetaData.GetColumnPrecision(ColumnNumber);
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.getColumnScale(ColumnNumber: Word;
+function TSQLCursor_Firebird_30.getColumnScale(ColumnNumber: Word;
   var piScale: SmallInt): SQLResult;
 begin
   piScale := FMetaData.GetColumnScale(ColumnNumber);
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.getColumnType(ColumnNumber: Word; var puType,
+function TSQLCursor_Firebird_30.getColumnType(ColumnNumber: Word; var puType,
   puSubType: Word): SQLResult;
 begin
   puType := FMetaData.GetColumnType(ColumnNumber);
@@ -185,7 +185,7 @@ begin
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.getDate(ColumnNumber: Word; Value: Pointer;
+function TSQLCursor_Firebird_30.getDate(ColumnNumber: Word; Value: Pointer;
   var IsBlank: LongBool): SQLResult;
 var b: Boolean;
 begin
@@ -194,7 +194,7 @@ begin
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.getDouble(ColumnNumber: Word; Value: Pointer;
+function TSQLCursor_Firebird_30.getDouble(ColumnNumber: Word; Value: Pointer;
   var IsBlank: LongBool): SQLResult;
 var b: Boolean;
 begin
@@ -203,26 +203,26 @@ begin
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.getErrorMessage(Error: PWideChar): SQLResult;
+function TSQLCursor_Firebird_30.getErrorMessage(Error: PWideChar): SQLResult;
 begin
   StatusVector.GetLastError.GetMessage(Error);
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.getErrorMessageLen(
+function TSQLCursor_Firebird_30.getErrorMessageLen(
   out ErrorLen: SmallInt): SQLResult;
 begin
   ErrorLen := StatusVector.GetError(FClient).GetLength;
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.getInt64(ColumnNumber: Word; Value: Pointer;
+function TSQLCursor_Firebird_30.getInt64(ColumnNumber: Word; Value: Pointer;
   var IsBlank: LongBool): SQLResult;
 begin
   Assert(False);
 end;
 
-function TSQLCursor30_Firebird.getLong(ColumnNumber: Word; Value: Pointer;
+function TSQLCursor_Firebird_30.getLong(ColumnNumber: Word; Value: Pointer;
   var IsBlank: LongBool): SQLResult;
 var b: Boolean;
 begin
@@ -231,7 +231,7 @@ begin
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.GetOption(eOption: TSQLCursorOption;
+function TSQLCursor_Firebird_30.GetOption(eOption: TSQLCursorOption;
   PropValue: Pointer; MaxLength: SmallInt;
   out Length: SmallInt): SQLResult;
 begin
@@ -242,7 +242,7 @@ begin
   end;
 end;
 
-function TSQLCursor30_Firebird.getShort(ColumnNumber: Word; Value: Pointer;
+function TSQLCursor_Firebird_30.getShort(ColumnNumber: Word; Value: Pointer;
   var IsBlank: LongBool): SQLResult;
 var b: Boolean;
 begin
@@ -251,7 +251,7 @@ begin
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.getString(ColumnNumber: Word; Value: PChar;
+function TSQLCursor_Firebird_30.getString(ColumnNumber: Word; Value: PChar;
   var IsBlank: LongBool): SQLResult;
 var b: boolean;
     c: PChar;
@@ -268,7 +268,7 @@ begin
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.getTime(ColumnNumber: Word; Value: Pointer;
+function TSQLCursor_Firebird_30.getTime(ColumnNumber: Word; Value: Pointer;
   var IsBlank: LongBool): SQLResult;
 var b: Boolean;
 begin
@@ -277,7 +277,7 @@ begin
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.getTimeStamp(ColumnNumber: Word; Value: Pointer;
+function TSQLCursor_Firebird_30.getTimeStamp(ColumnNumber: Word; Value: Pointer;
   var IsBlank: LongBool): SQLResult;
 var b: Boolean;
 begin
@@ -286,45 +286,45 @@ begin
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.getWideString(ColumnNumber: Word;
+function TSQLCursor_Firebird_30.getWideString(ColumnNumber: Word;
   Value: PWideChar; var IsBlank: LongBool): SQLResult;
 begin
   Assert(False);
 end;
 
-function TSQLCursor30_Firebird.isAutoIncrement(ColumnNumber: Word;
+function TSQLCursor_Firebird_30.isAutoIncrement(ColumnNumber: Word;
   var AutoIncr: LongBool): SQLResult;
 begin
   Assert(False);
 end;
 
-function TSQLCursor30_Firebird.isBlobSizeExact(ColumnNumber: Word;
+function TSQLCursor_Firebird_30.isBlobSizeExact(ColumnNumber: Word;
   var IsExact: LongBool): SQLResult;
 begin
   Assert(False);
 end;
 
-function TSQLCursor30_Firebird.isNullable(ColumnNumber: Word;
+function TSQLCursor_Firebird_30.isNullable(ColumnNumber: Word;
   var Nullable: LongBool): SQLResult;
 begin
   Nullable := FMetaData.IsNullable(ColumnNumber);
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.isReadOnly(ColumnNumber: Word;
+function TSQLCursor_Firebird_30.isReadOnly(ColumnNumber: Word;
   var ReadOnly: LongBool): SQLResult;
 begin
   ReadOnly := FReadOnly;  {$Message 'How to determine the value of ReadOnly'}
   Result := DBXERR_NONE;
 end;
 
-function TSQLCursor30_Firebird.isSearchable(ColumnNumber: Word;
+function TSQLCursor_Firebird_30.isSearchable(ColumnNumber: Word;
   var Searchable: LongBool): SQLResult;
 begin
   Assert(False);
 end;
 
-function TSQLCursor30_Firebird.next: SQLResult;
+function TSQLCursor_Firebird_30.next: SQLResult;
 begin
   if Assigned(FDSQL) then
     Result := FDSQL.Fetch(StatusVector)
@@ -334,7 +334,7 @@ begin
     StatusVector.CheckResult(Result, DBXERR_SQLERROR);
 end;
 
-function TSQLCursor30_Firebird.SetOption(eOption: TSQLCursorOption;
+function TSQLCursor_Firebird_30.SetOption(eOption: TSQLCursorOption;
   PropValue: Integer): SQLResult;
 begin
   case eOption of
@@ -344,7 +344,7 @@ begin
   end;
 end;
 
-function TSQLCursor30_Firebird.StatusVector: IStatusVector;
+function TSQLCursor_Firebird_30.StatusVector: IStatusVector;
 begin
   if FStatusVector = nil then
     FStatusVector := TStatusVector.Create;

@@ -13,6 +13,7 @@ type
     function GetColumnCount: integer;
     function GetColumnLength(const aColNo: Word): LongWord;
     function GetColumnName(const aColNo: Word): WideString;
+    function GetColumnNameLength(const aColNo: Word): Word;
     function GetColumnPrecision(const aColNo: Word): Smallint;
     function GetColumnScale(const aColNo: Word): Smallint;
     function GetColumnType(const aColNo: Word): Word;
@@ -22,7 +23,7 @@ type
     constructor Create(const aSQLDA: TXSQLDA);
   end;
 
-  TSQLCommand30_Firebird = class(TInterfacedObject, ISQLCommand30)
+  TSQLCommand_Firebird_30 = class(TInterfacedObject, ISQLCommand, ISQLCommand30)
   strict private
     FDBXOptions: TDBXOptions;
     FClient: IFirebirdClient;
@@ -62,9 +63,9 @@ type
 
 implementation
 
-uses Windows, SysUtils, FMTBcd;
+uses Windows, SysUtils, FMTBcd, dbx.firebird;
 
-constructor TSQLCommand30_Firebird.Create(const aClientLibrary:
+constructor TSQLCommand_Firebird_30.Create(const aClientLibrary:
     IFirebirdClient; const aDBHandle: pisc_db_handle; const aTransactionPool:
     TFirebirdTransactionPool; const aDBXOptions: TDBXOptions);
 begin
@@ -75,7 +76,7 @@ begin
   FTransactionPool := aTransactionPool;
 end;
 
-function TSQLCommand30_Firebird.close: SQLResult;
+function TSQLCommand_Firebird_30.close: SQLResult;
 begin
   if Assigned(FDSQL) then begin
     FDSQL.Close(StatusVector);
@@ -84,8 +85,9 @@ begin
     Result := DBXERR_NONE;
 end;
 
-function TSQLCommand30_Firebird.execute(var Cursor: ISQLCursor30): SQLResult;
+function TSQLCommand_Firebird_30.execute(var Cursor: ISQLCursor30): SQLResult;
 var M: IMetaDataProvider;
+    R: ISQLCursor;
 begin
   Assert(Assigned(FDSQL));
 
@@ -93,11 +95,12 @@ begin
   if not StatusVector.CheckResult(Result, DBXERR_SQLERROR) then Exit;
 
   M := TMetaData_Firebird.Create(FDSQL.o_SQLDA);
-  Cursor := TSQLCursor30_Firebird.Create(FClient, FDBHandle, M, FDSQL, FDBXOptions.TrimChar, False);
+  R := TSQLCursor_Firebird_30.Create(FClient, FDBHandle, M, FDSQL, FDBXOptions.TrimChar, False);
+  ISQLCursor(Cursor) := TDBX_Firebird.Factory.NewCursor(R);
   Result := DBXERR_NONE;
 end;
 
-function TSQLCommand30_Firebird.executeImmediate(SQL: PWideChar; var Cursor:
+function TSQLCommand_Firebird_30.executeImmediate(SQL: PWideChar; var Cursor:
     ISQLCursor30): SQLResult;
 var T: IFirebirdTransaction;
     bManage: boolean;
@@ -128,26 +131,26 @@ begin
   end;
 end;
 
-function TSQLCommand30_Firebird.getErrorMessage(Error: PWideChar): SQLResult;
+function TSQLCommand_Firebird_30.getErrorMessage(Error: PWideChar): SQLResult;
 begin
   StatusVector.GetLastError.GetMessage(Error);
   Result := DBXERR_NONE;
 end;
 
-function TSQLCommand30_Firebird.getErrorMessageLen(out ErrorLen: SmallInt):
+function TSQLCommand_Firebird_30.getErrorMessageLen(out ErrorLen: SmallInt):
     SQLResult;
 begin
   ErrorLen := StatusVector.GetError(FClient).GetLength;
   Result := DBXERR_NONE;
 end;
 
-function TSQLCommand30_Firebird.getNextCursor(var Cursor: ISQLCursor30):
+function TSQLCommand_Firebird_30.getNextCursor(var Cursor: ISQLCursor30):
     SQLResult;
 begin
   Assert(False);
 end;
 
-function TSQLCommand30_Firebird.GetOption(eSqlCommandOption: TSQLCommandOption;
+function TSQLCommand_Firebird_30.GetOption(eSqlCommandOption: TSQLCommandOption;
     PropValue: Pointer; MaxLength: SmallInt; out Length: SmallInt): SQLResult;
 begin
   case eSqlCommandOption of
@@ -174,13 +177,13 @@ begin
   Result := DBXERR_NONE;
 end;
 
-function TSQLCommand30_Firebird.getParameter(ParameterNumber: Word; ulChildPos:
+function TSQLCommand_Firebird_30.getParameter(ParameterNumber: Word; ulChildPos:
     Word; Value: Pointer; Length: Integer; var IsBlank: Integer): SQLResult;
 begin
   Assert(False);
 end;
 
-function TSQLCommand30_Firebird.getRowsAffected(var Rows: LongWord): SQLResult;
+function TSQLCommand_Firebird_30.getRowsAffected(var Rows: LongWord): SQLResult;
 var info_request: char;
 begin
   if Assigned(FDSQL) then begin
@@ -192,14 +195,14 @@ begin
   end;
 end;
 
-function TSQLCommand30_Firebird.StatusVector: IStatusVector;
+function TSQLCommand_Firebird_30.StatusVector: IStatusVector;
 begin
   if FStatusVector = nil then
     FStatusVector := TStatusVector.Create;
   Result := FStatusVector;
 end;
 
-function TSQLCommand30_Firebird.prepare(SQL: PWideChar; ParamCount: Word):
+function TSQLCommand_Firebird_30.prepare(SQL: PWideChar; ParamCount: Word):
     SQLResult;
 begin
   FDSQL := TFirebird_DSQL.Create(FClient, FTransactionPool);
@@ -211,7 +214,7 @@ begin
   if not StatusVector.CheckResult(Result, DBXERR_SQLERROR) then Exit;
 end;
 
-function TSQLCommand30_Firebird.SetOption(eSqlCommandOption: TSQLCommandOption;
+function TSQLCommand_Firebird_30.SetOption(eSqlCommandOption: TSQLCommandOption;
     ulValue: Integer): SQLResult;
 begin
   case eSqlCommandOption of
@@ -241,7 +244,7 @@ begin
   Result := DBXERR_NONE;
 end;
 
-function TSQLCommand30_Firebird.setParameter(ulParameter: Word ; ulChildPos: Word
+function TSQLCommand_Firebird_30.setParameter(ulParameter: Word ; ulChildPos: Word
     ; eParamType: TSTMTParamType ; uLogType: Word; uSubType: Word; iPrecision:
     Integer; iScale: Integer; Length: LongWord ; pBuffer: Pointer; lInd:
     Integer): SQLResult;
@@ -313,6 +316,11 @@ begin
   P := FSQLDA.Vars[aColNo].aliasname;
   SetString(S, P, FSQLDA.Vars[aColNo].aliasname_length);
   Result := S;
+end;
+
+function TMetaData_Firebird.GetColumnNameLength(const aColNo: Word): Word;
+begin
+  Result := FSQLDA.Vars[aColNo].aliasname_length;
 end;
 
 function TMetaData_Firebird.GetColumnPrecision(

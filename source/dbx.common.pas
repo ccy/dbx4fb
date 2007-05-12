@@ -41,6 +41,7 @@ type
     function GetColumnCount: integer;
     function GetColumnLength(const aColNo: Word): LongWord;
     function GetColumnName(const aColNo: Word): WideString;
+    function GetColumnNameLength(const aColNo: Word): Word;
     function GetColumnPrecision(const aColNo: Word): Smallint;
     function GetColumnScale(const aColNo: Word): Smallint;
     function GetColumnType(const aColNo: Word): Word;
