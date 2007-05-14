@@ -41,7 +41,7 @@ uses
 
 {$R *.res}
 
-{$LIBPREFIX 'dbxby'}
+{$LIBPREFIX 'dbx'}
 {$LIBSUFFIX '30'}
 
 function getSQLDriverFIREBIRD(SVendorLib, SResourceFile: PChar; out Obj): SQLResult; stdcall;
