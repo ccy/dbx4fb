@@ -56,6 +56,7 @@ type
   published
     procedure Test_Connection_Property;
     procedure Test_Execute;
+    procedure Test_Execute_Commit;
     procedure Test_ExecuteDirect;
     procedure Test_GetFieldNames;
     procedure Test_GetTableNames;
@@ -75,6 +76,7 @@ type
     procedure Test_Transaction_2;
     procedure Test_Transaction_RepeatableRead;
     procedure Test_Transaction_ReadCommitted;
+    procedure Test_Transaction_WaitLock;
   end;
 
   TTestCase_DBX_FieldType = class(TTestCase_DBX)
@@ -282,6 +284,11 @@ end;
 procedure TTestCase_DBX_General.Test_ExecuteDirect;
 begin
   FConnection.ExecuteDirect('DELETE FROM RDB$ROLES WHERE 1=2');
+end;
+
+procedure TTestCase_DBX_General.Test_Execute_Commit;
+begin
+  FConnection.ExecuteDirect('COMMIT');
 end;
 
 procedure TTestCase_DBX_General.Test_GetFieldNames;
@@ -602,6 +609,10 @@ begin
   Execute;
   CheckEquals(12345, Field.AsInteger);
 
+  Param.AsString := '56789.12349991234';
+  Execute;
+  CheckEquals('56789.1234', Field.AsString);
+
   Test_Required;
 end;
 
@@ -720,6 +731,10 @@ begin
   Param.AsSmallInt := 12345;
   Execute;
   CheckEquals(12345, Field.AsInteger);
+
+  Param.AsString := '56789.12349991234';
+  Execute;
+  CheckEquals('56789.1234', Field.AsString);
 
   Test_Required;
 end;
@@ -1082,6 +1097,45 @@ begin
   end;
 end;
 
+procedure TTestCase_DBX_Transaction.Test_Transaction_WaitLock;
+var T1, T2: TTransactionDesc;
+    D: ^TSQLDataSet;
+    V1: integer;
+begin
+  FConnection.ExecuteDirect('CREATE TABLE T_LOCK(FIELD1 VARCHAR(10), FIELD2 INTEGER)');
+
+  New(D);
+  try
+    T1.TransactionID := 1;
+    T1.IsolationLevel := xilREADCOMMITTED;
+    FConnection.StartTransaction(T1);
+    try
+      FConnection.ExecuteDirect('INSERT INTO T_LOCK VALUES(''ITEM-01'', 1)');
+
+      T2.TransactionID := 2;
+      T2.IsolationLevel := xilREADCOMMITTED;
+      FConnection.StartTransaction(T2);
+      try
+        FConnection.Execute('SELECT COUNT(*) FROM T_LOCK', nil, D);
+        V1 := D^.Fields[0].AsInteger;
+        D^.Free;
+        FConnection.Commit(T2);
+        CheckEquals(0, V1);
+      except
+        FConnection.Rollback(T2);
+        raise;
+      end;
+      FConnection.Commit(T1);
+    except
+      FConnection.Rollback(T1);
+      raise;
+    end;
+  finally
+    Dispose(D);
+    FConnection.ExecuteDirect('DROP TABLE T_LOCK');
+  end;
+end;
+
 class function TTestSuite_DBX_Factory.MySuite(const aTestData: ITestData): ITestSuite;
 var S: TTestSuite;
 begin
@@ -1127,7 +1181,7 @@ begin
     )
   );
 
-  sDriver := {$if CompilerVersion=15}'g:\bin\dbxbyfb30.dll'{$else}'g:\bin\dbxbyfb30.dll'{$ifend};
+  sDriver := 'g:\bin\dbxfb30.dll';
   Result.Add(
     TTestData_SQLConnection.Create(
       'TeamOO DBX Firebird Driver (Server))', 'INTERBASE', sDriver,
