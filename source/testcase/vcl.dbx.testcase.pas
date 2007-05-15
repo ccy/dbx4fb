@@ -32,6 +32,16 @@ type
     procedure Setup(const aConnection: TSQLConnection);
   end;
 
+  TTestSuite_DBX_Factory = class
+  private
+    class function Suite(const aTestData: ITestData): ITestSuite;
+    class function GetParams(const aDataBase, aExtraParams: string): string;
+    class function NewTestDataList(const aParams: string): IInterfaceList;
+    class procedure RegisterTest(const aParams: string);
+  public
+    class procedure Setup; 
+  end;
+
   ITestCase_DBX = interface(IInterface)
   ['{48656BDE-5C04-4CB6-895A-88139FD08E03}']
     procedure SetTestData(const I: ITestData);
@@ -145,20 +155,122 @@ type
     procedure Test_Repeated_Open;
   end;
 
-  TTestSuite_DBX_Factory = class
-  private
-    class function MySuite(const aTestData: ITestData): ITestSuite;
-    class function GetParams(const aDataBase, aExtraParams: string): string;
-    class function NewTestDataList(const aParams: string): IInterfaceList;
-    class procedure RegisterTest(const aParams: string);
-  public
-    class procedure Setup; 
-  end;
-
 implementation
 
 uses SysUtils, DBXpress, SqlConst, Windows, StrUtils, FMTBcd,
   SqlTimSt, DateUtils, Math;
+
+class function TTestSuite_DBX_Factory.Suite(const aTestData: ITestData): ITestSuite;
+var S: TTestSuite;
+begin
+  S := TTestSuite.Create(aTestData.Name);
+  S.AddSuite(TTestCase_DBX_General.NewSuite(aTestData));
+  S.AddSuite(TTestCase_DBX_Transaction.NewSuite(aTestData));
+  S.AddSuite(TTestCase_DBX_FieldType.NewSuite(aTestData));
+  S.AddSuite(TTest_DBX_FieldType_NOT_NULL.NewSuite(aTestData));
+  S.AddSuite(TTestCase_DBX_TSQLDataSet.NewSuite(aTestData));
+  S.AddSuite(TTestCase_DBX_DataSnap.NewSuite(aTestData));
+  Result := S as ITestSuite;
+end;
+
+class function TTestSuite_DBX_Factory.GetParams(const aDataBase, aExtraParams:
+    string): string;
+begin
+  Result := SQLDIALECT_KEY + '=3'
+         + #13#10 + szUSERNAME + '=SYSDBA'
+         + #13#10 + szPASSWORD + '=masterkey'
+         + #13#10 + ROLENAME_KEY + '=RoleName'
+         + #13#10 + 'ServerCharSet='
+         + #13#10 + 'BlobSize=-1'
+         + #13#10 + 'LocaleCode=0000'
+         + #13#10 + 'Interbase TransIsolation=ReadCommited'
+         + #13#10 + 'Database=' + aDatabase
+         + #13#10 + aExtraParams
+         ;
+end;
+
+class function TTestSuite_DBX_Factory.NewTestDataList(const aParams: string):
+    IInterfaceList;
+var S, sDriver: string;
+begin
+  Result := TInterfaceList.Create;
+
+  S := GetParams(Format('localhost:%sserver.15.fdb', [ExtractFilePath(ParamStr(0))]), aParams);
+
+  sDriver := 'g:\bin\dbxfb30.dll';
+  Result.Add(
+    TTestData_SQLConnection.Create(
+      'Beyond Lab DBX Firebird Driver (Server 1.5.3))', 'INTERBASE', sDriver,
+      'getSQLDriverFIREBIRD', 'g:\bin\fbclient.1.5.3.dll', False, S
+    )
+  );
+
+  Result.Add(
+    TTestData_SQLConnection.Create(
+      'Beyond Lab DBX Firebird Driver (Embedded, ODS 10.1)', 'INTERBASE', sDriver,
+      'getSQLDriverFIREBIRD', 'g:\bin\fbembed.10.1\fbembed.dll', True,
+      GetParams(Format('%sembed.15.fdb', [ExtractFilePath(ParamStr(0))]), aParams)
+    )
+  );
+
+  S := GetParams(Format('bee:%sserver.20.fdb', ['/tmp/']), aParams);
+
+  Result.Add(
+    TTestData_SQLConnection.Create(
+      'Beyond Lab DBX Firebird Driver (Server 2.0.1))', 'INTERBASE', sDriver,
+      'getSQLDriverFIREBIRD', 'g:\bin\fbclient.2.0.1.dll', False, S
+    )
+  );
+
+  Result.Add(
+    TTestData_SQLConnection.Create(
+      'Beyond Lab DBX Firebird Driver (Embedded, ODS 11.0)', 'INTERBASE', sDriver,
+      'getSQLDriverFIREBIRD', 'g:\bin\fbembed.11.0\fbembed.dll', True,
+      GetParams(Format('%sembed.20.fdb', [ExtractFilePath(ParamStr(0))]), aParams)
+    )
+  );
+
+  S := GetParams(Format('localhost:%sserver.15.fdb', [ExtractFilePath(ParamStr(0))]), aParams);
+  sDriver := {$if CompilerVersion=15}'g:\bin\dbexpint.dll'{$else}'g:\bin\dbxint30.dll'{$ifend};
+  Result.Add(
+    TTestData_SQLConnection.Create(
+      'Borland DBX Interbase Driver (Server)', 'INTERBASE', sDriver,
+      'getSQLDriverINTERBASE', 'g:\bin\fbclient.1.5.3.dll', False, S
+    )
+  );
+
+  Result.Add(
+    TTestData_SQLConnection.Create(
+      'Upscene DBX Firebird Driver (Server)', 'INTERBASE', 'g:\bin\dbxup_fb.dll',
+      'getSQLDriverFB', 'g:\bin\fbclient.1.5.3.dll', False, S
+    )
+  );
+end;
+
+class procedure TTestSuite_DBX_Factory.RegisterTest(const aParams: string);
+var L: IInterfaceList;
+    i: integer;
+    T: ITestSuite;
+begin
+  T := TTestSuite.Create('TSQLConnection: ' + StringReplace(aParams, #13#10, ' , ', [rfReplaceAll]));
+  L := NewTestDataList(aParams);
+  for i := 0 to L.Count - 1 do
+    T.AddSuite(Suite(L[i] as ITestData));
+  TestFrameWork.RegisterTest(T);
+end;
+
+class procedure TTestSuite_DBX_Factory.Setup;
+begin
+  RegisterTest('CommitRetain=False'
+    + #13#10 + WAITONLOCKS_KEY + '=False'
+    + #13#10 + 'Trim Char=False'
+  );
+
+  RegisterTest('CommitRetain=False'
+    + #13#10 + WAITONLOCKS_KEY + '=False'
+    + #13#10 + 'Trim Char=True'
+  );
+end;
 
 constructor TTestData_SQLConnection.Create(const aName, aDriverName,
     aLibraryName, aGetDriverFunc, aVendorLib: string; const aIsEmbedded:
@@ -1136,107 +1248,6 @@ begin
   end;
 end;
 
-class function TTestSuite_DBX_Factory.MySuite(const aTestData: ITestData): ITestSuite;
-var S: TTestSuite;
-begin
-  S := TTestSuite.Create(aTestData.Name);
-  S.AddSuite(TTestCase_DBX_General.NewSuite(aTestData));
-  S.AddSuite(TTestCase_DBX_Transaction.NewSuite(aTestData));
-  S.AddSuite(TTestCase_DBX_FieldType.NewSuite(aTestData));
-  S.AddSuite(TTest_DBX_FieldType_NOT_NULL.NewSuite(aTestData));
-  S.AddSuite(TTestCase_DBX_TSQLDataSet.NewSuite(aTestData));
-  S.AddSuite(TTestCase_DBX_DataSnap.NewSuite(aTestData));
-  Result := S as ITestSuite;
-end;
-
-class function TTestSuite_DBX_Factory.GetParams(const aDataBase, aExtraParams:
-    string): string;
-begin
-  Result := SQLDIALECT_KEY + '=3'
-         + #13#10 + szUSERNAME + '=SYSDBA'
-         + #13#10 + szPASSWORD + '=masterkey'
-         + #13#10 + ROLENAME_KEY + '=RoleName'
-         + #13#10 + 'ServerCharSet='
-         + #13#10 + 'BlobSize=-1'
-         + #13#10 + 'LocaleCode=0000'
-         + #13#10 + 'Interbase TransIsolation=ReadCommited'
-         + #13#10 + 'Database=' + aDatabase
-         + #13#10 + aExtraParams
-         ;
-end;
-
-class function TTestSuite_DBX_Factory.NewTestDataList(const aParams: string):
-    IInterfaceList;
-var S, sDriver: string;
-begin
-  Result := TInterfaceList.Create;
-
-  S := GetParams(Format('localhost:%sserver.15.fdb', [ExtractFilePath(ParamStr(0))]), aParams);
-
-  sDriver := {$if CompilerVersion=15}'g:\bin\dbexpint.dll'{$else}'g:\bin\dbxint30.dll'{$ifend};
-  Result.Add(
-    TTestData_SQLConnection.Create(
-      'Borland DBX Interbase Driver (Server)', 'INTERBASE', sDriver,
-      'getSQLDriverINTERBASE', 'g:\bin\fbclient.1.5.3.dll', False, S
-    )
-  );
-
-  sDriver := 'g:\bin\dbxfb30.dll';
-  Result.Add(
-    TTestData_SQLConnection.Create(
-      'TeamOO DBX Firebird Driver (Server))', 'INTERBASE', sDriver,
-      'getSQLDriverFIREBIRD', 'g:\bin\fbclient.1.5.3.dll', False, S
-    )
-  );
-
-  Result.Add(
-    TTestData_SQLConnection.Create(
-      'TeamOO DBX Firebird Driver (Embedded, ODS 10.1)', 'INTERBASE', sDriver,
-      'getSQLDriverFIREBIRD', 'g:\bin\fbembed.10.1\fbembed.dll', True,
-      GetParams(Format('%sembed.15.fdb', [ExtractFilePath(ParamStr(0))]), aParams)
-    )
-  );
-
-  Result.Add(
-    TTestData_SQLConnection.Create(
-      'TeamOO DBX Firebird Driver (Embedded, ODS 11.0)', 'INTERBASE', sDriver,
-      'getSQLDriverFIREBIRD', 'g:\bin\fbembed.11.0\fbembed.dll', True,
-      GetParams(Format('%sembed.20.fdb', [ExtractFilePath(ParamStr(0))]), aParams)
-    )
-  );
-
-  Result.Add(
-    TTestData_SQLConnection.Create(
-      'Upscene DBX Firebird Driver (Server)', 'INTERBASE', 'g:\bin\dbxup_fb.dll',
-      'getSQLDriverFB', 'g:\bin\fbclient.1.5.3.dll', False, S
-    )
-  );
-end;
-
-class procedure TTestSuite_DBX_Factory.RegisterTest(const aParams: string);
-var L: IInterfaceList;
-    i: integer;
-    T: ITestSuite;
-begin
-  T := TTestSuite.Create('TSQLConnection: ' + StringReplace(aParams, #13#10, ' , ', [rfReplaceAll]));
-  L := NewTestDataList(aParams);
-  for i := 0 to L.Count - 1 do
-    T.AddSuite(MySuite(L[i] as ITestData));
-  TestFrameWork.RegisterTest(T);
-end;
-
-class procedure TTestSuite_DBX_Factory.Setup;
-begin
-  RegisterTest('CommitRetain=False'
-    + #13#10 + WAITONLOCKS_KEY + '=False'
-    + #13#10 + 'Trim Char=False'
-  );
-
-  RegisterTest('CommitRetain=False'
-    + #13#10 + WAITONLOCKS_KEY + '=False'
-    + #13#10 + 'Trim Char=True'
-  );
-end;
 
 procedure TTestCase_DBX_DataSnap.SetUp;
 var S: string;
