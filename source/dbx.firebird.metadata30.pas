@@ -268,7 +268,7 @@ end;
 function TSQLMetaData_Firebird_30.getIndices(TableName: PWideChar; IndexType:
     LongWord; out Cursor: ISQLCursor30): SQLResult;
 var M: IMetaDataProvider;
-    S: string;
+//    S: string;
     R: ISQLCursor;
 //    C: IFirebird_DSQL;
 begin

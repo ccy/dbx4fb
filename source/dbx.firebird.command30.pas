@@ -119,15 +119,15 @@ begin
   if StatusVector.CheckResult(Result, DBXERR_SQLERROR) then begin
     if bManage then begin
       FTransactionPool.Commit(StatusVector, T.ID);
+      StatusVector.CheckResult(Result, DBXERR_SQLERROR);
       T := nil;
     end;
-    StatusVector.CheckResult(Result, DBXERR_NOTIMPLEMENT);
   end else begin
     if bManage then begin
       FTransactionPool.RollBack(StatusVector, T.ID);
+      StatusVector.CheckResult(Result, DBXERR_SQLERROR);
       T := nil;
     end;
-    StatusVector.CheckResult(Result, DBXERR_NOTIMPLEMENT);
   end;
 end;
 
@@ -184,7 +184,6 @@ begin
 end;
 
 function TSQLCommand_Firebird_30.getRowsAffected(var Rows: LongWord): SQLResult;
-var info_request: char;
 begin
   if Assigned(FDSQL) then begin
     FDSQL.GetRowsAffected(StatusVector, Rows);
