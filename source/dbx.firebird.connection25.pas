@@ -9,7 +9,6 @@ type
   private
     FConnection: ISQLConnection30;
   protected
-  protected
     function beginTransaction(TranID: LongWord): SQLResult; stdcall;
     function commit(TranID: LongWord): SQLResult; stdcall;
     function connect(ServerName: PChar; UserName: PChar; Password: PChar):
