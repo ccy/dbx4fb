@@ -17,6 +17,8 @@ library dbxfb;
   with your DLL. To avoid using BORLNDMM.DLL, pass string information
   using PChar or ShortString parameters. }
 
+{$R 'rc\library.res' 'rc\library.rc'}
+
 uses
   SysUtils,
   Windows,
@@ -38,8 +40,6 @@ uses
   dbx.firebird.factory25 in '..\source\dbx.firebird.factory25.pas',
   dbx.firebird.command25 in '..\source\dbx.firebird.command25.pas',
   dbx.firebird.cursor25 in '..\source\dbx.firebird.cursor25.pas';
-
-{$R *.res}
 
 {$LIBPREFIX 'dbx'}
 {$LIBSUFFIX '30'}
