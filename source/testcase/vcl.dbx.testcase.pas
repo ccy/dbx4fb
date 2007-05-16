@@ -109,6 +109,7 @@ type
     procedure Test_BLOB;
     procedure Test_CHAR;
     procedure Test_DATE;
+    procedure Test_DATETIME;
     procedure Test_DECIMAL;
     procedure Test_DECIMAL_LONG;
     procedure Test_DECIMAL_Limit;
@@ -545,6 +546,7 @@ begin
   else if GetName = 'Test_FLOAT'            then Result := 'FLOAT'
   else if GetName = 'Test_DOUBLE_PRECISION' then Result := 'DOUBLE PRECISION'
   else if GetName = 'Test_DATE'             then Result := 'DATE'
+  else if GetName = 'Test_DATETIME'         then Result := 'DATE'
   else if GetName = 'Test_TIME'             then Result := 'TIME'
   else if GetName = 'Test_TIMESTAMP'        then Result := 'TIMESTAMP'
   else if GetName = 'Test_BLOB'             then Result := 'BLOB SUB_TYPE 0 SEGMENT SIZE 512'
@@ -683,6 +685,22 @@ begin
   Test_Required;
 end;
 
+procedure TTestCase_DBX_FieldType.Test_DATETIME;
+begin
+  Param.AsDateTime := Date;
+  Execute;
+  CheckEquals(TDateField, Field.ClassType);
+  CheckEquals(4, Field.DataSize);
+
+  CheckEquals(Param.AsDate, Field.AsDateTime);
+  CheckEquals(Param.AsDateTime, Field.AsDateTime);
+  CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsFloat, Field.AsFloat);
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Test_Required;
+end;
+
 procedure TTestCase_DBX_FieldType.Test_DECIMAL;
 begin
   Param.AsFMTBCD := StrToBcd('12345678901.2345');
@@ -724,6 +742,10 @@ begin
   Param.AsString := '56789.12349991234';
   Execute;
   CheckEquals('56789.1234', Field.AsString);
+
+  Param.AsString := '-3.41060513164848E-13';
+  Execute;
+  CheckEquals(0, Field.AsFloat);
 
   Test_Required;
 end;
@@ -847,6 +869,10 @@ begin
   Param.AsString := '56789.12349991234';
   Execute;
   CheckEquals('56789.1234', Field.AsString);
+
+  Param.AsString := '-3.41060513164848E-13';
+  Execute;
+  CheckEquals(0, Field.AsFloat);
 
   Test_Required;
 end;
