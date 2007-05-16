@@ -156,6 +156,16 @@ type
     procedure Test_Repeated_Open;
   end;
 
+const
+  c_Driver_Beyond       = 'C:\Project\Output.d10\moon\dbxfb30.dll';
+  c_Driver_fbclient_153 = 'C:\Project\Factory\System\Resource\bin\fbclient.1.5.3.dll';
+  c_Driver_fbclient_201 = 'C:\Project\Factory\System\Resource\bin\fbclient.2.0.1.dll';
+  c_Driver_fbembed_101  = 'C:\C\fbembed.10.1\fbembed.dll';
+  c_Driver_fbembed_110  = 'C:\C\fbembed.11.0\fbembed.dll';
+  c_Driver_dbexpint     = 'C:\C\2006\dbexpint.dll';
+  c_Driver_dbxint30     = 'C:\Project\Factory\System\Resource\bin\dbxint30.dll';
+  c_Driver_Upscene_fb   = 'C:\Project\Factory\System\Resource\bin\dbxup_fb.dll';
+
 implementation
 
 uses SysUtils, DBXpress, SqlConst, Windows, StrUtils, FMTBcd,
@@ -198,18 +208,18 @@ begin
 
   S := GetParams(Format('localhost:%sserver.15.fdb', [ExtractFilePath(ParamStr(0))]), aParams);
 
-  sDriver := 'g:\bin\dbxfb30.dll';
+  sDriver := c_Driver_Beyond;
   Result.Add(
     TTestData_SQLConnection.Create(
       'Beyond Lab DBX Firebird Driver (Server 1.5.3))', 'INTERBASE', sDriver,
-      'getSQLDriverFIREBIRD', 'g:\bin\fbclient.1.5.3.dll', False, S
+      'getSQLDriverFIREBIRD', c_Driver_fbclient_153, False, S
     )
   );
 
   Result.Add(
     TTestData_SQLConnection.Create(
       'Beyond Lab DBX Firebird Driver (Embedded, ODS 10.1)', 'INTERBASE', sDriver,
-      'getSQLDriverFIREBIRD', 'g:\bin\fbembed.10.1\fbembed.dll', True,
+      'getSQLDriverFIREBIRD', c_Driver_fbembed_101, True,
       GetParams(Format('%sembed.15.fdb', [ExtractFilePath(ParamStr(0))]), aParams)
     )
   );
@@ -219,31 +229,31 @@ begin
   Result.Add(
     TTestData_SQLConnection.Create(
       'Beyond Lab DBX Firebird Driver (Server 2.0.1))', 'INTERBASE', sDriver,
-      'getSQLDriverFIREBIRD', 'g:\bin\fbclient.2.0.1.dll', False, S
+      'getSQLDriverFIREBIRD', c_Driver_fbclient_201, False, S
     )
   );
 
   Result.Add(
     TTestData_SQLConnection.Create(
       'Beyond Lab DBX Firebird Driver (Embedded, ODS 11.0)', 'INTERBASE', sDriver,
-      'getSQLDriverFIREBIRD', 'g:\bin\fbembed.11.0\fbembed.dll', True,
+      'getSQLDriverFIREBIRD', c_Driver_fbembed_110, True,
       GetParams(Format('%sembed.20.fdb', [ExtractFilePath(ParamStr(0))]), aParams)
     )
   );
 
   S := GetParams(Format('localhost:%sserver.15.fdb', [ExtractFilePath(ParamStr(0))]), aParams);
-  sDriver := {$if CompilerVersion=15}'g:\bin\dbexpint.dll'{$else}'g:\bin\dbxint30.dll'{$ifend};
+  sDriver := {$if CompilerVersion=15}c_Driver_dbexpint{$else}c_Driver_dbxint30{$ifend};
   Result.Add(
     TTestData_SQLConnection.Create(
       'Borland DBX Interbase Driver (Server)', 'INTERBASE', sDriver,
-      'getSQLDriverINTERBASE', 'g:\bin\fbclient.1.5.3.dll', False, S
+      'getSQLDriverINTERBASE', c_Driver_fbclient_153, False, S
     )
   );
 
   Result.Add(
     TTestData_SQLConnection.Create(
-      'Upscene DBX Firebird Driver (Server)', 'INTERBASE', 'g:\bin\dbxup_fb.dll',
-      'getSQLDriverFB', 'g:\bin\fbclient.1.5.3.dll', False, S
+      'Upscene DBX Firebird Driver (Server)', 'INTERBASE', c_Driver_Upscene_fb,
+      'getSQLDriverFB', c_Driver_fbclient_153, False, S
     )
   );
 end;
