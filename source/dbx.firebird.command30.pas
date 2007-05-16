@@ -248,6 +248,7 @@ function TSQLCommand_Firebird_30.setParameter(ulParameter: Word ; ulChildPos: Wo
     Integer; iScale: Integer; Length: LongWord ; pBuffer: Pointer; lInd:
     Integer): SQLResult;
 var bIsNull: boolean;
+    T: ^TDateTime;
 begin
   Result := DBXERR_NONE;
 
@@ -266,7 +267,7 @@ begin
     fldBCD:        FDSQL.i_SQLDA[ulParameter].SetBCD(pBuffer, bIsNull);
     fldBYTES:      Assert(False);
     fldTIME:       FDSQL.i_SQLDA[ulParameter].SetTime(pBuffer, bIsNull);
-    fldTIMESTAMP:  Assert(False);
+    fldTIMESTAMP:  FDSQL.i_SQLDA[ulParameter].SetDate(pBuffer, Length, bIsNull);
     fldUINT16:     Assert(False);
     fldUINT32:     Assert(False);
     fldFLOATIEEE:  Assert(False);
