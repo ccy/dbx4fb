@@ -129,6 +129,7 @@ var V: LongInt;
     S: WideString;
 begin
   case eConnectOption of
+    eConnHostName,
     eConnRoleName,
     eConnQualifiedName: begin
       S := PAnsiChar(lValue);

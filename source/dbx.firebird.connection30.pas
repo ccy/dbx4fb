@@ -112,6 +112,8 @@ begin
          char(isc_dpb_password) + char(Length(Password)) + Password;
 
   sServerName := ServerName;
+  if FDBXOptions.HostName <> '' then
+    sServerName := FDBXOptions.HostName + ':' + sServerName; 
 
   FDBHandle := 0;
   FClient.isc_attach_database(StatusVector.pValue, Length(sServerName), PAnsiChar(sServerName), GetDBHandle, Length(DPB), PAnsiChar(DPB));
@@ -255,7 +257,7 @@ begin
       FDBXOptions.DBXCallBackEvent := TSQLCallBackEvent(lValue);
       CheckDebugger;
     end;
-    eConnHostName: Assert(False);
+    eConnHostName: FDBXOptions.HostName := PWideChar(lValue);
     eConnDatabaseName: Assert(False);
     eConnCallBackInfo: begin
       FDBXOptions.DBXCallBackInfo := lValue;
