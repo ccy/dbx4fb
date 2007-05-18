@@ -7,39 +7,40 @@ uses Classes, TestFrameWork, TestExtensions, DB, SqlExpr, Provider, DBClient;
 type
   ITestData = interface(IInterface)
   ['{2DCC2E1F-BCE2-4D04-A61E-03DBFC031D0E}']
-    function GetIsEmbedded: boolean;
     function GetName: string;
     procedure Setup(const aConnection: TSQLConnection);
     property Name: string read GetName;
-    property IsEmbedded: boolean read GetIsEmbedded;
   end;
 
   TTestData_SQLConnection = class(TInterfacedObject, ITestData)
   private
-    FName: string;
     FDriverName: string;
-    FLibraryName: string;
     FGetDriverFunc: string;
-    FVendorLib: string;
+    FLibraryName: string;
+    FName: string;
     FParams: WideString;
-    FIsEmbedded: boolean;
+    FVendorLib: string;
+    procedure CreateDatabase;
   protected
-    function GetIsEmbedded: boolean;
     function GetName: string;
-  public
-    constructor Create(const aName, aDriverName, aLibraryName, aGetDriverFunc,
-        aVendorLib: string; const aIsEmbedded: boolean; const aParams: string);
     procedure Setup(const aConnection: TSQLConnection);
+  public
+    constructor Create(const aDriverName, aLibraryName, aGetDriverFunc, aVendorLib,
+        aParams: string);
+    procedure BeforeDestruction; override;
   end;
 
   TTestSuite_DBX_Factory = class
   private
+    class procedure CheckTestDataFile;
+    class function GetTestDataFileName: string;
     class function Suite(const aTestData: ITestData): ITestSuite;
-    class function GetParams(const aDataBase, aExtraParams: string): string;
+    class function GetParams(const aHostName, aExtraParams: string): string;
     class function NewTestDataList(const aParams: string): IInterfaceList;
     class procedure RegisterTest(const aParams: string);
+    class function GetServerVersion(aLibraryName, aParams: string): string;
   public
-    class procedure Setup; 
+    class procedure Setup;
   end;
 
   ITestCase_DBX = interface(IInterface)
@@ -156,20 +157,102 @@ type
     procedure Test_Repeated_Open;
   end;
 
-const
-  c_Driver_Beyond       = 'C:\Project\Output.d10\moon\dbxfb30.dll';
-  c_Driver_fbclient_153 = 'C:\Project\Factory\System\Resource\bin\fbclient.1.5.3.dll';
-  c_Driver_fbclient_201 = 'C:\Project\Factory\System\Resource\bin\fbclient.2.0.1.dll';
-  c_Driver_fbembed_101  = 'C:\C\fbembed.10.1\fbembed.dll';
-  c_Driver_fbembed_110  = 'C:\C\fbembed.11.0\fbembed.dll';
-  c_Driver_dbexpint     = 'C:\C\2006\dbexpint.dll';
-  c_Driver_dbxint30     = 'C:\Project\Factory\System\Resource\bin\dbxint30.dll';
-  c_Driver_Upscene_fb   = 'C:\Project\Factory\System\Resource\bin\dbxup_fb.dll';
-
 implementation
 
 uses SysUtils, DBXpress, SqlConst, Windows, StrUtils, FMTBcd,
-  SqlTimSt, DateUtils, Math;
+  SqlTimSt, DateUtils, Math, IniFiles, firebird.client, firebird.service,
+  UniqueID;
+
+constructor TTestData_SQLConnection.Create(const aDriverName, aLibraryName,
+    aGetDriverFunc, aVendorLib, aParams: string);
+begin
+  inherited Create;
+  FDriverName := aDriverName;
+  FLibraryName := aLibraryName;
+  FGetDriverFunc := aGetDriverFunc;
+  FVendorLib := aVendorLib;
+  FParams := aParams;
+  
+  CreateDatabase;
+end;
+
+procedure TTestData_SQLConnection.BeforeDestruction;
+var L: TStringList;
+    S: IFirebirdService;
+begin
+  L := TStringList.Create;
+  try
+    L.Text := FParams;
+    S := TFirebirdServiceFactory.New(FVendorLib, L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
+    S.DropDatabase(L.Values[DATABASENAME_KEY]);
+  finally
+    L.Free;
+  end;
+end;
+
+procedure TTestData_SQLConnection.CreateDatabase;
+var L: TStringList;
+    S: IFirebirdService;
+    sDatabase: string;
+    sImpl: string;
+begin
+  L := TStringList.Create;
+  try
+    L.Text := FParams;
+    S := TFirebirdServiceFactory.New(FVendorLib, L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
+
+    sImpl := S.GetServerImplementation;
+    if L.Values[HOSTNAME_KEY] = '' then
+      sDatabase := IncludeTrailingPathDelimiter(GetEnvironmentVariable('TEMP'))
+    else if ContainsText(sImpl, 'Windows') then
+      sDatabase := 'c:\'
+    else if ContainsText(sImpl, 'Linux') then
+      sDatabase := '/tmp/'
+    else
+      Assert(False);
+    sDatabase := sDatabase + TUniqueName.New('T_');
+
+    S.CreateDatabase(sDatabase);
+    L.Values[DATABASENAME_KEY] := sDatabase;
+    FParams := L.Text;
+
+    FName := Format('%s (%s) Host: %s Database: %s', [S.GetServerVersion, sImpl, L.Values[HOSTNAME_KEY], sDatabase]);
+  finally
+    L.Free;
+  end;
+end;
+
+function TTestData_SQLConnection.GetName: string;
+begin
+  Result := FName;
+end;
+
+procedure TTestData_SQLConnection.Setup(const aConnection: TSQLConnection);
+begin
+  aConnection.DriverName := FDriverName;
+  aConnection.ConnectionName := Self.ClassName;
+  aConnection.LibraryName := FLibraryName;
+  aConnection.GetDriverFunc := FGetDriverFunc;
+  aConnection.VendorLib := FVendorLib;
+  aConnection.Params.Text := FParams;
+end;
+
+class procedure TTestSuite_DBX_Factory.CheckTestDataFile;
+var F: TIniFile;
+begin
+  if FileExists(GetTestDataFileName) then Exit;
+
+  F := TIniFile.Create(GetTestDataFileName);
+  try
+    F.WriteString('driver', 'getSQLDriverFIREBIRD', 'dbxfb30.dll');
+    F.WriteString('embedded', 'embedded_1', 'fbembed.dll');
+    F.WriteString('server', 'server_1', 'localhost');
+    F.WriteString('vendor', 'default', 'fbclient.1.5.3.dll');
+    F.UpdateFile;
+  finally
+    F.Free;
+  end;
+end;
 
 class function TTestSuite_DBX_Factory.Suite(const aTestData: ITestData): ITestSuite;
 var S: TTestSuite;
@@ -184,78 +267,78 @@ begin
   Result := S as ITestSuite;
 end;
 
-class function TTestSuite_DBX_Factory.GetParams(const aDataBase, aExtraParams:
+class function TTestSuite_DBX_Factory.GetParams(const aHostName, aExtraParams:
     string): string;
 begin
   Result := SQLDIALECT_KEY + '=3'
-         + #13#10 + szUSERNAME + '=SYSDBA'
-         + #13#10 + szPASSWORD + '=masterkey'
-         + #13#10 + ROLENAME_KEY + '=RoleName'
-         + #13#10 + 'ServerCharSet='
-         + #13#10 + 'BlobSize=-1'
-         + #13#10 + 'LocaleCode=0000'
-         + #13#10 + 'Interbase TransIsolation=ReadCommited'
-         + #13#10 + 'Database=' + aDatabase
-         + #13#10 + aExtraParams
-         ;
+            + #13#10 + szUSERNAME + '=SYSDBA'
+            + #13#10 + szPASSWORD + '=masterkey'
+            + #13#10 + ROLENAME_KEY + '=RoleName'
+            + #13#10 + 'ServerCharSet='
+            + #13#10 + 'BlobSize=-1'
+            + #13#10 + 'LocaleCode=0000'
+            + #13#10 + 'Interbase TransIsolation=ReadCommited'
+//            + #13#10 + 'Database=' + aDatabase
+            + #13#10 + aExtraParams
+            ;
+
+  if aHostName <> '' then
+    Result := Result + #13#10
+              + HOSTNAME_KEY + '=' + aHostName;
+end;
+
+class function TTestSuite_DBX_Factory.GetTestDataFileName: string;
+begin
+  Result := ChangeFileExt(ParamStr(0), '.ini');
 end;
 
 class function TTestSuite_DBX_Factory.NewTestDataList(const aParams: string):
     IInterfaceList;
-var S, sDriver: string;
+var F: TIniFile;
+    sDrivers, sServers, sEmbeds: TStringList;
+    i: integer;
+    j: Integer;
+    sParams: string;
+    sVer: string;
 begin
   Result := TInterfaceList.Create;
 
-  S := GetParams(Format('localhost:%sserver.15.fdb', [ExtractFilePath(ParamStr(0))]), aParams);
+  F := TIniFile.Create(GetTestDataFileName);
+  sDrivers := TStringList.Create;
+  sServers := TStringList.Create;
+  sEmbeds := TStringList.Create;
+  try
+    F.ReadSectionValues('driver', sDrivers);
+    F.ReadSectionValues('server', sServers);
+    F.ReadSectionValues('embedded', sEmbeds);
+    for i := 0 to sDrivers.Count - 1 do begin
+      for j := 0 to sServers.Count - 1 do begin
+        sParams := GetParams(sServers.ValueFromIndex[j], aParams);
 
-  sDriver := c_Driver_Beyond;
-  Result.Add(
-    TTestData_SQLConnection.Create(
-      'Beyond Lab DBX Firebird Driver (Server 1.5.3))', 'INTERBASE', sDriver,
-      'getSQLDriverFIREBIRD', c_Driver_fbclient_153, False, S
-    )
-  );
+        sVer := GetServerVersion(F.ReadString('vendor', 'default', ''), sParams);
 
-  Result.Add(
-    TTestData_SQLConnection.Create(
-      'Beyond Lab DBX Firebird Driver (Embedded, ODS 10.1)', 'INTERBASE', sDriver,
-      'getSQLDriverFIREBIRD', c_Driver_fbembed_101, True,
-      GetParams(Format('%sembed.15.fdb', [ExtractFilePath(ParamStr(0))]), aParams)
-    )
-  );
+        Result.Add(
+          TTestData_SQLConnection.Create('INTERBASE', sDrivers.ValueFromIndex[i],
+          sDrivers.Names[i], F.ReadString('vendor', sVer, sVer), sParams)
+        );
+      end;
+      for j := 0 to sEmbeds.Count - 1 do begin
+        sParams := GetParams('', aParams);
 
-  S := GetParams(Format('bee:%sserver.20.fdb', ['/tmp/']), aParams);
+        sVer := GetServerVersion(sEmbeds.ValueFromIndex[j], sParams);
 
-  Result.Add(
-    TTestData_SQLConnection.Create(
-      'Beyond Lab DBX Firebird Driver (Server 2.0.1))', 'INTERBASE', sDriver,
-      'getSQLDriverFIREBIRD', c_Driver_fbclient_201, False, S
-    )
-  );
-
-  Result.Add(
-    TTestData_SQLConnection.Create(
-      'Beyond Lab DBX Firebird Driver (Embedded, ODS 11.0)', 'INTERBASE', sDriver,
-      'getSQLDriverFIREBIRD', c_Driver_fbembed_110, True,
-      GetParams(Format('%sembed.20.fdb', [ExtractFilePath(ParamStr(0))]), aParams)
-    )
-  );
-
-  S := GetParams(Format('localhost:%sserver.15.fdb', [ExtractFilePath(ParamStr(0))]), aParams);
-  sDriver := {$if CompilerVersion=15}c_Driver_dbexpint{$else}c_Driver_dbxint30{$ifend};
-  Result.Add(
-    TTestData_SQLConnection.Create(
-      'Borland DBX Interbase Driver (Server)', 'INTERBASE', sDriver,
-      'getSQLDriverINTERBASE', c_Driver_fbclient_153, False, S
-    )
-  );
-
-  Result.Add(
-    TTestData_SQLConnection.Create(
-      'Upscene DBX Firebird Driver (Server)', 'INTERBASE', c_Driver_Upscene_fb,
-      'getSQLDriverFB', c_Driver_fbclient_153, False, S
-    )
-  );
+        Result.Add(
+          TTestData_SQLConnection.Create('INTERBASE', sDrivers.ValueFromIndex[i],
+          sDrivers.Names[i], sEmbeds.ValueFromIndex[j], sParams)
+        );
+      end;
+    end;
+  finally
+    sDrivers.Free;
+    sServers.Free;
+    sEmbeds.Free;
+    F.Free;
+  end;
 end;
 
 class procedure TTestSuite_DBX_Factory.RegisterTest(const aParams: string);
@@ -272,6 +355,8 @@ end;
 
 class procedure TTestSuite_DBX_Factory.Setup;
 begin
+  CheckTestDataFile;
+  
   RegisterTest('CommitRetain=False'
     + #13#10 + WAITONLOCKS_KEY + '=False'
     + #13#10 + 'Trim Char=False'
@@ -283,38 +368,19 @@ begin
   );
 end;
 
-constructor TTestData_SQLConnection.Create(const aName, aDriverName,
-    aLibraryName, aGetDriverFunc, aVendorLib: string; const aIsEmbedded:
-    boolean; const aParams: string);
+class function TTestSuite_DBX_Factory.GetServerVersion(aLibraryName, aParams:
+    string): string;
+var L: TStringList;
+    S: IFirebirdService;
 begin
-  inherited Create;
-  FName := aName;
-  FDriverName := aName;
-  FLibraryName := aLibraryName;
-  FGetDriverFunc := aGetDriverFunc;
-  FVendorLib := aVendorLib;
-  FParams := aParams;
-  FIsEmbedded := aIsEmbedded;
-end;
-
-function TTestData_SQLConnection.GetIsEmbedded: boolean;
-begin
-  Result := FIsEmbedded;
-end;
-
-function TTestData_SQLConnection.GetName: string;
-begin
-  Result := FName;
-end;
-
-procedure TTestData_SQLConnection.Setup(const aConnection: TSQLConnection);
-begin
-  aConnection.DriverName := FDriverName;
-  aConnection.ConnectionName := Self.ClassName;
-  aConnection.LibraryName := FLibraryName;
-  aConnection.GetDriverFunc := FGetDriverFunc;
-  aConnection.VendorLib := FVendorLib;
-  aConnection.Params.Text := FParams;
+  L := TStringList.Create;
+  L.Text := aParams;
+  try
+    S := TFirebirdServiceFactory.New(aLibraryName, L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
+    Result := S.GetServerVersion;
+  finally
+    L.Free;
+  end;
 end;
 
 function TTestCase_DBX.IsTrimChar: boolean;
@@ -482,7 +548,7 @@ procedure TTestCase_DBX_General.Test_Invalid_Login;
 begin
   FConnection.Close;
   FConnection.Params.Values[szUSERNAME] := 'no.such.user';
-  if not FTestData.IsEmbedded then
+  if FConnection.Params.IndexOfName(HOSTNAME_KEY) <> -1 then
     StartExpectingException(EDatabaseError);
   FConnection.Open;
 end;
