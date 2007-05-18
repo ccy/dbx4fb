@@ -12,7 +12,7 @@ type
     uTotalMsgLen    : Word;
   end;
 
-  TFirebirdClientDebuggerListener_DBXCallBack_25 = class(TInterfacedObject, IFirebirdClientDebuggerListener)
+  TFirebirdClientDebuggerListener_DBXCallBack_25 = class(TInterfacedObject, IFirebirdLibraryDebuggerListener)
   private
     FDBXOptions: TDBXOptions;
   protected
@@ -26,7 +26,7 @@ type
     function NewCommand(const aCommand: ISQLCommand): ISQLCommand;
     function NewConnection(const aConnection: ISQLConnection): ISQLConnection;
     function NewCursor(const aCursor: ISQLCursor): ISQLCursor;
-    function NewDebuggerListener(const aDBXOptions: TDBXOptions): IFirebirdClientDebuggerListener;
+    function NewDebuggerListener(const aDBXOptions: TDBXOptions): IFirebirdLibraryDebuggerListener;
     function NewMetaData(const aMetaData: ISQLMetaData): ISQLMetaData;
   end;
 
@@ -54,7 +54,7 @@ begin
 end;
 
 function TDBX_Firebird_Factory_25.NewDebuggerListener(
-  const aDBXOptions: TDBXOptions): IFirebirdClientDebuggerListener;
+  const aDBXOptions: TDBXOptions): IFirebirdLibraryDebuggerListener;
 begin
   Result := TFirebirdClientDebuggerListener_DBXCallBack_25.Create(aDBXOptions);
 end;

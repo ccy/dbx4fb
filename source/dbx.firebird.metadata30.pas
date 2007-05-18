@@ -32,7 +32,7 @@ type
   TSQLMetaData_Firebird_30 = class(TInterfacedObject, ISQLMetaData, ISQLMetaData30)
   strict private
     FDBXOptions: TDBXOptions;
-    FClient: IFirebirdClient;
+    FLibrary: IFirebirdLibrary;
     FDBHandle: pisc_db_handle;
     FTransactionPool: TFirebirdTransactionPool;
   private
@@ -58,7 +58,7 @@ type
     function SetOption(eDOption: TSQLMetaDataOption; PropValue: LongInt):
         SQLResult; stdcall;
   public
-    constructor Create(const aClientLibrary: IFirebirdClient; const aDBHandle:
+    constructor Create(const aLibrary: IFirebirdLibrary; const aDBHandle:
         pisc_db_handle; const aTransactionPool: TFirebirdTransactionPool; const
         aDBXOptions: TDBXOptions);
   end;
@@ -213,12 +213,12 @@ begin
   Result := True;
 end;
 
-constructor TSQLMetaData_Firebird_30.Create(const aClientLibrary:
-    IFirebirdClient; const aDBHandle: pisc_db_handle; const aTransactionPool:
+constructor TSQLMetaData_Firebird_30.Create(const aLibrary: IFirebirdLibrary;
+    const aDBHandle: pisc_db_handle; const aTransactionPool:
     TFirebirdTransactionPool; const aDBXOptions: TDBXOptions);
 begin
   inherited Create;
-  FClient := aClientLibrary;
+  FLibrary := aLibrary;
   FDBHandle := aDBHandle;
   FTransactionPool := aTransactionPool;
   FDBXOptions := aDBXOptions;
@@ -237,7 +237,7 @@ begin
  Format('WHERE (A.RDB$FIELD_SOURCE = B.RDB$FIELD_NAME) AND (A.RDB$RELATION_NAME = ''%s'') ', [TableName]) +
      'ORDER BY A.RDB$FIELD_POSITION';
 
-  C := TFirebird_DSQL.Create(FClient, FTransactionPool);
+  C := TFirebird_DSQL.Create(FLibrary, FTransactionPool);
   C.Open(StatusVector, FDBHandle, nil);
   C.Prepare(StatusVector, S, FDBXOptions.SQLDialect);
   C.Execute(StatusVector);
@@ -245,7 +245,7 @@ begin
 
   M := TMetaDataProvider_Firebird.Create(TMetaData_Firebird_Factory.New_getColumns(TableName));
 
-  R := TSQLCursor_Firebird_30.Create(FClient, FDBHandle, M, C, True, True);
+  R := TSQLCursor_Firebird_30.Create(FLibrary, FDBHandle, M, C, True, True);
   ISQLCursor(Cursor) := TDBX_Firebird.Factory.NewCursor(R);
 
   Result := DBXERR_NONE;
@@ -261,7 +261,7 @@ end;
 function TSQLMetaData_Firebird_30.getErrorMessageLen(out ErrorLen: SmallInt):
     SQLResult;
 begin
-  ErrorLen := StatusVector.GetError(FClient).GetLength;
+  ErrorLen := StatusVector.GetError(FLibrary).GetLength;
   Result := DBXERR_NONE;
 end;
 
@@ -291,7 +291,7 @@ begin
 //  if not StatusVector.CheckResult(Result, DBXERR_SQLERROR) then Exit;
 
   M := TMetaDataProvider_Firebird.Create(TMetaData_Firebird_Factory.New_getIndices(TableName));
-  R := TSQLCursor_Firebird_30.Create(FClient, FDBHandle, M, nil, True, True);
+  R := TSQLCursor_Firebird_30.Create(FLibrary, FDBHandle, M, nil, True, True);
   ISQLCursor(Cursor) := TDBX_Firebird.Factory.NewCursor(R);
 
   Result := DBXERR_NONE;
@@ -367,14 +367,14 @@ begin
           'AND A.RDB$OWNER_NAME = ''SYSDBA'' '+
      'ORDER BY A.RDB$RELATION_NAME';
 
-  C := TFirebird_DSQL.Create(FClient, FTransactionPool);
+  C := TFirebird_DSQL.Create(FLibrary, FTransactionPool);
   C.Open(StatusVector, FDBHandle, nil);
   C.Prepare(StatusVector, S, FDBXOptions.SQLDialect);
   C.Execute(StatusVector);
   if not StatusVector.CheckResult(Result, DBXERR_SQLERROR) then Exit;
 
   M := TMetaDataProvider_Firebird.Create(TMetaData_Firebird_Factory.New_getTables);
-  R := TSQLCursor_Firebird_30.Create(FClient, FDBHandle, M, C, True, True);
+  R := TSQLCursor_Firebird_30.Create(FLibrary, FDBHandle, M, C, True, True);
   ISQLCursor(Cursor) := TDBX_Firebird.Factory.NewCursor(R);
 
   Result := DBXERR_NONE;

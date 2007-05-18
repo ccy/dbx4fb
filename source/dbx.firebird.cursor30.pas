@@ -10,7 +10,7 @@ type
     FStatusVector: IStatusVector;
     function StatusVector: IStatusVector;
   private
-    FClient: IFirebirdClient;
+    FLibrary: IFirebirdLibrary;
     FDBHandle: pisc_db_handle;
     FMetaData: IMetaDataProvider;
     FDSQL: IFirebird_DSQL;
@@ -74,7 +74,7 @@ type
     function SetOption(eOption: TSQLCursorOption; PropValue: LongInt): SQLResult;
         stdcall;
   public
-    constructor Create(const aClientLibrary: IFirebirdClient; const aDBHandle:
+    constructor Create(const aLibrary: IFirebirdLibrary; const aDBHandle:
         pisc_db_handle; const aMetaData: IMetaDataProvider; const aDSQL:
         IFirebird_DSQL; const aTrimChar, aReadOnly: boolean);
     procedure BeforeDestruction; override;
@@ -90,12 +90,12 @@ begin
   if Assigned(FDSQL) then FDSQL.Close(StatusVector);
 end;
 
-constructor TSQLCursor_Firebird_30.Create(const aClientLibrary: IFirebirdClient;
+constructor TSQLCursor_Firebird_30.Create(const aLibrary: IFirebirdLibrary;
     const aDBHandle: pisc_db_handle; const aMetaData: IMetaDataProvider; const
     aDSQL: IFirebird_DSQL; const aTrimChar, aReadOnly: boolean);
 begin
   inherited Create;
-  FClient := aClientLibrary;
+  FLibrary := aLibrary;
   FDBHandle := aDBHandle;
   FMetaData := aMetaData;
   FDSQL := aDSQL;
@@ -212,7 +212,7 @@ end;
 function TSQLCursor_Firebird_30.getErrorMessageLen(
   out ErrorLen: SmallInt): SQLResult;
 begin
-  ErrorLen := StatusVector.GetError(FClient).GetLength;
+  ErrorLen := StatusVector.GetError(FLibrary).GetLength;
   Result := DBXERR_NONE;
 end;
 

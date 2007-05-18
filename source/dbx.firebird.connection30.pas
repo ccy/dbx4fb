@@ -9,10 +9,10 @@ type
   strict private
     FDBHandle: isc_db_handle;
   private
-    FDebuggerListener: IFirebirdClientDebuggerListener;
+    FDebuggerListener: IFirebirdLibraryDebuggerListener;
     FDBXOptions: TDBXOptions;
   private
-    FClient: IFirebirdClient;
+    FLibrary: IFirebirdLibrary;
     FStatusVector: IStatusVector;
     FTransactionPool: TFirebirdTransactionPool;
     procedure CheckDebugger;
@@ -36,7 +36,7 @@ type
     function SetOption(eConnectOption: TSQLConnectionOption; lValue: LongInt):
         SQLResult; stdcall;
   public
-    constructor Create(const aClient: IFirebirdClient);
+    constructor Create(const aLibrary: IFirebirdLibrary);
     procedure BeforeDestruction; override;
   end;
 
@@ -45,11 +45,11 @@ implementation
 uses SysUtils, Windows, dbx.firebird.command30, dbx.firebird.metadata30,
      WideStrUtils, dbx.firebird;
 
-constructor TSQLConnection_Firebird_30.Create(const aClient: IFirebirdClient);
+constructor TSQLConnection_Firebird_30.Create(const aLibrary: IFirebirdLibrary);
 begin
   inherited Create;
   FDBXOptions := TDBXOptions.Create;
-  FClient := aClient;
+  FLibrary := aLibrary;
 end;
 
 procedure TSQLConnection_Firebird_30.BeforeDestruction;
@@ -84,11 +84,11 @@ end;
 procedure TSQLConnection_Firebird_30.CheckDebugger;
 begin
   if Assigned(FDebuggerListener) then
-    (FClient as IFirebirdClientDebugger).Remove(FDebuggerListener);
+    (FLibrary as IFirebirdLibraryDebugger).Remove(FDebuggerListener);
   FDebuggerListener := nil;
   if Assigned(FDBXOptions.DBXCallBackEvent) and (FDBXOptions.DBXCallBackInfo <> 0) then begin
     FDebuggerListener := TDBX_Firebird.Factory.NewDebuggerListener(FDBXOptions);
-    (FClient as IFirebirdClientDebugger).Add(FDebuggerListener);
+    (FLibrary as IFirebirdLibraryDebugger).Add(FDebuggerListener);
   end;
 end;
 
@@ -116,18 +116,18 @@ begin
     sServerName := FDBXOptions.HostName + ':' + sServerName; 
 
   FDBHandle := 0;
-  FClient.isc_attach_database(StatusVector.pValue, Length(sServerName), PAnsiChar(sServerName), GetDBHandle, Length(DPB), PAnsiChar(DPB));
+  FLibrary.isc_attach_database(StatusVector.pValue, Length(sServerName), PAnsiChar(sServerName), GetDBHandle, Length(DPB), PAnsiChar(DPB));
   StatusVector.CheckResult(Result, DBXERR_CONNECTIONFAILED);
 
   FTransactionPool.Free;
-  FTransactionPool := TFirebirdTransactionPool.Create(FClient, GetDBHandle);
+  FTransactionPool := TFirebirdTransactionPool.Create(FLibrary, GetDBHandle);
 end;
 
 function TSQLConnection_Firebird_30.disconnect: SQLResult;
 begin
   FTransactionPool.Free;
 
-  FClient.isc_detach_database(StatusVector.pValue, GetDBHandle);
+  FLibrary.isc_detach_database(StatusVector.pValue, GetDBHandle);
   StatusVector.CheckResult(Result, DBXERR_CONNECTIONFAILED);
 end;
 
@@ -145,7 +145,7 @@ end;
 function TSQLConnection_Firebird_30.getErrorMessageLen(out ErrorLen: SmallInt):
     SQLResult;
 begin
-  ErrorLen := StatusVector.GetError(FClient).GetLength;
+  ErrorLen := StatusVector.GetError(FLibrary).GetLength;
   Result := DBXERR_NONE;
 end;
 
@@ -220,7 +220,7 @@ function TSQLConnection_Firebird_30.getSQLCommand(out pComm: ISQLCommand30):
     SQLResult;
 var C: ISQLCommand;
 begin
-  C := TSQLCommand_Firebird_30.Create(FClient, GetDBHandle, FTransactionPool, FDBXOptions);
+  C := TSQLCommand_Firebird_30.Create(FLibrary, GetDBHandle, FTransactionPool, FDBXOptions);
   ISQLCommand(pComm) := TDBX_Firebird.Factory.NewCommand(C);
   Result := DBXERR_NONE;
 end;
@@ -229,7 +229,7 @@ function TSQLConnection_Firebird_30.getSQLMetaData(out pMetaData: ISQLMetaData30
     SQLResult;
 var M: ISQLMetaData;
 begin
-  M := TSQLMetaData_Firebird_30.Create(FClient, GetDBHandle, FTransactionPool, FDBXOptions);
+  M := TSQLMetaData_Firebird_30.Create(FLibrary, GetDBHandle, FTransactionPool, FDBXOptions);
   ISQLMetaData(pMetaData) := TDBX_Firebird.Factory.NewMetaData(M);
   Result := DBXERR_NONE;
 end;

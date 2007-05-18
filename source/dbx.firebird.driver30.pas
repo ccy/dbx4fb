@@ -57,10 +57,10 @@ end;
 
 function TSQLDriver_Firebird.getSQLConnection(out pConn: ISQLConnection):
     SQLResult;
-var L: IFirebirdClient;
+var L: IFirebirdLibrary;
     C: ISQLConnection;
 begin
-  L := TFirebirdClientFactory.New(FVendorLibHandle);
+  L := TFirebirdLibraryFactory.New(FVendorLibHandle);
   if TDBX_Firebird.Factory = nil then
     TDBX_Firebird.SetDriverVersion('2.5');
   C := TSQLConnection_Firebird_30.Create(L);

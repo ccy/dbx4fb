@@ -26,7 +26,7 @@ type
   TSQLCommand_Firebird_30 = class(TInterfacedObject, ISQLCommand, ISQLCommand30)
   strict private
     FDBXOptions: TDBXOptions;
-    FClient: IFirebirdClient;
+    FLibrary: IFirebirdLibrary;
     FDBHandle: pisc_db_handle;
     FTransactionID: LongWord;
     FTransactionPool: TFirebirdTransactionPool;
@@ -56,21 +56,21 @@ type
     function getErrorMessage(Error: PWideChar): SQLResult; overload; stdcall;
     function getErrorMessageLen(out ErrorLen: SmallInt): SQLResult; stdcall;
   public
-    constructor Create(const aClientLibrary: IFirebirdClient; const aDBHandle:
+    constructor Create(const aLibrary: IFirebirdLibrary; const aDBHandle:
         pisc_db_handle; const aTransactionPool: TFirebirdTransactionPool; const
         aDBXOptions: TDBXOptions);
   end;
 
 implementation
 
-uses Windows, SysUtils, FMTBcd, dbx.firebird;
+uses Windows, SysUtils, StrUtils, FMTBcd, dbx.firebird;
 
-constructor TSQLCommand_Firebird_30.Create(const aClientLibrary:
-    IFirebirdClient; const aDBHandle: pisc_db_handle; const aTransactionPool:
+constructor TSQLCommand_Firebird_30.Create(const aLibrary: IFirebirdLibrary;
+    const aDBHandle: pisc_db_handle; const aTransactionPool:
     TFirebirdTransactionPool; const aDBXOptions: TDBXOptions);
 begin
   inherited Create;
-  FClient := aClientLibrary;
+  FLibrary := aLibrary;
   FDBHandle := aDBHandle;
   FDBXOptions := aDBXOptions;
   FTransactionPool := aTransactionPool;
@@ -95,7 +95,7 @@ begin
   if not StatusVector.CheckResult(Result, DBXERR_SQLERROR) then Exit;
 
   M := TMetaData_Firebird.Create(FDSQL.o_SQLDA);
-  R := TSQLCursor_Firebird_30.Create(FClient, FDBHandle, M, FDSQL, FDBXOptions.TrimChar, False);
+  R := TSQLCursor_Firebird_30.Create(FLibrary, FDBHandle, M, FDSQL, FDBXOptions.TrimChar, False);
   ISQLCursor(Cursor) := TDBX_Firebird.Factory.NewCursor(R);
   Result := DBXERR_NONE;
 end;
@@ -104,29 +104,41 @@ function TSQLCommand_Firebird_30.executeImmediate(SQL: PWideChar; var Cursor:
     ISQLCursor30): SQLResult;
 var T: IFirebirdTransaction;
     bManage: boolean;
+    S: AnsiString;
+    hTR: isc_tr_handle;
+    hDB: isc_db_handle;
 begin
+  S := AnsiString(SQL);
+
   Cursor := nil;
 
-  T := FTransactionPool.CurrentTransaction;
-  bManage := T = nil;
-  if bManage then begin
-    T := FTransactionPool.Add;
-    T.Start(StatusVector);
-  end;
-
-  FClient.isc_dsql_execute_immediate(StatusVector.pValue, FDBHandle, T.TransactionHandle, 0, PAnsiChar(AnsiString(SQL)), FDBXOptions.SQLDialect, nil);
-
-  if StatusVector.CheckResult(Result, DBXERR_SQLERROR) then begin
-    if bManage then begin
-      FTransactionPool.Commit(StatusVector, T.ID);
-      StatusVector.CheckResult(Result, DBXERR_SQLERROR);
-      T := nil;
-    end;
+  if AnsiStartsText('CREATE DATABASE', S) then begin
+    hDB := nil;
+    hTR := nil;
+    FLibrary.isc_dsql_execute_immediate(StatusVector.pValue, @hDB, @hTR, 0, PAnsiChar(S), FDBXOptions.SQLDialect, nil);
+    StatusVector.CheckResult(Result, DBXERR_SQLERROR);
   end else begin
+    T := FTransactionPool.CurrentTransaction;
+    bManage := T = nil;
     if bManage then begin
-      FTransactionPool.RollBack(StatusVector, T.ID);
-      StatusVector.CheckResult(Result, DBXERR_SQLERROR);
-      T := nil;
+      T := FTransactionPool.Add;
+      T.Start(StatusVector);
+    end;
+
+    FLibrary.isc_dsql_execute_immediate(StatusVector.pValue, FDBHandle, T.TransactionHandle, 0, PAnsiChar(S), FDBXOptions.SQLDialect, nil);
+
+    if StatusVector.CheckResult(Result, DBXERR_SQLERROR) then begin
+      if bManage then begin
+        FTransactionPool.Commit(StatusVector, T.ID);
+        StatusVector.CheckResult(Result, DBXERR_SQLERROR);
+        T := nil;
+      end;
+    end else begin
+      if bManage then begin
+        FTransactionPool.RollBack(StatusVector, T.ID);
+        StatusVector.CheckResult(Result, DBXERR_SQLERROR);
+        T := nil;
+      end;
     end;
   end;
 end;
@@ -140,7 +152,7 @@ end;
 function TSQLCommand_Firebird_30.getErrorMessageLen(out ErrorLen: SmallInt):
     SQLResult;
 begin
-  ErrorLen := StatusVector.GetError(FClient).GetLength;
+  ErrorLen := StatusVector.GetError(FLibrary).GetLength;
   Result := DBXERR_NONE;
 end;
 
@@ -204,7 +216,7 @@ end;
 function TSQLCommand_Firebird_30.prepare(SQL: PWideChar; ParamCount: Word):
     SQLResult;
 begin
-  FDSQL := TFirebird_DSQL.Create(FClient, FTransactionPool);
+  FDSQL := TFirebird_DSQL.Create(FLibrary, FTransactionPool);
 
   FDSQL.Open(StatusVector, FDBHandle, FTransactionPool.Get(FTransactionID));
   if not StatusVector.CheckResult(Result, DBXERR_SQLERROR) then Exit;

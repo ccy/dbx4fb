@@ -10,7 +10,7 @@ type
     function NewCommand(const aCommand: ISQLCommand): ISQLCommand;
     function NewConnection(const aConnection: ISQLConnection): ISQLConnection;
     function NewCursor(const aCursor: ISQLCursor): ISQLCursor;
-    function NewDebuggerListener(const aDBXOptions: TDBXOptions): IFirebirdClientDebuggerListener;
+    function NewDebuggerListener(const aDBXOptions: TDBXOptions): IFirebirdLibraryDebuggerListener;
     function NewMetaData(const aMetaData: ISQLMetaData): ISQLMetaData;
   end;
 
