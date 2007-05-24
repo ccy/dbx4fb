@@ -12,7 +12,7 @@ uses
   firebird.client.debug in '..\..\core\source\rtl\firebird.client.debug.pas',
   firebird.dsql in '..\..\core\source\rtl\firebird.dsql.pas';
 
-procedure CheckStatus(aStatus: IStatusVector; const aLibrary: IFirebirdClient);
+procedure CheckStatus(aStatus: IStatusVector; const aLibrary: IFirebirdLibrary);
 var r: word;
 begin
   if not aStatus.CheckResult(r, 65535) then
@@ -21,7 +21,7 @@ end;
 
 procedure test_isc_dsql_execute;
 var hFB: THandle;
-    lFB: IFirebirdClient;
+    lFB: IFirebirdLibrary;
 var DPB, sServerName, sUserName, sPassword: AnsiString;
     hDB: isc_db_handle;
     Status: IStatusVector;
@@ -39,7 +39,7 @@ var SQL: string;
 begin
   {$region 'Load Library'}
   hFB := LoadLibrary('C:\Project\Factory\System\Resource\bin\fbclient.1.5.3.dll');
-  lFB := TFirebirdClientFactory.New(hFB);
+  lFB := TFirebirdLibraryFactory.New(hFB);
   {$endregion}
 
   Status := TStatusVector.Create;
@@ -142,7 +142,7 @@ end;
 
 procedure test_isc_dsql_execute2;
 var hFB: THandle;
-    lFB: IFirebirdClient;
+    lFB: IFirebirdLibrary;
 var DPB, sServerName, sUserName, sPassword: AnsiString;
     hDB: isc_db_handle;
     Status: IStatusVector;
@@ -161,7 +161,7 @@ var SQL: string;
 begin
   {$region 'Load Library'}
   hFB := LoadLibrary('C:\Project\Factory\System\Resource\bin\fbclient.1.5.3.dll');
-  lFB := TFirebirdClientFactory.New(hFB);
+  lFB := TFirebirdLibraryFactory.New(hFB);
   {$endregion}
 
   Status := TStatusVector.Create;
@@ -267,7 +267,7 @@ var hBlob: isc_blob_handle;
     lBuffer: PChar;
     lSQL: string;
     o1, o2: TXSQLDA;
-    lFB: IFirebirdClient;
+    lFB: IFirebirdLibrary;
     Status: IStatusVector;
     hFB: THandle;
     hDB: isc_db_handle;
@@ -280,7 +280,7 @@ begin
   Status := TStatusVector.Create;
   {$region 'Load Library'}
   hFB := LoadLibrary('C:\Project\Factory\System\Resource\bin\fbclient.1.5.3.dll');
-  lFB := TFirebirdClientFactory.New(hFB);
+  lFB := TFirebirdLibraryFactory.New(hFB);
   {$endregion}
   {$region 'Attach'}
   sServerName := 'localhost:c:\My DB\Pay-0001.fdb';
@@ -383,7 +383,7 @@ end;
 
 procedure test_isc_dsql_execute_readblob;
 var hFB: THandle;
-    lFB: IFirebirdClient;
+    lFB: IFirebirdLibrary;
 var DPB, sServerName, sUserName, sPassword: AnsiString;
     hDB: isc_db_handle;
     Status: IStatusVector;
@@ -404,7 +404,7 @@ var SQL: string;
 begin
   {$region 'Load Library'}
   hFB := LoadLibrary('C:\Project\Factory\System\Resource\bin\fbclient.1.5.3.dll');
-  lFB := TFirebirdClientFactory.New(hFB);
+  lFB := TFirebirdLibraryFactory.New(hFB);
   {$endregion}
 
   Status := TStatusVector.Create;
@@ -508,7 +508,141 @@ begin
   oSQLDA.Free;
 end;
 
+procedure test_isc_dsql_execute_read_BlobSize;
+var hFB: THandle;
+    lFB: IFirebirdLibrary;
+var DPB, sServerName, sUserName, sPassword: AnsiString;
+    hDB: isc_db_handle;
+    Status: IStatusVector;
+    hStmt: isc_stmt_handle;
+var TPB: AnsiString;
+    teb: isc_teb;
+    hTR: isc_tr_handle;
+var SQL: string;
+    iFetch: word;
+    oSQLDA: TXSQLDA;
+    hBlob: isc_blob_handle;
+    lBlobSegment: PChar;
+    lActualLen: word;
+    lBlobID: ISC_QUAD;
+    lBlobStat: integer;
+    lData: pointer;
+    M: TMemoryStream;
+var T1, T2: cardinal;
+    iCount: integer;
+    Info: char;
+    BufResult: array [0..9] of char;
+    iLen: integer;
+begin
+  {$region 'Load Library'}
+  hFB := LoadLibrary('g:\bin\fbclient.1.5.3.dll');
+  lFB := TFirebirdLibraryFactory.New(hFB);
+  {$endregion}
+
+  Status := TStatusVector.Create;
+
+  {$region 'Attach'}
+  sServerName := 'localhost:G:\Project\Output.d7\SQLAccounting\DB\acc-0020.fdb';
+  sUserName := 'SYSDBA';
+  sPassword := 'masterkey';
+
+  DPB := char(isc_dpb_version1) +
+         char(isc_dpb_user_name) + char(Length(sUserName)) + sUserName +
+         char(isc_dpb_password) + char(Length(sPassword)) + sPassword;
+
+  hDB := 0;
+  lFB.isc_attach_database(Status.pValue, Length(sServerName), PAnsiChar(sServerName), @hDB, Length(DPB), PAnsiChar(DPB));
+  CheckStatus(Status, lFB);
+  {$endregion}
+  {$region 'Allocate Statement'}
+  hStmt := 0;
+  lFB.isc_dsql_allocate_statement(Status.pValue, @hDB, @hStmt);
+  CheckStatus(Status, lFB);
+  {$endregion}
+  {$region 'Start Transaction'}
+  tpb := char(isc_tpb_version3) + char(isc_tpb_write) + char(isc_tpb_read_committed) +
+         char(isc_tpb_no_rec_version) + char(isc_tpb_nowait);
+
+  hTR := 0;
+  teb.db_ptr := @hDB;
+  teb.tpb_len := Length(tpb);
+  teb.tpb_ptr := PAnsiChar(tpb);
+
+  lFB.isc_start_multiple(Status.pValue, @hTR, 1, @teb);
+  CheckStatus(Status, lFB);
+  {$endregion}
+  {$region 'Prepare'}
+  oSQLDA := TXSQLDA.Create(lFB, 1);
+  SQL := 'SELECT ATTACHMENTS FROM AR_IV';
+  lFB.isc_dsql_prepare(Status.pValue, @hTR, @hStmt, Length(SQL), pAnsiChar(SQL), SQL_DIALECT_CURRENT, oSQLDA.XSQLDA);
+  CheckStatus(Status, lFB);
+  oSQLDA.Prepare;
+  {$endregion}
+  {$region 'Execute'}
+  lFB.isc_dsql_execute(Status.pValue, @hTR, @hStmt, oSQLDA.Version, nil);
+  CheckStatus(Status, lFB);
+  {$endregion}
+  {$region 'Fetch'}
+  T1 := GetTickCount;
+  try
+    iCount := 0;
+    repeat
+      hBlob := 0;
+      iFetch := lFB.isc_dsql_fetch(Status.pValue, @hStmt, 1, oSQLDA.XSQLDA);
+      CheckStatus(Status, lFB);
+      if iFetch = 100 then Break;
+
+      if oSQLDA.Vars[1].sqlind^ = 0 then begin
+        lData := oSQLDA.Vars[1].sqldata;
+        Move(lData^, lBlobID, 8);
+
+        lFB.isc_open_blob(Status.pValue, @hDB, @hTR, @hBlob, @lBlobID);
+        CheckStatus(Status, lFB);
+
+        Info := char(isc_info_blob_total_length);
+        lFB.isc_blob_info(Status.pValue, @hBlob, 1, @Info, SizeOf(BufResult), BufResult);
+        CheckStatus(Status, lFB);
+        Move(BufResult[3], iLen, 4);
+//        OutputDebugString(PChar(IntToStr(iLen)));
+
+        lFB.isc_close_blob(Status.pValue, @hBlob);
+        CheckStatus(Status, lFB);
+      end;
+
+      Inc(iCount);
+//      if iCount mod 1000 = 0 then
+//        Break;
+
+    until iFetch <> 0;
+
+    if iFetch <> 100 then begin
+      //EOF
+    end;
+  finally
+    T2 := GetTickCount;
+    OutputDebugString(PChar(FloatToStr((T2-T1)/1000)));
+  end;
+  {$endregion}
+  {$region 'Free Statement'}
+  lFB.isc_dsql_free_statement(Status.pValue, @hStmt, DSQL_DROP);
+  CheckStatus(Status, lFB);
+  {$endregion}
+  {$region 'Commit Transaction'}
+  lFB.isc_commit_transaction(Status.pValue, @hTR);
+  CheckStatus(Status, lFB);
+  {$endregion}
+  {$region 'Detach'}
+  lFB.isc_detach_database(Status.pValue, @hDB);
+  CheckStatus(Status, lFB);
+  {$endregion}
+  {$region 'FreeLibrary'}
+  lFB := nil;
+  FreeLibrary(hFB);
+  {$endregion}
+  oSQLDA.Free;
+end;
+
 begin
   ReportMemoryLeaksOnShutdown := True;
-  test_isc_dsql_execute_readblob;
+  test_isc_dsql_execute_read_BlobSize;
 end.
