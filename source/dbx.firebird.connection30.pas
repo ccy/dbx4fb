@@ -112,7 +112,7 @@ begin
          char(isc_dpb_password) + char(Length(Password)) + Password;
 
   sServerName := ServerName;
-  if FDBXOptions.HostName <> '' then
+  if not FDBXOptions.IsLocalHost then
     sServerName := FDBXOptions.HostName + ':' + sServerName; 
 
   FDBHandle := 0;

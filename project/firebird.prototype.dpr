@@ -524,15 +524,16 @@ var SQL: string;
     hBlob: isc_blob_handle;
     lBlobSegment: PChar;
     lActualLen: word;
-    lBlobID: ISC_QUAD;
+    pBlobID: PISC_QUAD;
     lBlobStat: integer;
-    lData: pointer;
     M: TMemoryStream;
 var T1, T2: cardinal;
     iCount: integer;
     Info: char;
     BufResult: array [0..9] of char;
     iLen: integer;
+    hStmt2: isc_stmt_handle;
+    i_xsqlda: TXSQLDA;
 begin
   {$region 'Load Library'}
   hFB := LoadLibrary('g:\bin\fbclient.1.5.3.dll');
@@ -542,7 +543,7 @@ begin
   Status := TStatusVector.Create;
 
   {$region 'Attach'}
-  sServerName := 'localhost:G:\Project\Output.d7\SQLAccounting\DB\acc-0020.fdb';
+  sServerName := 'G:\Project\Output.d7\SQLAccounting\DB\acc-0020.fdb';
   sUserName := 'SYSDBA';
   sPassword := 'masterkey';
 
@@ -579,7 +580,7 @@ begin
   oSQLDA.Prepare;
   {$endregion}
   {$region 'Execute'}
-  lFB.isc_dsql_execute(Status.pValue, @hTR, @hStmt, oSQLDA.Version, nil);
+  lFB.isc_dsql_execute(Status.pValue, @hTR, @hStmt, SQLDA_VERSION1, nil);
   CheckStatus(Status, lFB);
   {$endregion}
   {$region 'Fetch'}
@@ -587,31 +588,30 @@ begin
   try
     iCount := 0;
     repeat
-      hBlob := 0;
+      hBlob := nil;
       iFetch := lFB.isc_dsql_fetch(Status.pValue, @hStmt, 1, oSQLDA.XSQLDA);
       CheckStatus(Status, lFB);
       if iFetch = 100 then Break;
 
       if oSQLDA.Vars[1].sqlind^ = 0 then begin
-        lData := oSQLDA.Vars[1].sqldata;
-        Move(lData^, lBlobID, 8);
+        pBlobID := oSQLDA.Vars[1].sqldata;
 
-        lFB.isc_open_blob(Status.pValue, @hDB, @hTR, @hBlob, @lBlobID);
+
+        lFB.isc_open_blob(Status.pValue, @hDB, @hTR, @hBlob, pBlobID);
         CheckStatus(Status, lFB);
 
         Info := char(isc_info_blob_total_length);
         lFB.isc_blob_info(Status.pValue, @hBlob, 1, @Info, SizeOf(BufResult), BufResult);
         CheckStatus(Status, lFB);
         Move(BufResult[3], iLen, 4);
-//        OutputDebugString(PChar(IntToStr(iLen)));
 
         lFB.isc_close_blob(Status.pValue, @hBlob);
         CheckStatus(Status, lFB);
       end;
 
       Inc(iCount);
-//      if iCount mod 1000 = 0 then
-//        Break;
+      if iCount mod 7500 = 0 then
+        OutputDebugString(PChar(IntToStr(iCount)));
 
     until iFetch <> 0;
 
@@ -640,6 +640,7 @@ begin
   FreeLibrary(hFB);
   {$endregion}
   oSQLDA.Free;
+  i_xsqlda.Free;
 end;
 
 begin

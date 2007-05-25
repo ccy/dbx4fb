@@ -18,6 +18,7 @@ type
     FHostName: string;
     function GetConnQuotedObjectName: WideString;
   public
+    function IsLocalHost: boolean;
     property BlobSize: integer read FBlobSize write FBlobSize;
     property ConnQualifiedName: WideString read FConnQualifiedName write FConnQualifiedName;
     property ConnQuotedObjectName: WideString read GetConnQuotedObjectName;
@@ -53,11 +54,20 @@ type
 
 implementation
 
-{ TDBXOptions }
+uses SysUtils;
 
 function TDBXOptions.GetConnQuotedObjectName: WideString;
 begin
   Result := '"' + FConnQualifiedName + '"';
+end;
+
+function TDBXOptions.IsLocalHost: boolean;
+begin
+  Result := FHostName = '';
+  if not Result then
+    Result := FHostName = '127.0.0.1';
+  if not Result then
+    Result := SameText(FHostName, 'localhost');
 end;
 
 end.
