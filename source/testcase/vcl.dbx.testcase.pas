@@ -145,6 +145,16 @@ type
     procedure Test_ctQuery;
   end;
 
+  TTestCase_DBX_TSQLStoredProc = class(TTestCase_DBX)
+  private
+    FStoredProc: TSQLStoredProc;
+  protected
+    procedure SetUp; override;
+    procedure TearDown; override;
+  published
+    procedure Test_1;
+  end;
+
   TTestCase_DBX_DataSnap = class(TTestCase_DBX)
   private
     FDataSet: TSQLDataSet;
@@ -264,6 +274,7 @@ begin
   S.AddSuite(TTest_DBX_FieldType_NOT_NULL.NewSuite(aTestData));
   S.AddSuite(TTestCase_DBX_TSQLDataSet.NewSuite(aTestData));
   S.AddSuite(TTestCase_DBX_DataSnap.NewSuite(aTestData));
+//  S.AddSuite(TTestCase_DBX_TSQLStoredProc.NewSuite(aTestData));
   Result := S as ITestSuite;
 end;
 
@@ -278,7 +289,6 @@ begin
             + #13#10 + 'BlobSize=-1'
             + #13#10 + 'LocaleCode=0000'
             + #13#10 + 'Interbase TransIsolation=ReadCommited'
-//            + #13#10 + 'Database=' + aDatabase
             + #13#10 + aExtraParams
             ;
 
@@ -718,10 +728,20 @@ begin
 end;
 
 procedure TTestCase_DBX_FieldType.Test_BLOB;
+var S: TStringStream;
 begin
   Param.LoadFromFile('c:\windows\notepad.exe', ftBlob);
   Execute;
   CheckEquals(TBlobField, Field.ClassType);
+  CheckEquals(Param.AsString, Field.AsString);
+
+  S := TStringStream.Create(DupeString('a', 65535));
+  try
+    Param.LoadFromStream(S, ftBlob);
+  finally
+    S.Free;
+  end;
+  Execute;
   CheckEquals(Param.AsString, Field.AsString);
 
   Test_Required;
@@ -822,6 +842,38 @@ begin
   Param.AsString := '-3.41060513164848E-13';
   Execute;
   CheckEquals(0, Field.AsFloat);
+
+  Param.AsString := '0.1';
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsString := '0.01';
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsString := '0.001';
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsString := '0.0001';
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsString := '-0.1';
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsString := '-0.01';
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsString := '-0.001';
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsString := '-0.0001';
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
   Test_Required;
 end;
@@ -949,6 +1001,38 @@ begin
   Param.AsString := '-3.41060513164848E-13';
   Execute;
   CheckEquals(0, Field.AsFloat);
+
+  Param.AsString := '0.1';
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsString := '0.01';
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsString := '0.001';
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsString := '0.0001';
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsString := '-0.1';
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsString := '-0.01';
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsString := '-0.001';
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsString := '-0.0001';
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
   Test_Required;
 end;
@@ -1399,6 +1483,55 @@ begin
   CheckFalse(FCDS.Active);
   FCDS.SetProvider(FDSP);
   FCDS.Open;
+end;
+
+{ TTestCase_DBX_TSQLStoredProc }
+
+procedure TTestCase_DBX_TSQLStoredProc.SetUp;
+var S: string;
+    i: integer;
+begin
+  inherited;
+  S := 'CREATE TABLE T_STOREDPROC( ' +
+       '   FIELD VARCHAR(100)' +
+       ')';
+  FConnection.ExecuteDirect(S);
+
+  S := 'INSERT INTO T_STOREDPROC VALUES(''%d'')';
+  for i := 1 to 9 do
+    FConnection.ExecuteDirect(Format(S, [i]));
+
+  FStoredProc := TSQLStoredProc.Create(nil);
+  FStoredProc.SQLConnection := FConnection;
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc.TearDown;
+begin
+  FStoredProc.Free;
+  FConnection.ExecuteDirect('DROP TABLE T_STOREDPROC');
+  inherited;
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc.Test_1;
+var S: string;
+begin
+  S := 'CREATE PROCEDURE PROC ' +
+       'RETURNS (Max_Field VARCHAR(100)) ' +
+       'AS ' +
+       'BEGIN ' +
+         'SELECT MAX(FIELD) ' +
+         'FROM T_STOREDPROC ' +
+         'INTO :Max_Field; ' +
+         'SUSPEND; ' +
+       'END ';
+  FConnection.ExecuteDirect(S);
+
+  FStoredProc.StoredProcName := 'PROC';
+  FStoredProc.ExecProc;
+  CheckEquals('9', FStoredProc.ParamByName('Max_Field').AsString);
+  FStoredProc.Close;
+
+  FConnection.ExecuteDirect('DROP PROCEDURE PROC');
 end;
 
 initialization
