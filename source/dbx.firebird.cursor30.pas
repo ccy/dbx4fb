@@ -116,7 +116,7 @@ function TSQLCursor_Firebird_30.getBlob(ColumnNumber: Word; Value: Pointer;
   var IsBlank: LongBool; Length: LongWord): SQLResult;
 var b: Boolean;
 begin
-  FDSQL.o_SQLDA[ColumnNumber].GetBlob(StatusVector, FDBHandle, FDSQL.Transaction, Value, b);
+  FDSQL.o_SQLDA[ColumnNumber].GetBlob(StatusVector, FDBHandle, FDSQL.Transaction, Value, b, Length);
   IsBlank := b;
   Result := DBXERR_NONE;
 end;
