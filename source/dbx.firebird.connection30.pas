@@ -60,6 +60,7 @@ end;
 
 function TSQLConnection_Firebird_30.beginTransaction(TranID: LongWord): SQLResult;
 var T: TTransactionDesc;
+    O: TTransactionInfo;
     N: IFirebirdTransaction;
 begin
   {$Message 'Unable to find isc_start_transaction header translation in pascal'}
@@ -71,7 +72,13 @@ begin
   end;
 
   try
-    N := FTransactionPool.Add(T);
+    O.ID := T.TransactionID;
+    case T.IsolationLevel of
+      xilREPEATABLEREAD: O.Isolation := isoRepeatableRead;
+      else
+        O.Isolation := isoReadCommitted;
+    end;
+    N := FTransactionPool.Add(O);
   except
     Result := DBXERR_DUPLICATETXNID;
     Exit;
@@ -159,7 +166,7 @@ begin
     eConnRoleName: Assert(False);
     eConnWaitOnLocks: Assert(False);
     eConnCommitRetain: Assert(False);
-    eConnTxnIsoLevel: Assert(False);
+    eConnTxnIsoLevel: Assert(False);  // disable this line for dbxadapter30.dll
     eConnNativeHandle: Assert(False);
     eConnServerVersion: Assert(False);
     eConnCallBack: Assert(False);

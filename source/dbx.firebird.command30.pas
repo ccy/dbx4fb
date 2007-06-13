@@ -63,7 +63,9 @@ type
 
 implementation
 
-uses Windows, SysUtils, StrUtils, FMTBcd, dbx.firebird;
+uses Windows, SysUtils, StrUtils, FMTBcd, dbx.firebird
+     //, SqlTimSt {dbxadapter30.dll}
+     ;
 
 constructor TSQLCommand_Firebird_30.Create(const aLibrary: IFirebirdLibrary;
     const aDBHandle: pisc_db_handle; const aTransactionPool:
@@ -266,7 +268,7 @@ begin
 
   bIsNull := lInd = 1;
   case uLogType of
-    fldZSTRING:    FDSQL.i_SQLDA[ulParameter].SetString(pBuffer, iPrecision, bIsNull);
+    fldZSTRING:    FDSQL.i_SQLDA[ulParameter].SetString(pBuffer, iPrecision {iPrecision - 1 : dbxadapter30.dll}, bIsNull);
     fldDATE:       FDSQL.i_SQLDA[ulParameter].SetDate(pBuffer, Length, bIsNull);
     fldBLOB:       begin
       FDSQL.i_SQLDA[ulParameter].SetBlob(StatusVector, FDBHandle, FDSQL.Transaction, pBuffer, Length, bIsNull);
@@ -317,6 +319,16 @@ begin
   V := FSQLDA.Vars[aColNo];
   if V.CheckType(SQL_INT64) then
     Result := SizeOf(TBcd)
+{ dbxadapter30.dll
+ else if V.CheckType(SQL_FLOAT) then
+    Result := SizeOf(Double)
+  else if V.CheckType(SQL_TIMESTAMP) then
+    Result := SizeOf(TSQLTimeStamp)
+  else if V.CheckType(SQL_LONG) and (FSQLDA.Vars[aColNo].sqlscale <> 0) then
+    Result := SizeOf(TBcd)
+  else if V.CheckType(SQL_SHORT) and (FSQLDA.Vars[aColNo].sqlscale <> 0) then
+    Result := SizeOf(TBcd)
+}
   else
     Result := V.Size;
 end;
@@ -371,7 +383,7 @@ begin
       if iScale = 0 then
         Result := fldINT16
       else
-        Result := fldFMTBCD;
+        Result := fldFMTBCD;  // fldBCD: dbxadapter30.dll
     end;
     SQL_TEXT: Result := fldZSTRING;
     SQL_VARYING: Result := fldZSTRING;
@@ -379,10 +391,10 @@ begin
       if iScale = 0 then
         Result := fldINT32
       else
-        Result := fldFMTBCD;
+        Result := fldFMTBCD;  // fldBCD: dbxadapter30.dll
     end;
     SQL_BLOB: Result := fldBLOB;
-    SQL_INT64: Result := fldFMTBCD;
+    SQL_INT64: Result := fldFMTBCD;  // fldBCD: dbxadapter30.dll
     SQL_FLOAT: Result := fldFLOAT;
     SQL_DOUBLE: Result := fldFLOAT;
     SQL_TYPE_DATE: Result := fldDATE;
