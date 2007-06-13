@@ -56,6 +56,7 @@ begin
     if H = 0 then
       Result := DBXERR_DRIVERINITFAILED
     else begin
+      Pointer(Obj) := nil;
       ISQLDriver(Obj) := TSQLDriver_Firebird.Create(H);
       Result := DBXERR_NONE;
     end;

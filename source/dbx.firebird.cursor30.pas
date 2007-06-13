@@ -295,13 +295,15 @@ end;
 function TSQLCursor_Firebird_30.isAutoIncrement(ColumnNumber: Word;
   var AutoIncr: LongBool): SQLResult;
 begin
-  Assert(False);
+  AutoIncr := False;
+  Result := DBXERR_NONE;
 end;
 
 function TSQLCursor_Firebird_30.isBlobSizeExact(ColumnNumber: Word;
   var IsExact: LongBool): SQLResult;
 begin
-  Assert(False);
+  IsExact := True;
+  Result := DBXERR_NONE;
 end;
 
 function TSQLCursor_Firebird_30.isNullable(ColumnNumber: Word;
@@ -321,7 +323,8 @@ end;
 function TSQLCursor_Firebird_30.isSearchable(ColumnNumber: Word;
   var Searchable: LongBool): SQLResult;
 begin
-  Assert(False);
+  Searchable := False;
+  Result := DBXERR_NONE;
 end;
 
 function TSQLCursor_Firebird_30.next: SQLResult;
