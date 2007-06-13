@@ -100,8 +100,10 @@ begin
 end;
 
 function TSQLConnection_Firebird_30.commit(TranID: LongWord): SQLResult;
+var T: IFirebirdTransaction;
 begin
-  FTransactionPool.Commit(StatusVector, pTTransactionDesc(TranID)^.TransactionID);
+  T := FTransactionPool.Get(pTTransactionDesc(TranID)^.TransactionID);
+  FTransactionPool.Commit(StatusVector, T);
   StatusVector.CheckResult(Result, DBXERR_NOTIMPLEMENT);
 end;
 
@@ -242,8 +244,10 @@ begin
 end;
 
 function TSQLConnection_Firebird_30.rollback(TranID: LongWord): SQLResult;
+var T: IFirebirdTransaction;
 begin
-  FTransactionPool.RollBack(StatusVector, pTTransactionDesc(TranID)^.TransactionID);
+  T := FTransactionPool.Get(pTTransactionDesc(TranID)^.TransactionID);
+  FTransactionPool.RollBack(StatusVector, T);
   StatusVector.CheckResult(Result, DBXERR_NOTIMPLEMENT);
 end;
 

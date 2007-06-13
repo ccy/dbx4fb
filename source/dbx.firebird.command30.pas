@@ -131,13 +131,13 @@ begin
 
     if StatusVector.CheckResult(Result, DBXERR_SQLERROR) then begin
       if bManage then begin
-        FTransactionPool.Commit(StatusVector, T.ID);
+        FTransactionPool.Commit(StatusVector, T);
         StatusVector.CheckResult(Result, DBXERR_SQLERROR);
         T := nil;
       end;
     end else begin
       if bManage then begin
-        FTransactionPool.RollBack(StatusVector, T.ID);
+        FTransactionPool.RollBack(StatusVector, T);
         StatusVector.CheckResult(Result, DBXERR_SQLERROR);
         T := nil;
       end;
