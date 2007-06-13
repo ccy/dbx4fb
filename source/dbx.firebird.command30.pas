@@ -262,7 +262,6 @@ function TSQLCommand_Firebird_30.setParameter(ulParameter: Word ; ulChildPos: Wo
     Integer; iScale: Integer; Length: LongWord ; pBuffer: Pointer; lInd:
     Integer): SQLResult;
 var bIsNull: boolean;
-    T: ^TDateTime;
 begin
   Result := DBXERR_NONE;
 
@@ -316,7 +315,7 @@ end;
 function TMetaData_Firebird.GetColumnLength(const aColNo: Word): LongWord;
 var V: TXSQLVAR;
 begin
-  V := FSQLDA.Vars[aColNo];
+  V := FSQLDA[aColNo];
   if V.CheckType(SQL_INT64) then
     Result := SizeOf(TBcd)
 { dbxadapter30.dll
@@ -324,9 +323,9 @@ begin
     Result := SizeOf(Double)
   else if V.CheckType(SQL_TIMESTAMP) then
     Result := SizeOf(TSQLTimeStamp)
-  else if V.CheckType(SQL_LONG) and (FSQLDA.Vars[aColNo].sqlscale <> 0) then
+  else if V.CheckType(SQL_LONG) and (FSQLDA[aColNo].sqlscale <> 0) then
     Result := SizeOf(TBcd)
-  else if V.CheckType(SQL_SHORT) and (FSQLDA.Vars[aColNo].sqlscale <> 0) then
+  else if V.CheckType(SQL_SHORT) and (FSQLDA[aColNo].sqlscale <> 0) then
     Result := SizeOf(TBcd)
 }
   else
@@ -337,21 +336,21 @@ function TMetaData_Firebird.GetColumnName(const aColNo: Word): WideString;
 var S: string;
     P: TIB_Identifier;
 begin
-  P := FSQLDA.Vars[aColNo].aliasname;
-  SetString(S, P, FSQLDA.Vars[aColNo].aliasname_length);
+  P := FSQLDA[aColNo].aliasname;
+  SetString(S, P, FSQLDA[aColNo].aliasname_length);
   Result := S;
 end;
 
 function TMetaData_Firebird.GetColumnNameLength(const aColNo: Word): Word;
 begin
-  Result := FSQLDA.Vars[aColNo].aliasname_length;
+  Result := FSQLDA[aColNo].aliasname_length;
 end;
 
 function TMetaData_Firebird.GetColumnPrecision(
   const aColNo: Word): Smallint;
 var V: TXSQLVAR;
 begin
-  V := FSQLDA.Vars[aColNo];
+  V := FSQLDA[aColNo];
   if V.CheckType(SQL_INT64) then
     Result := 19
   else if V.CheckType(SQL_LONG) and (V.sqlscale <> 0) then
@@ -364,20 +363,20 @@ end;
 
 function TMetaData_Firebird.GetColumnScale(const aColNo: Word): Smallint;
 begin
-  Result := FSQLDA.Vars[aColNo].sqlscale;
+  Result := FSQLDA[aColNo].sqlscale;
 end;
 
 function TMetaData_Firebird.GetColumnSubType(const aColNo: Word): Word;
 begin
-  Result := FSQLDA.Vars[aColNo].sqlsubtype;
+  Result := FSQLDA[aColNo].sqlsubtype;
 end;
 
 function TMetaData_Firebird.GetColumnType(const aColNo: Word): Word;
 var iType: Smallint;
     iScale: Smallint;
 begin
-  iType := FSQLDA.Vars[aColNo].sqltype and not 1;
-  iScale := FSQLDA.Vars[aColNo].sqlscale;
+  iType := FSQLDA[aColNo].sqltype and not 1;
+  iScale := FSQLDA[aColNo].sqlscale;
   case iType of
     SQL_SHORT: begin
       if iScale = 0 then
@@ -407,7 +406,7 @@ end;
 
 function TMetaData_Firebird.IsNullable(const aColNo: Word): boolean;
 begin
-  Result := FSQLDA.Vars[aColNo].IsNullable;
+  Result := FSQLDA[aColNo].IsNullable;
 end;
 
 end.
