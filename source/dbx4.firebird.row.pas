@@ -6,7 +6,7 @@ uses SysUtils, FmtBcd, SqlTimSt, DBXCommon, DBXPlatform, dbx4.base,
   dbx4.firebird.base, firebird.dsql, firebird.client, IB_Header;
 
 type
-  TDBXRow = class(TDBXBase_Firebird, IDBXRow)
+  TDBXWritableRow_Firebird = class(TDBXBase_Firebird, IDBXWritableRow)
   private
     FSQLDA: TXSQLDA;
     FDBHandle: pisc_db_handle;
@@ -35,12 +35,12 @@ type
 
 implementation
 
-function TDBXRow.Close: TDBXErrorCode;
+function TDBXWritableRow_Firebird.Close: TDBXErrorCode;
 begin
   Result := TDBXErrorCodes.None;
 end;
 
-constructor TDBXRow.Create(const aDBHandle: pisc_db_handle; const aTransaction:
+constructor TDBXWritableRow_Firebird.Create(const aDBHandle: pisc_db_handle; const aTransaction:
     IFirebirdTransaction; const aSQLDA: TXSQLDA);
 begin
   inherited Create;
@@ -49,13 +49,13 @@ begin
   FSQLDA := aSQLDA;
 end;
 
-function TDBXRow.SetBcd(Ordinal: TInt32; Value: TBcd): TDBXErrorCode;
+function TDBXWritableRow_Firebird.SetBcd(Ordinal: TInt32; Value: TBcd): TDBXErrorCode;
 begin
   FSQLDA[Ordinal].SetBCD(@Value, False);
   Result := TDBXErrorCodes.None;
 end;
 
-function TDBXRow.SetBytes(Ordinal: TInt32; BlobOffset: Int64;
+function TDBXWritableRow_Firebird.SetBytes(Ordinal: TInt32; BlobOffset: Int64;
   Value: TBytes; LastIndex: TInt32; ValueOffset,
   Length: Int64): TDBXErrorCode;
 begin
@@ -65,37 +65,37 @@ begin
   Result := TDBXErrorCodes.None;
 end;
 
-function TDBXRow.SetDate(Ordinal: TInt32; Value: TDBXDate): TDBXErrorCode;
+function TDBXWritableRow_Firebird.SetDate(Ordinal: TInt32; Value: TDBXDate): TDBXErrorCode;
 begin
   FSQLDA[Ordinal].SetDate(@Value, SizeOf(Value), False);
   Result := TDBXErrorCodes.None;
 end;
 
-function TDBXRow.SetDouble(Ordinal: TInt32; Value: Double): TDBXErrorCode;
+function TDBXWritableRow_Firebird.SetDouble(Ordinal: TInt32; Value: Double): TDBXErrorCode;
 begin
   FSQLDA[Ordinal].SetDouble(@Value, SizeOf(Value), False);
   Result := TDBXErrorCodes.None;
 end;
 
-function TDBXRow.SetInt16(Ordinal: TInt32; Value: SmallInt): TDBXErrorCode;
+function TDBXWritableRow_Firebird.SetInt16(Ordinal: TInt32; Value: SmallInt): TDBXErrorCode;
 begin
   FSQLDA[Ordinal].SetShort(@Value, SizeOf(Value), False);
   Result := TDBXErrorCodes.None;
 end;
 
-function TDBXRow.SetInt32(Ordinal: TInt32; Value: Integer): TDBXErrorCode;
+function TDBXWritableRow_Firebird.SetInt32(Ordinal: TInt32; Value: Integer): TDBXErrorCode;
 begin
   FSQLDA[Ordinal].SetInteger(@Value, SizeOf(Value), False);
   Result := TDBXErrorCodes.None;
 end;
 
-function TDBXRow.SetNull(Ordinal: TInt32): TDBXErrorCode;
+function TDBXWritableRow_Firebird.SetNull(Ordinal: TInt32): TDBXErrorCode;
 begin
   FSQLDA[Ordinal].IsNull := True;
   Result := TDBXErrorCodes.None;
 end;
 
-function TDBXRow.SetParameterType(Ordinal: TInt32;
+function TDBXWritableRow_Firebird.SetParameterType(Ordinal: TInt32;
   const Name: TDBXWideString; ChildPosition: TInt32;
   ParamDirection: TDBXParameterDirection; DBXType, DBXSubType: TInt32;
   Size, Precision: Int64; Scale: TInt32): TDBXErrorCode;
@@ -103,20 +103,20 @@ begin
   Result := TDBXErrorCodes.None;
 end;
 
-function TDBXRow.SetString(Ordinal: TInt32; const Value: TDBXAnsiString;
+function TDBXWritableRow_Firebird.SetString(Ordinal: TInt32; const Value: TDBXAnsiString;
   Length: Int64): TDBXErrorCode;
 begin
   FSQLDA[Ordinal].SetString(Value, Length, False);
   Result := TDBXErrorCodes.None;
 end;
 
-function TDBXRow.SetTime(Ordinal: TInt32; Value: TDBXTime): TDBXErrorCode;
+function TDBXWritableRow_Firebird.SetTime(Ordinal: TInt32; Value: TDBXTime): TDBXErrorCode;
 begin
   FSQLDA[Ordinal].SetTime(@Value, False);
   Result := TDBXErrorCodes.None;
 end;
 
-function TDBXRow.SetTimeStamp(Ordinal: TInt32;
+function TDBXWritableRow_Firebird.SetTimeStamp(Ordinal: TInt32;
   var Value: TSQLTimeStamp): TDBXErrorCode;
 begin
   FSQLDA[Ordinal].SetTimeStamp(@Value, False);

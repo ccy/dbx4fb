@@ -18,7 +18,7 @@ type
     function GetColumnScale(const aColNo: TInt32): TInt32;
     function GetColumnType(const aColNo: TInt32): TInt32;
     function GetColumnSubType(const aColNo: TInt32): TInt32;
-    function IsNullable(const aColNo: TInt32): boolean;
+    function GetIsNullable(const aColNo: TInt32): boolean;
   public
     constructor Create(const aSQLDA: TXSQLDA);
   end;
@@ -34,7 +34,7 @@ type
     FTrimChar: Boolean;
   protected
     function Close: TDBXErrorCode; override;
-    function CreateParameterRow(out aRow: IDBXRow): TDBXErrorCode;
+    function CreateParameterRow(out aRow: IDBXWritableRow): TDBXErrorCode;
     function Execute(out Reader: IDBXReader): TDBXErrorCode;
     function ExecuteImmediate(const SQL: TDBXWideString; out aReader: IDBXReader):
         TDBXErrorCode;
@@ -157,7 +157,8 @@ begin
   end;
 end;
 
-function TMetaDataProvider_Firebird.IsNullable(const aColNo: TInt32): boolean;
+function TMetaDataProvider_Firebird.GetIsNullable(const aColNo: TInt32):
+    boolean;
 begin
   Result := FSQLDA.Vars[aColNo].IsNullable;
 end;
@@ -186,10 +187,10 @@ begin
   Result := TDBXErrorCodes.None;
 end;
 
-function TDBXCommand_Firebird.CreateParameterRow(out aRow: IDBXRow):
+function TDBXCommand_Firebird.CreateParameterRow(out aRow: IDBXWritableRow):
     TDBXErrorCode;
 begin
-  aRow := TDBXRow.Create(FDBHandle, FDSQL.Transaction, FDSQL.i_SQLDA);
+  aRow := TDBXWritableRow_Firebird.Create(FDBHandle, FDSQL.Transaction, FDSQL.i_SQLDA);
   Result := TDBXErrorCodes.None;
 end;
 
@@ -202,7 +203,7 @@ begin
   if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
 
   M := TMetaDataProvider_Firebird.Create(FDSQL.o_SQLDA);
-  Reader := TDBXReader_Firebird1.Create(FDBHandle, M, FDSQL, FTrimChar);
+  Reader := TDBXReader_Firebird_DSQL.Create(FDBHandle, M, FDSQL, FTrimChar);
   Result := TDBXErrorCodes.None;
 end;
 
@@ -215,18 +216,17 @@ var M: IMetaDataProvider;
     WL: TWideStringList;
     sTableName: WideString;
 begin
+  {$Message 'This method too long, find a way to revise it'}
+
   Assert(FDSQL = nil);
   Assert(FCommandType = TDBXCommandTypes.DbxMetaData);
 
-//    aReader := TFactory.New(SQL);
-//    Assert(Assigned(aReader));
-//    Result := TDBXErrorCodes.None;
-
-  if SQL = TDBXMetaDataCommands.GetDatabase then begin
-    M := TMetaDataProvider_xxx.Create(TMetaData_Firebird_Factory.New_GetDatabase);
-    aReader := TDBXReader_Firebird.Create(M);
+  if Pos(TDBXMetaDataCommands.GetDatabase, SQL) = 1 then begin
+    M := TMetaDataProvider_FieldColumns.Create(TMetaData_Firebird_Factory.New_GetDatabase);
+    aReader := TDBXReader_Firebird_GetDatabase.Create(M);
     Result := TDBXErrorCodes.None;
   end else if Pos(TDBXMetaDataCommands.GetColumns, SQL) = 1 then begin
+    // GetColumns "c:\T_E304K4GAOBPLUFGFC3CCV1YTCA"."SYSDBA"."RDB$RELATIONS".%
     WL := TWideStringList.Create;
     try
       W := SQL;
@@ -250,9 +250,9 @@ begin
     FDSQL.Execute(StatusVector);
     if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
 
-    M := TMetaDataProvider_xxx.Create(TMetaData_Firebird_Factory.New_getColumns(sTableName));
+    M := TMetaDataProvider_FieldColumns.Create(TMetaData_Firebird_Factory.New_getColumns(sTableName));
 
-    aReader := TDBXReader_Firebird1.Create(FDBHandle, M, FDSQL, True);
+    aReader := TDBXReader_Firebird_DSQL.Create(FDBHandle, M, FDSQL, True);
     Result := TDBXErrorCodes.None;
   end else if Pos(TDBXMetaDataCommands.GetTables, SQL) = 1 then begin
     // GetTables "G:\Win.XP\ccy\LOCALS~1\Temp\T_OFWSA5ZZ354AUHCO55K2GC5IYA"."SYSDBA".% SystemTable
@@ -282,9 +282,9 @@ begin
     FDSQL.Execute(StatusVector);
     if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
 
-    M := TMetaDataProvider_xxx.Create(TMetaData_Firebird_Factory.New_getTables);
+    M := TMetaDataProvider_FieldColumns.Create(TMetaData_Firebird_Factory.New_getTables);
 
-    aReader := TDBXReader_Firebird1.Create(FDBHandle, M, FDSQL, True);
+    aReader := TDBXReader_Firebird_DSQL.Create(FDBHandle, M, FDSQL, True);
     Result := TDBXErrorCodes.None;
   end else if Pos(TDBXMetaDataCommands.GetIndexes, SQL) = 1 then begin
     // GetIndexes "G:\Win.XP\ccy\LOCALS~1\Temp\T_OZFAI1PPYS4NE20MVD2GAV4UZB"."SYSDBA"."RDB$RELATIONS"
@@ -314,9 +314,9 @@ begin
     FDSQL.Execute(StatusVector);
     if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
 
-    M := TMetaDataProvider_xxx.Create(TMetaData_Firebird_Factory.New_getIndices(sTableName));
+    M := TMetaDataProvider_FieldColumns.Create(TMetaData_Firebird_Factory.New_getIndices(sTableName));
 
-    aReader := TDBXReader_Firebird1.Create(FDBHandle, M, FDSQL, True);
+    aReader := TDBXReader_Firebird_DSQL.Create(FDBHandle, M, FDSQL, True);
     Result := TDBXErrorCodes.None;
   end else
     Assert(False);

@@ -62,7 +62,7 @@ type
     function Next: TDBXErrorCode;
   end;
 
-  IDBXRow = interface(IDBXBase)
+  IDBXWritableRow = interface(IDBXBase)
   ['{1B637B12-12B0-42AC-97F0-906C26D72F7E}']
     function SetBcd(Ordinal: TInt32; Value: TBcd): TDBXErrorCode;
     function SetBytes(Ordinal: TInt32; BlobOffset: Int64; Value: TBytes; LastIndex:
@@ -83,7 +83,7 @@ type
 
   IDBXCommand = interface(IDBXBase)
   ['{D509CC08-86E0-459E-8C08-E5E1346C7590}']
-    function CreateParameterRow(out aRow: IDBXRow): TDBXErrorCode;
+    function CreateParameterRow(out aRow: IDBXWritableRow): TDBXErrorCode;
     function Execute(out Reader: IDBXReader): TDBXErrorCode;
     function ExecuteImmediate(const SQL: TDBXWideString; out aReader: IDBXReader):
         TDBXErrorCode;
@@ -99,6 +99,7 @@ type
     function GetColumnScale(const aColNo: TInt32): TInt32;
     function GetColumnType(const aColNo: TInt32): TInt32;
     function GetColumnSubType(const aColNo: TInt32): TInt32;
+    function GetIsNullable(const aColNo: TInt32): boolean;
   end;
 
 implementation

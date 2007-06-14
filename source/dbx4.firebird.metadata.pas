@@ -21,7 +21,7 @@ type
     class function New_getTables: TFieldColumns;
   end;
 
-  TMetaDataProvider_xxx = class(TInterfacedObject, IMetaDataProvider)
+  TMetaDataProvider_FieldColumns = class(TInterfacedObject, IMetaDataProvider)
   private
     FColumns: TFieldColumns;
   protected
@@ -32,6 +32,7 @@ type
     function GetColumnScale(const aColNo: TInt32): TInt32;
     function GetColumnType(const aColNo: TInt32): TInt32;
     function GetColumnSubType(const aColNo: TInt32): TInt32;
+    function GetIsNullable(const aColNo: TInt32): boolean;
   public
     constructor Create(const aColumns: TFieldColumns);
   end;
@@ -148,18 +149,18 @@ begin
   Add('TABLE_TYPE',        TDBXDataTypes.Int32Type,       0);
 end;
 
-constructor TMetaDataProvider_xxx.Create(const aColumns: TFieldColumns);
+constructor TMetaDataProvider_FieldColumns.Create(const aColumns: TFieldColumns);
 begin
   inherited Create;
   FColumns := aColumns;
 end;
 
-function TMetaDataProvider_xxx.GetColumnCount: TInt32;
+function TMetaDataProvider_FieldColumns.GetColumnCount: TInt32;
 begin
   Result := Length(FColumns);
 end;
 
-function TMetaDataProvider_xxx.GetColumnLength(const aColNo: TInt32): LongWord;
+function TMetaDataProvider_FieldColumns.GetColumnLength(const aColNo: TInt32): LongWord;
 begin
   if (FColumns[aColNo].ColumnType = TDBXDataTypes.AnsiStringType) or
      (FColumns[aColNo].ColumnType = TDBXDataTypes.WideStringType) then
@@ -168,29 +169,35 @@ begin
     Result := 0;
 end;
 
-function TMetaDataProvider_xxx.GetColumnName(const aColNo: TInt32): WideString;
+function TMetaDataProvider_FieldColumns.GetColumnName(const aColNo: TInt32): WideString;
 begin
   Result := FColumns[aColNo].Name;
 end;
 
-function TMetaDataProvider_xxx.GetColumnPrecision(const aColNo: TInt32): TInt32;
+function TMetaDataProvider_FieldColumns.GetColumnPrecision(const aColNo: TInt32): TInt32;
 begin
   Result := GetColumnLength(aColNo);
 end;
 
-function TMetaDataProvider_xxx.GetColumnScale(const aColNo: TInt32): TInt32;
+function TMetaDataProvider_FieldColumns.GetColumnScale(const aColNo: TInt32): TInt32;
 begin
   Result := 0;
 end;
 
-function TMetaDataProvider_xxx.GetColumnSubType(const aColNo: TInt32): TInt32;
+function TMetaDataProvider_FieldColumns.GetColumnSubType(const aColNo: TInt32): TInt32;
 begin
   Result := 0;
 end;
 
-function TMetaDataProvider_xxx.GetColumnType(const aColNo: TInt32): TInt32;
+function TMetaDataProvider_FieldColumns.GetColumnType(const aColNo: TInt32): TInt32;
 begin
   Result := FColumns[aColNo].ColumnType;
+end;
+
+function TMetaDataProvider_FieldColumns.GetIsNullable(
+  const aColNo: TInt32): boolean;
+begin
+  Result := True;
 end;
 
 end.

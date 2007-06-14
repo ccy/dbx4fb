@@ -61,11 +61,11 @@ end;
 
 function DBXCommand_CreateParameterRow(Handle: TDBXCommandHandle; out
     Parameters: TDBXRowHandle): TDBXErrorCode; stdcall;
-var o: IDBXRow;
+var o: IDBXWritableRow;
 begin
   Result := IDBXCommand(Handle).CreateParameterRow(o);
   Parameters := nil;
-  IDBXRow(Parameters) := o;
+  IDBXWritableRow(Parameters) := o;
 end;
 
 function DBXCommand_Execute(Handle: TDBXCommandHandle; out Reader:
@@ -202,7 +202,7 @@ function DBXParameterRow_SetParameterType(Handle: TDBXRowHandle;Ordinal:
     TDBXParameterDirection; DBXType: TInt32; DBXSubType: TInt32; Size: Int64;
     Precision: Int64; Scale: TInt32): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXRow(Handle).SetParameterType(Ordinal, Name, ChildPosition, ParamDirection, DBXType, DBXSubType, Size, Precision, Scale);
+  Result := IDBXWritableRow(Handle).SetParameterType(Ordinal, Name, ChildPosition, ParamDirection, DBXType, DBXSubType, Size, Precision, Scale);
 end;
 
 function DBXReader_GetColumnCount(Handle: TDBXReaderHandle; out ColumnCount:
@@ -321,7 +321,7 @@ end;
 function DBXWritableRow_SetBcd(Handle: TDBXWritableRowHandle; Ordinal: TInt32;
     Value: TBcd): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXRow(Handle).SetBcd(Ordinal, Value);
+  Result := IDBXWritableRow(Handle).SetBcd(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetBoolean(Handle: TDBXWritableRowHandle; Ordinal:
@@ -335,31 +335,31 @@ function DBXWritableRow_SetBytes(Handle: TDBXWritableRowHandle; Ordinal:
     {dummy to simulate native "open array"} ValueOffset: Int64; Length: Int64):
     TDBXErrorCode; stdcall;
 begin
-  Result := IDBXRow(Handle).SetBytes(Ordinal, BlobOffset, Value, LastIndex, ValueOffset, Length);
+  Result := IDBXWritableRow(Handle).SetBytes(Ordinal, BlobOffset, Value, LastIndex, ValueOffset, Length);
 end;
 
 function DBXWritableRow_SetDate(Handle: TDBXWritableRowHandle; Ordinal: TInt32;
     Value: TDBXDate): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXRow(Handle).SetDate(Ordinal, Value);
+  Result := IDBXWritableRow(Handle).SetDate(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetDouble(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; Value: double): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXRow(Handle).SetDouble(Ordinal, Value);
+  Result := IDBXWritableRow(Handle).SetDouble(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetInt16(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; Value: SmallInt): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXRow(Handle).SetInt16(Ordinal, Value);
+  Result := IDBXWritableRow(Handle).SetInt16(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetInt32(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; Value: LongInt): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXRow(Handle).SetInt32(Ordinal, Value);
+  Result := IDBXWritableRow(Handle).SetInt32(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetInt64(Handle: TDBXWritableRowHandle; Ordinal:
@@ -371,25 +371,25 @@ end;
 function DBXWritableRow_SetNull(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXRow(Handle).SetNull(Ordinal);
+  Result := IDBXWritableRow(Handle).SetNull(Ordinal);
 end;
 
 function DBXWritableRow_SetString(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; const Value: TDBXAnsiString; Length: Int64): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXRow(Handle).SetString(Ordinal, Value, Length);
+  Result := IDBXWritableRow(Handle).SetString(Ordinal, Value, Length);
 end;
 
 function DBXWritableRow_SetTime(Handle: TDBXWritableRowHandle; Ordinal: TInt32;
     Value: TDBXTime): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXRow(Handle).SetTime(Ordinal, Value);
+  Result := IDBXWritableRow(Handle).SetTime(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetTimeStamp(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; var Value: TSQLTimeStamp): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXRow(Handle).SetTimeStamp(Ordinal, Value);
+  Result := IDBXWritableRow(Handle).SetTimeStamp(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetWideString(Handle: TDBXWritableRowHandle; Ordinal:
