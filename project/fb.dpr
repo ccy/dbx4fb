@@ -17,7 +17,7 @@ library dbxfb;
   with your DLL. To avoid using BORLNDMM.DLL, pass string information
   using PChar or ShortString parameters. }
 
-{$R 'rc\library.res' 'rc\library.rc'}
+{$R 'fb.res' 'fb.rc'}
 
 uses
   SysUtils,
