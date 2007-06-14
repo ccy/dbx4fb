@@ -2,7 +2,11 @@ unit vcl.dbx.testcase;
 
 interface
 
-uses Classes, TestFrameWork, TestExtensions, DB, SqlExpr, DBXCommon, Provider, DBClient;
+uses Classes, TestFrameWork, TestExtensions, DB, SqlExpr, Provider, DBClient
+     {$if CompilerVersion > 18}
+     , DBXCommon
+     {$ifend}
+     ;
 
 type
   EDBXError = {$if CompilerVersion<=18}EDatabaseError{$else}TDBXError{$ifend};
