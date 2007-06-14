@@ -1,0 +1,2 @@
+#include "fb4.rc.h"
+#include "rc\library.rc"

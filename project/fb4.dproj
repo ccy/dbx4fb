@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{549a3915-3fd5-480f-8c15-d7512ff09719}</ProjectGuid>
+    <MainSource>fb4.dpr</MainSource>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+    <DCC_DependencyCheckOutputName>..\..\..\..\output.d11\moon\dbxfb40.dll</DCC_DependencyCheckOutputName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_DebugInformation>False</DCC_DebugInformation>
+    <DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
+    <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+    <DCC_Define>RELEASE</DCC_Define>
+    <DCC_ExeOutput>$(OutputDir)\$(ActiveProjectModule)</DCC_ExeOutput>
+    <DCC_DcuOutput>$(UnitOutputDir)\$(ActiveProjectModule)</DCC_DcuOutput>
+    <DCC_ObjOutput>$(UnitOutputDir)\$(ActiveProjectModule)</DCC_ObjOutput>
+    <DCC_HppOutput>$(UnitOutputDir)\$(ActiveProjectModule)</DCC_HppOutput>
+    <DCC_Optimize>False</DCC_Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_Define>DEBUG</DCC_Define>
+    <DCC_ExeOutput>$(OutputDir)\$(ActiveProjectModule)</DCC_ExeOutput>
+    <DCC_DcuOutput>$(UnitOutputDir)\$(ActiveProjectModule)</DCC_DcuOutput>
+    <DCC_ObjOutput>$(UnitOutputDir)\$(ActiveProjectModule)</DCC_ObjOutput>
+    <DCC_HppOutput>$(UnitOutputDir)\$(ActiveProjectModule)</DCC_HppOutput>
+    <DCC_Optimize>False</DCC_Optimize>
+    <DCC_UnitSearchPath>$(ComponentDir)\dunit\lib\debug;$(IDE)\lib\Debug;$(IDE)\Lib\Debug\Indy10</DCC_UnitSearchPath>
+    <DCC_ResourcePath>$(ComponentDir)\dunit\lib\debug;$(IDE)\lib\Debug;$(IDE)\Lib\Debug\Indy10</DCC_ResourcePath>
+    <DCC_ObjPath>$(ComponentDir)\dunit\lib\debug;$(IDE)\lib\Debug;$(IDE)\Lib\Debug\Indy10</DCC_ObjPath>
+    <DCC_IncludePath>$(ComponentDir)\dunit\lib\debug;$(IDE)\lib\Debug;$(IDE)\Lib\Debug\Indy10</DCC_IncludePath>
+  </PropertyGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Delphi.Personality</Borland.Personality>
+    <Borland.ProjectType>VCLApplication</Borland.ProjectType>
+    <BorlandProject>
+<BorlandProject><Delphi.Personality><Parameters><Parameters Name="UseLauncher">False</Parameters><Parameters Name="LoadAllSymbols">True</Parameters><Parameters Name="LoadUnspecifiedSymbols">False</Parameters><Parameters Name="HostApplication">$(ActiveHostApplication)</Parameters></Parameters><VersionInfo><VersionInfo Name="IncludeVerInfo">False</VersionInfo><VersionInfo Name="AutoIncBuild">False</VersionInfo><VersionInfo Name="MajorVer">1</VersionInfo><VersionInfo Name="MinorVer">0</VersionInfo><VersionInfo Name="Release">0</VersionInfo><VersionInfo Name="Build">0</VersionInfo><VersionInfo Name="Debug">False</VersionInfo><VersionInfo Name="PreRelease">False</VersionInfo><VersionInfo Name="Special">False</VersionInfo><VersionInfo Name="Private">False</VersionInfo><VersionInfo Name="DLL">False</VersionInfo><VersionInfo Name="Locale">1033</VersionInfo><VersionInfo Name="CodePage">1252</VersionInfo></VersionInfo><VersionInfoKeys><VersionInfoKeys Name="CompanyName"></VersionInfoKeys><VersionInfoKeys Name="FileDescription"></VersionInfoKeys><VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="InternalName"></VersionInfoKeys><VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys><VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys><VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys><VersionInfoKeys Name="ProductName"></VersionInfoKeys><VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="Comments"></VersionInfoKeys></VersionInfoKeys><Source><Source Name="MainSource">fb4.dpr</Source></Source><Excluded_Packages>
+      
+      
+      <Excluded_Packages Name="$(BDS)\bin\dclofficexp100.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dcloffice2k100.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+    </Excluded_Packages></Delphi.Personality></BorlandProject></BorlandProject>
+  </ProjectExtensions>
+  <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />
+  <ItemGroup>
+    <DelphiCompile Include="fb4.dpr">
+      <MainSource>MainSource</MainSource>
+    </DelphiCompile>
+    <RcCompile Include="fb4.rc">
+      <Form>fb4.res</Form>
+    </RcCompile>
+    <DCCReference Include="..\..\core\source\rtl\firebird.client.debug.pas" />
+    <DCCReference Include="..\..\core\source\rtl\firebird.client.pas" />
+    <DCCReference Include="..\..\core\source\rtl\firebird.dsql.pas" />
+    <DCCReference Include="..\..\core\source\rtl\IB_Header.pas" />
+    <DCCReference Include="..\source\dbx.common.pas" />
+    <DCCReference Include="..\source\dbx.firebird.command25.pas" />
+    <DCCReference Include="..\source\dbx.firebird.command30.pas" />
+    <DCCReference Include="..\source\dbx.firebird.connection25.pas" />
+    <DCCReference Include="..\source\dbx.firebird.connection30.pas" />
+    <DCCReference Include="..\source\dbx.firebird.cursor25.pas" />
+    <DCCReference Include="..\source\dbx.firebird.cursor30.pas" />
+    <DCCReference Include="..\source\dbx.firebird.driver30.pas" />
+    <DCCReference Include="..\source\dbx.firebird.factory25.pas" />
+    <DCCReference Include="..\source\dbx.firebird.factory30.pas" />
+    <DCCReference Include="..\source\dbx.firebird.metadata25.pas" />
+    <DCCReference Include="..\source\dbx.firebird.metadata30.pas" />
+    <DCCReference Include="..\source\dbx.firebird.pas" />
+    <DCCReference Include="..\source\dbx4.base.pas" />
+    <DCCReference Include="..\source\dbx4.firebird.base.pas" />
+    <DCCReference Include="..\source\dbx4.firebird.command.pas" />
+    <DCCReference Include="..\source\dbx4.firebird.connection.pas" />
+    <DCCReference Include="..\source\dbx4.firebird.dll.pas" />
+    <DCCReference Include="..\source\dbx4.firebird.driver.pas" />
+    <DCCReference Include="..\source\dbx4.firebird.metadata.pas" />
+    <DCCReference Include="..\source\dbx4.firebird.reader.pas" />
+    <DCCReference Include="..\source\dbx4.firebird.row.pas" />
+  </ItemGroup>
+</Project>
