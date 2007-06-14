@@ -2,9 +2,11 @@ unit vcl.dbx.testcase;
 
 interface
 
-uses Classes, TestFrameWork, TestExtensions, DB, SqlExpr, Provider, DBClient;
+uses Classes, TestFrameWork, TestExtensions, DB, SqlExpr, DBXCommon, Provider, DBClient;
 
 type
+  EDBXError = {$if CompilerVersion<=18}EDatabaseError{$else}TDBXError{$ifend};
+
   ITestData = interface(IInterface)
   ['{2DCC2E1F-BCE2-4D04-A61E-03DBFC031D0E}']
     function GetName: string;
@@ -53,7 +55,11 @@ type
     FConnection: TSQLConnection;
     FTestData: ITestData;
     FSQLMonitor: TSQLMonitor;
+    {$if CompilerVersion <= 18}
     procedure SQLMonitorOnLogTrace(Sender: TObject; CBInfo: pSQLTRACEDesc);
+    {$else}
+    procedure SQLMonitorOnLogTrace(Sender: TObject; TraceInfo: TDBXTraceInfo);
+    {$ifend}
     function IsTrimChar: boolean;
     procedure SetTestData(const aTestData: ITestData);
   protected
@@ -397,8 +403,12 @@ function TTestCase_DBX.IsTrimChar: boolean;
 var b: longint;
     iLen: Smallint;
 begin
+  {$if CompilerVersion <= 18}
   Assert(FConnection.SQLConnection.GetOption(eConnTrimChar, @b, SizeOf(b), iLen) = DBXERR_NONE);
   Result := boolean(b);
+  {$else}
+  Result := SameText(FConnection.Params.Values[TRIMCHAR], 'True');
+  {$ifend}
 end;
 
 class function TTestCase_DBX.NewSuite(const aTestData: ITestData):
@@ -427,6 +437,7 @@ begin
   FConnection.Open;
 end;
 
+{$if CompilerVersion<=18}
 procedure TTestCase_DBX.SQLMonitorOnLogTrace(Sender: TObject; CBInfo:
     pSQLTRACEDesc);
 var T: String;
@@ -434,6 +445,13 @@ begin
   T := String(CBInfo^.pszTrace);
   Status(T);
 end;
+{$else}
+procedure TTestCase_DBX.SQLMonitorOnLogTrace(Sender: TObject;
+  TraceInfo: TDBXTraceInfo);
+begin
+  Status(TraceInfo.Message);
+end;
+{$ifend}
 
 procedure TTestCase_DBX.TearDown;
 begin
@@ -444,12 +462,7 @@ begin
 end;
 
 procedure TTestCase_DBX_General.Test_Connection_Property;
-var iSQLDialect: Longint;
-    PropSize: Smallint;
 begin
-  CheckEquals(DBXERR_NONE, FConnection.SQLConnection.GetOption(eConnSqlDialect, @iSQLDialect, SizeOf(iSQLDialect), PropSize));
-  CheckEquals(IntTostr(iSQLDialect), FConnection.Params.Values[SQLDIALECT_KEY]);
-
   CheckTrue(FConnection.TransactionsSupported);
   CheckTrue(FConnection.MultipleTransactionsSupported);
 end;
@@ -559,7 +572,7 @@ begin
   FConnection.Close;
   FConnection.Params.Values[szUSERNAME] := 'no.such.user';
   if FConnection.Params.IndexOfName(HOSTNAME_KEY) <> -1 then
-    StartExpectingException(EDatabaseError);
+    StartExpectingException(EDBXError);
   FConnection.Open;
 end;
 
@@ -567,7 +580,7 @@ procedure TTestCase_DBX_General.Test_Invalid_VendorLib;
 begin
   FConnection.Close;
   FConnection.VendorLib := 'no.such.vendorlib';
-  CheckException(FConnection.Open, EDatabaseError);
+  CheckException(FConnection.Open, EDBXError);
 end;
 
 procedure TTestCase_DBX_General.Test_Open_Close;
@@ -783,6 +796,10 @@ end;
 
 procedure TTestCase_DBX_FieldType.Test_DATETIME;
 begin
+  {$Message 'QC#47267 - Encounter "No value for parameter" error for ftDateTime Param in DBX4'}
+  {$if CompilerVersion = 18.5}
+  StartExpectingException(EDatabaseError);
+  {$ifend}
   Param.AsDateTime := Date;
   Execute;
   CheckEquals(TDateField, Field.ClassType);
@@ -1080,7 +1097,7 @@ end;
 procedure TTestCase_DBX_FieldType.Test_Required;
 begin
   CheckEquals(FRequired, Field.Required);
-  if FRequired then StartExpectingException(EDatabaseError);
+  if FRequired then StartExpectingException(EDBXError);
   Param.Clear;
   Execute;
   CheckTrue(Field.IsNull);
@@ -1241,23 +1258,27 @@ end;
 procedure TTestCase_DBX_Transaction.Test_Duplicate_TransactionID;
 var T1, T2: TTransactionDesc;
 begin
+  {$if CompilerVersion <= 18}
   T1.TransactionID := 1;
   T1.IsolationLevel := xilREADCOMMITTED;
   FConnection.StartTransaction(T1);
 
   T2.TransactionID := 1;
   T2.IsolationLevel := xilREADCOMMITTED;
-  StartExpectingException(EDatabaseError);
+  StartExpectingException(EDBXError);
   FConnection.StartTransaction(T2);
+  {$ifend}
 end;
 
 procedure TTestCase_DBX_Transaction.Test_Invalid_TransactionID;
 var T: TTransactionDesc;
 begin
+  {$if CompilerVersion <= 18}
   StartExpectingException(EDatabaseError);
   T.TransactionID := 0;
   T.IsolationLevel := xilREADCOMMITTED;
   FConnection.StartTransaction(T);
+  {$ifend}
 end;
 
 procedure TTestCase_DBX_Transaction.Test_Transaction;
@@ -1282,7 +1303,7 @@ begin
   ZeroMemory(@T, SizeOf(T));
   T.TransactionID := 1;
   T.IsolationLevel := xilREADCOMMITTED;
-  Self.StartExpectingException(EDatabaseError);
+  Self.StartExpectingException(EDBXError);
   try
     FConnection.StartTransaction(T);
     try
