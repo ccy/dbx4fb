@@ -1079,6 +1079,7 @@ end;
 
 procedure TTestCase_DBX_FieldType.Test_Required;
 begin
+  CheckEquals(FRequired, Field.Required);
   if FRequired then StartExpectingException(EDatabaseError);
   Param.Clear;
   Execute;
