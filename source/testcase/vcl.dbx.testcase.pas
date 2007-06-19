@@ -175,6 +175,7 @@ type
     procedure TearDown; override;
   published
     procedure Test_Repeated_Open;
+    procedure Test_Master_Detail;
   end;
 
 implementation
@@ -1498,6 +1499,44 @@ begin
   FDataSet.Free;
   FConnection.ExecuteDirect('DROP TABLE T_DATASET');
   inherited;
+end;
+
+procedure TTestCase_DBX_DataSnap.Test_Master_Detail;
+var S: string;
+    D: TSQLDataSet;
+    DS: TDataSource;
+begin
+  S := 'CREATE TABLE T_DETAIL( ' +
+       '   FIELD1 VARCHAR(100), ' +
+       '   FIELD2 VARCHAR(100) ' +
+       ')';
+  FConnection.ExecuteDirect(S);
+
+  S := 'INSERT INTO T_DATASET VALUES(''ABC'')';
+  FConnection.ExecuteDirect(S);
+
+  try
+    DS := TDataSource.Create(nil);
+    try
+      DS.DataSet := FDataSet;
+      D := TSQLDataSet.Create(nil);
+      try
+        D.Name := 'SQLDataSet_Detail';
+        D.SQLConnection := FConnection;
+        D.CommandType := ctTable;
+        D.CommandText := 'T_DETAIL';
+        D.DataSource := DS;
+        FCDS.SetProvider(FDSP);
+        FCDS.Open;
+      finally
+        D.Free;
+      end;
+    finally
+      DS.Free;
+    end;
+  finally
+    FConnection.ExecuteDirect('DROP TABLE T_DETAIL');
+  end;
 end;
 
 procedure TTestCase_DBX_DataSnap.Test_Repeated_Open;
