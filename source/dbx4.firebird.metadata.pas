@@ -57,8 +57,8 @@ begin
   SetLength(Result, 14);
   iIndex := 0;
   Add('RECNO',             TDBXDataTypes.Int32Type,       0);
-  Add('CATALOG_NAME',      TDBXDataTypes.AnsiStringType,  6);
-  Add('SCHEMA_NAME',       TDBXDataTypes.AnsiStringType,  6);
+  Add('CATALOG_NAME',      TDBXDataTypes.AnsiStringType,  128);
+  Add('SCHEMA_NAME',       TDBXDataTypes.AnsiStringType,  128);
   Add('TABLE_NAME',        TDBXDataTypes.AnsiStringType,  128);
   Add('COLUMN_NAME',       TDBXDataTypes.AnsiStringType,  128);
   Add('COLUMN_POSITION',   TDBXDataTypes.Int16Type,       0);
@@ -114,15 +114,15 @@ begin
   SetLength(Result, 11);
   iIndex := 0;
   Add('RECNO',             TDBXDataTypes.Int32Type,       0);
-  Add('CATALOG_NAME',      TDBXDataTypes.AnsiStringType,  6);
-  Add('SCHEMA_NAME',       TDBXDataTypes.AnsiStringType,  6);
-  Add('TABLE_NAME',        TDBXDataTypes.AnsiStringType,  Length(aTableName));
-  Add('INDEX_NAME',        TDBXDataTypes.AnsiStringType,  30);
-  Add('COLUMN_NAME',       TDBXDataTypes.AnsiStringType,  30);
+  Add('CATALOG_NAME',      TDBXDataTypes.AnsiStringType,  128);
+  Add('SCHEMA_NAME',       TDBXDataTypes.AnsiStringType,  128);
+  Add('TABLE_NAME',        TDBXDataTypes.AnsiStringType,  128);
+  Add('INDEX_NAME',        TDBXDataTypes.AnsiStringType,  128);
+  Add('COLUMN_NAME',       TDBXDataTypes.AnsiStringType,  128);
   Add('COLUMN_POSITION',   TDBXDataTypes.Int16Type,       0);
-  Add('PKEY_NAME',         TDBXDataTypes.AnsiStringType,  30);
+  Add('PKEY_NAME',         TDBXDataTypes.AnsiStringType,  128);
   Add('INDEX_TYPE',        TDBXDataTypes.Int32Type,       0);
-  Add('SORT_ORDER',        TDBXDataTypes.AnsiStringType,  1);
+  Add('SORT_ORDER',        TDBXDataTypes.AnsiStringType,  3);
   Add('FILTER',            TDBXDataTypes.AnsiStringType,  6);
 end;
 
@@ -143,8 +143,8 @@ begin
   SetLength(Result, 5);
   iIndex := 0;
   Add('RECNO',             TDBXDataTypes.Int32Type,       0);
-  Add('CATALOG_NAME',      TDBXDataTypes.AnsiStringType,  6);
-  Add('SCHEMA_NAME',       TDBXDataTypes.AnsiStringType,  6);
+  Add('CATALOG_NAME',      TDBXDataTypes.AnsiStringType,  128);
+  Add('SCHEMA_NAME',       TDBXDataTypes.AnsiStringType,  128);
   Add('TABLE_NAME',        TDBXDataTypes.AnsiStringType,  128);
   Add('TABLE_TYPE',        TDBXDataTypes.Int32Type,       0);
 end;
