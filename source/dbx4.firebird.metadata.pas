@@ -59,12 +59,12 @@ begin
   Add('RECNO',             TDBXDataTypes.Int32Type,       0);
   Add('CATALOG_NAME',      TDBXDataTypes.AnsiStringType,  6);
   Add('SCHEMA_NAME',       TDBXDataTypes.AnsiStringType,  6);
-  Add('TABLE_NAME',        TDBXDataTypes.AnsiStringType,  Length(aTableName));
-  Add('COLUMN_NAME',       TDBXDataTypes.AnsiStringType,  31);
+  Add('TABLE_NAME',        TDBXDataTypes.AnsiStringType,  128);
+  Add('COLUMN_NAME',       TDBXDataTypes.AnsiStringType,  128);
   Add('COLUMN_POSITION',   TDBXDataTypes.Int16Type,       0);
   Add('COLUMN_TYPE',       TDBXDataTypes.Int16Type,       0);
   Add('COLUMN_DATATYPE',   TDBXDataTypes.Int16Type,       0);
-  Add('COLUMN_TYPENAME',   TDBXDataTypes.AnsiStringType,  31);
+  Add('COLUMN_TYPENAME',   TDBXDataTypes.AnsiStringType,  128);
   Add('COLUMN_SUBTYPE',    TDBXDataTypes.Int16Type,       0);
   Add('COLUMN_LENGTH',     TDBXDataTypes.Int32Type,       0);
   Add('COLUMN_PRECISION',  TDBXDataTypes.Int16Type,       0);
@@ -145,7 +145,7 @@ begin
   Add('RECNO',             TDBXDataTypes.Int32Type,       0);
   Add('CATALOG_NAME',      TDBXDataTypes.AnsiStringType,  6);
   Add('SCHEMA_NAME',       TDBXDataTypes.AnsiStringType,  6);
-  Add('TABLE_NAME',        TDBXDataTypes.AnsiStringType,  31);
+  Add('TABLE_NAME',        TDBXDataTypes.AnsiStringType,  128);
   Add('TABLE_TYPE',        TDBXDataTypes.Int32Type,       0);
 end;
 

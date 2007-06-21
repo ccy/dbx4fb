@@ -5,4 +5,4 @@
 #define _CompanyURL "www.sql.com.my"
 #define _SupportURL "www.sql.com.my/support"
 #define _FileVersion 4,0,0,1
-#define _FileVersionStr "4,0,0,1"
+#define _FileVersionStr "4,0,0,2"
