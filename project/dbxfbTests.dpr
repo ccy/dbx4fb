@@ -2,6 +2,7 @@
 
      Output Directory: $(OutputDir)\$(ActiveProjectModule)
 Unit Output Directory: $(UnitOutputDir)\$(ActiveProjectModule)
+          Search Path: ..\..\core\source\rtl
 *)
 
 program dbxfbTests;
@@ -15,6 +16,7 @@ uses
   vcl.patch in '..\..\base\source\vcl.patch.pas',
   FastCodePatch in '..\..\base\source\FastCodePatch.pas',
   vcl.dbx.testcase in '..\source\testcase\vcl.dbx.testcase.pas';
+
 
 {$R *.RES}
 

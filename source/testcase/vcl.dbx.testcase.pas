@@ -1040,6 +1040,10 @@ begin
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
+  Param.AsString := '0.00001';
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
   Param.AsString := '-0.1';
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
@@ -1053,6 +1057,10 @@ begin
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
   Param.AsString := '-0.0001';
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsString := '-0.00001';
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
