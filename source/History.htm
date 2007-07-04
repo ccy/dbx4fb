@@ -1,0 +1,35 @@
+1.0.0.1 Release on May 15 2007
+
+1.0.0.2 Release on May 16 2007
+
+- Fixed incorrect handling of isc_get_segment when reading Blob field. Did not call isc_close_blob if there is no more blob data to read (when reach isc_segstr_eof). This will cause massive memory leaking
+- Did not free XSQLVAR.sqlind after used.
+- Fixed Param.AsDateTime := Date error. setParameter did not interpret fldTIMESTAMP
+- Fixed Param.AsString := '-3.41060513164848E-13' and pass to Decimal or Numeric Data type will cause StrToBcd conversion error.
+
+1.0.0.3 Release on May 25 2007
+
+- Support HostName parameter in TSQLConnection.Params
+- Auto detect if connection is loopback (localhost, 127.0.0.1). Access speed will improve much using local protocol
+- Improve access performance to Blob Field
+- Improve access performance to BCD Field
+
+1.0.0.4 Release on Jul 04 2007
+
+- Fix BCD conversion bug that pass value (0.1 or -0.1) to TXSQLVAR.SetBCD
+
+3.0.0.4 Release on 
+
+- Fixed Access Violation when using the driver with DBX4 
+
+4.0.0.1 Release on Jun 14 2007
+
+- Firebird Driver for DBX4 Dynalink Driver
+
+4.0.0.2 Release on Jun 21 2007
+
+- Fixed Access Violation when accessing Firebird 2.0 Database metadata
+
+4.0.0.3 Release on Jul 04 2007
+
+- Fix BCD conversion bug that pass value (0.1 or -0.1) to TXSQLVAR.SetBCD
