@@ -167,6 +167,7 @@ type
 
   TTestCase_DBX_DataSnap = class(TTestCase_DBX)
   private
+    FCounter: integer;
     FDataSet: TSQLDataSet;
     FDSP: TDataSetProvider;
     FCDS: TClientDataSet;
@@ -176,6 +177,7 @@ type
   published
     procedure Test_Repeated_Open;
     procedure Test_Master_Detail;
+    procedure Test_Self_Manage_Transaction;
   end;
 
 implementation
@@ -1556,6 +1558,26 @@ begin
   CheckFalse(FCDS.Active);
   FCDS.SetProvider(FDSP);
   FCDS.Open;
+end;
+
+procedure TTestCase_DBX_DataSnap.Test_Self_Manage_Transaction;
+var T: TTransactionDesc;
+    i: integer;
+begin
+  for i := 1 to 10 do begin
+    T.GlobalID := 1;
+    T.IsolationLevel := xilREADCOMMITTED;
+    FConnection.StartTransaction(T);
+    try
+      FCDS.SetProvider(FDSP);
+      FCDS.Open;
+      FCDS.Close;
+      FConnection.Commit(T);
+    except
+      FConnection.Rollback(T);
+      raise;
+    end;
+  end;
 end;
 
 { TTestCase_DBX_TSQLStoredProc }

@@ -13,10 +13,7 @@ uses
   TestFramework,
   GUITestRunner,
   TextTestRunner,
-  vcl.patch in '..\..\base\source\vcl.patch.pas',
-  FastCodePatch in '..\..\base\source\FastCodePatch.pas',
   vcl.dbx.testcase in '..\source\testcase\vcl.dbx.testcase.pas';
-
 
 {$R *.RES}
 
