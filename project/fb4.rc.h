@@ -4,5 +4,5 @@
 #define _CompanyName "E Stream Software Sdn Bhd"
 #define _CompanyURL "www.sql.com.my"
 #define _SupportURL "www.sql.com.my/support"
-#define _FileVersion 4,0,0,2
-#define _FileVersionStr "4,0,0,2"
+#define _FileVersion 4,0,0,4
+#define _FileVersionStr "4,0,0,4"
