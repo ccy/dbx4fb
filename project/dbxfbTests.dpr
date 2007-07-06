@@ -13,6 +13,7 @@ uses
   TestFramework,
   GUITestRunner,
   TextTestRunner,
+  MidasLib,
   vcl.dbx.testcase in '..\source\testcase\vcl.dbx.testcase.pas';
 
 {$R *.RES}
