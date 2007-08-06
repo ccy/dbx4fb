@@ -159,7 +159,7 @@ begin
          char(isc_dpb_password) + char(Length(FPassword)) + FPassword;
 
   sServerName := FDatabase;
-  if not IsLocalHost then
+  if FHostName <> '' then
     sServerName := FHostName + ':' + sServerName;
 
   FDBHandle := nil;

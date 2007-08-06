@@ -67,7 +67,9 @@ function TMetaDataProvider_Firebird.GetColumnLength(const aColNo: TInt32):
 var V: TXSQLVAR;
 begin
   V := FSQLDA.Vars[aColNo];
-  if V.CheckType(SQL_INT64) then
+  if V.CheckType(SQL_VARYING) then
+    Result := V.sqllen + 1
+  else if V.CheckType(SQL_INT64) then
     Result := SizeOf(TBcd)
   else if V.CheckType(SQL_FLOAT) then
     Result := SizeOf(Double)

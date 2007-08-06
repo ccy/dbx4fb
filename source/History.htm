@@ -33,3 +33,15 @@
 4.0.0.3 Release on Jul 04 2007
 
 - Fix BCD conversion bug that pass value (0.1 or -0.1) to TXSQLVAR.SetBCD
+
+4.0.0.4 Release on Jul 05 2007
+
+- Fix a bug where datasnap application try to retrieve nested data packet for more than 1 time, the auto commit semantic implement in DBX4 driver will prompt transaction exception.
+
+4.0.0.5 Release on Jul 06 2007
+
+- Fix program suddenly close on embedded database. Place a sleep instruction before FreeLibrary handle.
+
+4.0.0.6 Release on Aug 06 2007
+
+- If run DBX4 application compile with FastMM full debug mode, VARCHAR column may prompt corrupt memory block when TField.GetIsNull is invoked.  The cause is due to the VARCHAR column size returned was (ActualSize + 2) instead of (ActualSize + 1).
