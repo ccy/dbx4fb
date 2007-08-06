@@ -772,6 +772,7 @@ var i: integer;
 begin
   Param.AsString := 'CHAR';
   Execute;
+  CheckFalse(Field.IsNull);
   CheckEquals(TStringField, Field.ClassType);
   CheckEquals(101, Field.DataSize);
   CheckEquals(100, Field.Size);
@@ -1170,6 +1171,7 @@ var F: TStringField;
 begin
   Param.AsString := 'VARCHAR';
   Execute;
+  CheckFalse(Field.IsNull);
   CheckEquals(TStringField, Field.ClassType);
   F := Field as TStringField;
   CheckEquals(101, F.DataSize);
