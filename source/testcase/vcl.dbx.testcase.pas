@@ -75,6 +75,7 @@ type
 
   TTestCase_DBX_General = class(TTestCase_DBX)
   published
+    procedure Test_CAST_SQL_DECIMAL_Bug;
     procedure Test_Connection_Property;
     procedure Test_Execute;
     procedure Test_Execute_Commit;
@@ -466,6 +467,44 @@ begin
   FConnection.Close;
   FreeAndNil(FConnection);
   FreeAndNil(FSQLMonitor);
+end;
+
+procedure TTestCase_DBX_General.Test_CAST_SQL_DECIMAL_Bug;
+var pD: ^TSQLDataSet;
+    D: TSQLDataSet;
+    S: string;
+begin
+  //refer to BU-00010
+  New(pD);
+  try
+    S := 'CREATE TABLE T_TEST1 ' +
+            '( ' +
+            '  DTLKEY INTEGER NOT NULL, ' +
+            '  CURRENCYRATE DECIMAL(14, 6), ' +
+            '  AMOUNT DECIMAL(16, 2), ' +
+            '  SQTY	DECIMAL(18, 4), ' +
+            '  PRIMARY KEY(DTLKEY) ' +
+             ') ';
+    FConnection.ExecuteDirect(S);
+
+    S := 'INSERT INTO T_TEST1 (DTLKEY, CURRENCYRATE, AMOUNT, SQTY) ' +
+         'VALUES (1, 9011.2, 1482.8, 1)';
+    FConnection.ExecuteDirect(S);
+
+    S := 'INSERT INTO T_TEST1 (DTLKEY, CURRENCYRATE, AMOUNT, SQTY) ' +
+         'VALUES (2, 9317.2, 2965.6, 2)';
+    FConnection.ExecuteDirect(S);
+
+    S := 'SELECT CAST(Amount * CurrencyRate AS DECIMAL(18, 8)) / SQTY AS UnitPrice ' +
+             'FROM T_TEST1';
+    FConnection.Execute(S, nil, pD);
+    D := pD^;
+    D.Free;
+
+    FConnection.ExecuteDirect('DROP TABLE T_TEST1');
+  finally
+    Dispose(pD);
+  end;
 end;
 
 procedure TTestCase_DBX_General.Test_Connection_Property;
