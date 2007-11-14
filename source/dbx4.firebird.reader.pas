@@ -46,6 +46,7 @@ type
 
   TDBXReader_Firebird_DSQL = class(TDBXReader_Firebird)
   private
+    FConnection: IDBXConnection;
     FDBHandle: pisc_db_handle;
     FDSQL: IFirebird_DSQL;
     FTrimChar: boolean;
@@ -62,6 +63,7 @@ type
         TDBXErrorCode;
     function GetDouble(Ordinal: TInt32; out Value: PDouble; out IsNull: LongBool):
         TDBXErrorCode;
+    function GetFirebirdLibrary: IFirebirdLibrary; override;
     function GetFixedBytes(Ordinal: TInt32; Value: TBytes; const LastIndex: TInt32;
         ValueOffset: TInt32; out IsNull: LongBool): TDBXErrorCode; override;
     function GetInt16(Ordinal: TInt32; out Value: PShortInt; out IsNull: LongBool):
@@ -78,8 +80,9 @@ type
         IsNull: LongBool): TDBXErrorCode; override;
     function Next: TDBXErrorCode; override;
   public
-    constructor Create(const aDBHandle: pisc_db_handle; const aMetaData:
-        IMetaDataProvider; const aDSQL: IFirebird_DSQL; const aTrimChar: boolean);
+    constructor Create(const aConnection: IDBXConnection; const aDBHandle:
+        pisc_db_handle; const aMetaData: IMetaDataProvider; const aDSQL:
+        IFirebird_DSQL; const aTrimChar: boolean);
   end;
 
 implementation
@@ -197,11 +200,12 @@ begin
   Result := TDBXErrorCodes.None;
 end;
 
-constructor TDBXReader_Firebird_DSQL.Create(const aDBHandle: pisc_db_handle; const
-    aMetaData: IMetaDataProvider; const aDSQL: IFirebird_DSQL; const aTrimChar:
-    boolean);
+constructor TDBXReader_Firebird_DSQL.Create(const aConnection: IDBXConnection;
+    const aDBHandle: pisc_db_handle; const aMetaData: IMetaDataProvider; const
+    aDSQL: IFirebird_DSQL; const aTrimChar: boolean);
 begin
   inherited Create(aMetaData);
+  FConnection := aConnection;
   FDBHandle := aDBHandle;
   FDSQL := aDSQL;
   FTrimChar := aTrimChar;
@@ -266,6 +270,11 @@ begin
   FDSQL.o_SQLDA[Ordinal].GetDouble(Value, B);
   IsNull := B;
   Result := TDBXErrorCodes.None;
+end;
+
+function TDBXReader_Firebird_DSQL.GetFirebirdLibrary: IFirebirdLibrary;
+begin
+  Result := (FConnection as IDBXBase_Firebird).FirebirdLibrary;
 end;
 
 function TDBXReader_Firebird_DSQL.GetFixedBytes(Ordinal: TInt32; Value: TBytes;

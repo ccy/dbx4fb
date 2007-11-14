@@ -205,7 +205,7 @@ begin
   if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
 
   M := TMetaDataProvider_Firebird.Create(FDSQL.o_SQLDA);
-  Reader := TDBXReader_Firebird_DSQL.Create(FDBHandle, M, FDSQL, FTrimChar);
+  Reader := TDBXReader_Firebird_DSQL.Create(FConnection, FDBHandle, M, FDSQL, FTrimChar);
   Result := TDBXErrorCodes.None;
 end;
 
@@ -254,7 +254,7 @@ begin
 
     M := TMetaDataProvider_FieldColumns.Create(TMetaData_Firebird_Factory.New_getColumns(sTableName));
 
-    aReader := TDBXReader_Firebird_DSQL.Create(FDBHandle, M, FDSQL, True);
+    aReader := TDBXReader_Firebird_DSQL.Create(FConnection, FDBHandle, M, FDSQL, True);
     Result := TDBXErrorCodes.None;
   end else if Pos(TDBXMetaDataCommands.GetTables, SQL) = 1 then begin
     // GetTables "G:\Win.XP\ccy\LOCALS~1\Temp\T_OFWSA5ZZ354AUHCO55K2GC5IYA"."SYSDBA".% SystemTable
@@ -286,7 +286,7 @@ begin
 
     M := TMetaDataProvider_FieldColumns.Create(TMetaData_Firebird_Factory.New_getTables);
 
-    aReader := TDBXReader_Firebird_DSQL.Create(FDBHandle, M, FDSQL, True);
+    aReader := TDBXReader_Firebird_DSQL.Create(FConnection, FDBHandle, M, FDSQL, True);
     Result := TDBXErrorCodes.None;
   end else if Pos(TDBXMetaDataCommands.GetIndexes, SQL) = 1 then begin
     // GetIndexes "G:\Win.XP\ccy\LOCALS~1\Temp\T_OZFAI1PPYS4NE20MVD2GAV4UZB"."SYSDBA"."RDB$RELATIONS"
@@ -318,7 +318,7 @@ begin
 
     M := TMetaDataProvider_FieldColumns.Create(TMetaData_Firebird_Factory.New_getIndices(sTableName));
 
-    aReader := TDBXReader_Firebird_DSQL.Create(FDBHandle, M, FDSQL, True);
+    aReader := TDBXReader_Firebird_DSQL.Create(FConnection, FDBHandle, M, FDSQL, True);
     Result := TDBXErrorCodes.None;
   end else
     Assert(False);
