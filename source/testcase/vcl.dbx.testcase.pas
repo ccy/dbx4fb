@@ -495,11 +495,15 @@ begin
          'VALUES (2, 9317.2, 2965.6, 2)';
     FConnection.ExecuteDirect(S);
 
+    StartExpectingException(TDBXError);
     S := 'SELECT CAST(Amount * CurrencyRate AS DECIMAL(18, 8)) / SQTY AS UnitPrice ' +
              'FROM T_TEST1';
-    FConnection.Execute(S, nil, pD);
-    D := pD^;
-    D.Free;
+    try
+      FConnection.Execute(S, nil, pD);
+    finally
+      D := pD^;
+      D.Free;
+    end;
 
     FConnection.ExecuteDirect('DROP TABLE T_TEST1');
   finally
