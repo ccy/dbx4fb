@@ -36,28 +36,44 @@ type
     procedure BeforeDestruction; override;
   end;
 
-  TTestSuite_DBX_Factory = class
-  private
+  TTestSuite_DBX = class abstract
+  protected
     class procedure CheckTestDataFile;
     class function GetTestDataFileName: string;
-    class function Suite(const aTestData: ITestData): ITestSuite;
     class function GetParams(const aHostName, aExtraParams: string): string;
+    class function GetServerVersion(aLibraryName, aParams: string): string;
+  end;
+
+  TTestSuite_DBX1 = class abstract(TTestSuite_DBX)
+  private
     class function NewTestDataList(const aParams: string): IInterfaceList;
     class procedure RegisterTest(const aParams: string);
-    class function GetServerVersion(aLibraryName, aParams: string): string;
+    class function Suite(const aTestData: ITestData): ITestSuite;
   public
     class procedure Setup;
   end;
 
-  ITestCase_DBX = interface(IInterface)
+  TTestSuite_DBX2 = class abstract(TTestSuite_DBX)
+  private
+    class function NewTestDataList(const aParams: string): IInterfaceList;
+  public
+    class procedure Setup;
+  end;
+
+  ITestCase_DBX1 = interface(IInterface)
   ['{48656BDE-5C04-4CB6-895A-88139FD08E03}']
     procedure SetTestData(const I: ITestData);
   end;
 
-  TTestCase_DBX = class(TTestCase, ITestCase_DBX)
+  ITestCase_DBX2 = interface(IInterface)
+  ['{E56373C3-BD6E-444C-B11D-78A8BB842DC6}']
+    procedure SetTestData(const I1, I2: ITestData);
+  end;
+
+  TTestCase_DBX = class(TTestCase, ITestCase_DBX1)
   private
     FConnection: TSQLConnection;
-    FTestData: ITestData;
+    FTestData: ITestData;                                           
     FSQLMonitor: TSQLMonitor;
     {$if CompilerVersion <= 18}
     procedure SQLMonitorOnLogTrace(Sender: TObject; CBInfo: pSQLTRACEDesc);
@@ -156,7 +172,7 @@ type
     procedure Test_ctQuery;
   end;
 
-  TTestCase_DBX_TSQLStoredProc = class(TTestCase_DBX)
+  TTestCase_DBX_TSQLStoredProc = class(TTestCase_DBX)                             
   private
     FStoredProc: TSQLStoredProc;
   protected
@@ -168,7 +184,6 @@ type
 
   TTestCase_DBX_DataSnap = class(TTestCase_DBX)
   private
-    FCounter: integer;
     FDataSet: TSQLDataSet;
     FDSP: TDataSetProvider;
     FCDS: TClientDataSet;
@@ -179,6 +194,18 @@ type
     procedure Test_Repeated_Open;
     procedure Test_Master_Detail;
     procedure Test_Self_Manage_Transaction;
+  end;
+
+  TTestCase_DBX_Server_Embed = class(TTestCase, ITestCase_DBX2)
+  private
+    FTestData1: ITestData;
+    FTestData2: ITestData;
+  protected
+    procedure SetTestData(const I1, I2: ITestData);
+  public
+    class function NewSuite(const aTestData1, aTestData2: ITestData): ITestSuite;
+  published
+    procedure Test_Unavailable_Database;
   end;
 
 implementation
@@ -261,7 +288,7 @@ begin
   aConnection.Params.Text := FParams;
 end;
 
-class procedure TTestSuite_DBX_Factory.CheckTestDataFile;
+class procedure TTestSuite_DBX.CheckTestDataFile;
 var F: TIniFile;
 begin
   if FileExists(GetTestDataFileName) then Exit;
@@ -278,24 +305,11 @@ begin
   end;
 end;
 
-class function TTestSuite_DBX_Factory.Suite(const aTestData: ITestData): ITestSuite;
-var S: TTestSuite;
-begin
-  S := TTestSuite.Create(aTestData.Name);
-  S.AddSuite(TTestCase_DBX_General.NewSuite(aTestData));
-  S.AddSuite(TTestCase_DBX_Transaction.NewSuite(aTestData));
-  S.AddSuite(TTestCase_DBX_FieldType.NewSuite(aTestData));
-  S.AddSuite(TTest_DBX_FieldType_NOT_NULL.NewSuite(aTestData));
-  S.AddSuite(TTestCase_DBX_TSQLDataSet.NewSuite(aTestData));
-  S.AddSuite(TTestCase_DBX_DataSnap.NewSuite(aTestData));
-//  S.AddSuite(TTestCase_DBX_TSQLStoredProc.NewSuite(aTestData));
-  Result := S as ITestSuite;
-end;
-
-class function TTestSuite_DBX_Factory.GetParams(const aHostName, aExtraParams:
+class function TTestSuite_DBX.GetParams(const aHostName, aExtraParams:
     string): string;
 begin
-  Result := SQLDIALECT_KEY + '=3'
+  Result := DRIVERNAME_KEY + '=' + TUniqueName.New 
+            + #13#10 + SQLDIALECT_KEY + '=3'
             + #13#10 + szUSERNAME + '=SYSDBA'
             + #13#10 + szPASSWORD + '=masterkey'
             + #13#10 + ROLENAME_KEY + '=RoleName'
@@ -311,88 +325,12 @@ begin
               + HOSTNAME_KEY + '=' + aHostName;
 end;
 
-class function TTestSuite_DBX_Factory.GetTestDataFileName: string;
+class function TTestSuite_DBX.GetTestDataFileName: string;
 begin
   Result := ChangeFileExt(ParamStr(0), '.ini');
 end;
 
-class function TTestSuite_DBX_Factory.NewTestDataList(const aParams: string):
-    IInterfaceList;
-var F: TIniFile;
-    sDrivers, sServers, sEmbeds: TStringList;
-    i: integer;
-    j: Integer;
-    sParams: string;
-    sVer: string;
-begin
-  Result := TInterfaceList.Create;
-
-  F := TIniFile.Create(GetTestDataFileName);
-  sDrivers := TStringList.Create;
-  sServers := TStringList.Create;
-  sEmbeds := TStringList.Create;
-  try
-    F.ReadSectionValues('driver', sDrivers);
-    F.ReadSectionValues('server', sServers);
-    F.ReadSectionValues('embedded', sEmbeds);
-    for i := 0 to sDrivers.Count - 1 do begin
-      for j := 0 to sServers.Count - 1 do begin
-        sParams := GetParams(sServers.ValueFromIndex[j], aParams);
-
-        sVer := GetServerVersion(F.ReadString('vendor', 'default', ''), sParams);
-
-        Result.Add(
-          TTestData_SQLConnection.Create('INTERBASE', sDrivers.ValueFromIndex[i],
-          sDrivers.Names[i], F.ReadString('vendor', sVer, sVer), sParams)
-        );
-      end;
-      for j := 0 to sEmbeds.Count - 1 do begin
-        sParams := GetParams('', aParams);
-
-        sVer := GetServerVersion(sEmbeds.ValueFromIndex[j], sParams);
-
-        Result.Add(
-          TTestData_SQLConnection.Create('INTERBASE', sDrivers.ValueFromIndex[i],
-          sDrivers.Names[i], sEmbeds.ValueFromIndex[j], sParams)
-        );
-      end;
-    end;
-  finally
-    sDrivers.Free;
-    sServers.Free;
-    sEmbeds.Free;
-    F.Free;
-  end;
-end;
-
-class procedure TTestSuite_DBX_Factory.RegisterTest(const aParams: string);
-var L: IInterfaceList;
-    i: integer;
-    T: ITestSuite;
-begin
-  T := TTestSuite.Create('TSQLConnection: ' + StringReplace(aParams, #13#10, ' , ', [rfReplaceAll]));
-  L := NewTestDataList(aParams);
-  for i := 0 to L.Count - 1 do
-    T.AddSuite(Suite(L[i] as ITestData));
-  TestFrameWork.RegisterTest(T);
-end;
-
-class procedure TTestSuite_DBX_Factory.Setup;
-begin
-  CheckTestDataFile;
-  
-  RegisterTest('CommitRetain=False'
-    + #13#10 + WAITONLOCKS_KEY + '=False'
-    + #13#10 + 'Trim Char=False'
-  );
-
-  RegisterTest('CommitRetain=False'
-    + #13#10 + WAITONLOCKS_KEY + '=False'
-    + #13#10 + 'Trim Char=True'
-  );
-end;
-
-class function TTestSuite_DBX_Factory.GetServerVersion(aLibraryName, aParams:
+class function TTestSuite_DBX.GetServerVersion(aLibraryName, aParams:
     string): string;
 var L: TStringList;
     S: IFirebirdService;
@@ -409,7 +347,7 @@ end;
 
 function TTestCase_DBX.IsTrimChar: boolean;
 var b: longint;
-    iLen: Smallint;
+    {$if CompilerVersion <= 18}iLen: Smallint;{$ifend}
 begin
   {$if CompilerVersion <= 18}
   Assert(FConnection.SQLConnection.GetOption(eConnTrimChar, @b, SizeOf(b), iLen) = DBXERR_NONE);
@@ -425,7 +363,7 @@ var i: integer;
 begin
   Result := Suite;
   for i := 0 to Result.CountTestCases - 1 do
-    (Result.Tests[i] as ITestCase_DBX).SetTestData(aTestData);
+    (Result.Tests[i] as ITestCase_DBX1).SetTestData(aTestData);
 end;
 
 procedure TTestCase_DBX.SetTestData(const aTestData: ITestData);
@@ -1316,7 +1254,7 @@ begin
 end;
 
 procedure TTestCase_DBX_Transaction.Test_Duplicate_TransactionID;
-var T1, T2: TTransactionDesc;
+{$if CompilerVersion <= 18}var T1, T2: TTransactionDesc;{$ifend}
 begin
   {$if CompilerVersion <= 18}
   T1.TransactionID := 1;
@@ -1331,7 +1269,7 @@ begin
 end;
 
 procedure TTestCase_DBX_Transaction.Test_Invalid_TransactionID;
-var T: TTransactionDesc;
+{$if CompilerVersion <= 18}var T: TTransactionDesc;{$ifend}
 begin
   {$if CompilerVersion <= 18}
   StartExpectingException(EDatabaseError);
@@ -1407,7 +1345,7 @@ begin
 end;
 
 procedure TTestCase_DBX_Transaction.Test_Transaction_ReadCommitted;
-var T1, T2: TTransactionDesc;
+var TTestSuite_DBX1, TTestSuite_DBX2: TTransactionDesc;
     D: ^TSQLDataSet;
     V1, V2: string;
 begin
@@ -1416,23 +1354,23 @@ begin
 
   New(D);
   try
-    T1.TransactionID := 1;
-    T1.IsolationLevel := xilREADCOMMITTED;
-    FConnection.StartTransaction(T1);
+    TTestSuite_DBX1.TransactionID := 1;
+    TTestSuite_DBX1.IsolationLevel := xilREADCOMMITTED;
+    FConnection.StartTransaction(TTestSuite_DBX1);
     FConnection.Execute('SELECT * FROM T_REPEAT', nil, D);
     V1 := D^.Fields[0].AsString;
     D^.Free;
 
-    T2.TransactionID := 2;
-    T2.IsolationLevel := xilREADCOMMITTED;
-    FConnection.StartTransaction(T2);
+    TTestSuite_DBX2.TransactionID := 2;
+    TTestSuite_DBX2.IsolationLevel := xilREADCOMMITTED;
+    FConnection.StartTransaction(TTestSuite_DBX2);
     FConnection.ExecuteDirect('UPDATE T_REPEAT SET FIELD1=''ITEM-02''');
-    FConnection.Commit(T2);
+    FConnection.Commit(TTestSuite_DBX2);
 
     FConnection.Execute('SELECT * FROM T_REPEAT', nil, D);
     V2 := D^.Fields[0].AsString;
     D^.Free;
-    FConnection.Commit(T1);
+    FConnection.Commit(TTestSuite_DBX1);
 
     CheckEquals('ITEM-01', V1);
     CheckEquals('ITEM-02', V2);
@@ -1443,7 +1381,7 @@ begin
 end;
 
 procedure TTestCase_DBX_Transaction.Test_Transaction_RepeatableRead;
-var T1, T2: TTransactionDesc;
+var TTestSuite_DBX1, TTestSuite_DBX2: TTransactionDesc;
     D: ^TSQLDataSet;
     V1, V2: string;
 begin
@@ -1452,23 +1390,23 @@ begin
 
   New(D);
   try
-    T1.TransactionID := 1;
-    T1.IsolationLevel := xilREPEATABLEREAD;
-    FConnection.StartTransaction(T1);
+    TTestSuite_DBX1.TransactionID := 1;
+    TTestSuite_DBX1.IsolationLevel := xilREPEATABLEREAD;
+    FConnection.StartTransaction(TTestSuite_DBX1);
     FConnection.Execute('SELECT * FROM T_REPEAT', nil, D);
     V1 := D^.Fields[0].AsString;
     D^.Free;
 
-    T2.TransactionID := 2;
-    T2.IsolationLevel := xilREPEATABLEREAD;
-    FConnection.StartTransaction(T2);
+    TTestSuite_DBX2.TransactionID := 2;
+    TTestSuite_DBX2.IsolationLevel := xilREPEATABLEREAD;
+    FConnection.StartTransaction(TTestSuite_DBX2);
     FConnection.ExecuteDirect('UPDATE T_REPEAT SET FIELD1=''ITEM-02''');
-    FConnection.Commit(T2);
+    FConnection.Commit(TTestSuite_DBX2);
 
     FConnection.Execute('SELECT * FROM T_REPEAT', nil, D);
     V2 := D^.Fields[0].AsString;
     D^.Free;
-    FConnection.Commit(T1);
+    FConnection.Commit(TTestSuite_DBX1);
 
     CheckEquals(V1, V2);
   finally
@@ -1478,7 +1416,7 @@ begin
 end;
 
 procedure TTestCase_DBX_Transaction.Test_Transaction_WaitLock;
-var T1, T2: TTransactionDesc;
+var TTestSuite_DBX1, TTestSuite_DBX2: TTransactionDesc;
     D: ^TSQLDataSet;
     V1: integer;
 begin
@@ -1486,28 +1424,28 @@ begin
 
   New(D);
   try
-    T1.TransactionID := 1;
-    T1.IsolationLevel := xilREADCOMMITTED;
-    FConnection.StartTransaction(T1);
+    TTestSuite_DBX1.TransactionID := 1;
+    TTestSuite_DBX1.IsolationLevel := xilREADCOMMITTED;
+    FConnection.StartTransaction(TTestSuite_DBX1);
     try
       FConnection.ExecuteDirect('INSERT INTO T_LOCK VALUES(''ITEM-01'', 1)');
 
-      T2.TransactionID := 2;
-      T2.IsolationLevel := xilREADCOMMITTED;
-      FConnection.StartTransaction(T2);
+      TTestSuite_DBX2.TransactionID := 2;
+      TTestSuite_DBX2.IsolationLevel := xilREADCOMMITTED;
+      FConnection.StartTransaction(TTestSuite_DBX2);
       try
         FConnection.Execute('SELECT COUNT(*) FROM T_LOCK', nil, D);
         V1 := D^.Fields[0].AsInteger;
         D^.Free;
-        FConnection.Commit(T2);
+        FConnection.Commit(TTestSuite_DBX2);
         CheckEquals(0, V1);
       except
-        FConnection.Rollback(T2);
+        FConnection.Rollback(TTestSuite_DBX2);
         raise;
       end;
-      FConnection.Commit(T1);
+      FConnection.Commit(TTestSuite_DBX1);
     except
-      FConnection.Rollback(T1);
+      FConnection.Rollback(TTestSuite_DBX1);
       raise;
     end;
   finally
@@ -1674,6 +1612,205 @@ begin
   FConnection.ExecuteDirect('DROP PROCEDURE PROC');
 end;
 
+class function TTestCase_DBX_Server_Embed.NewSuite(const aTestData1,
+    aTestData2: ITestData): ITestSuite;
+var i: integer;
+begin
+  Result := Suite;
+  for i := 0 to Result.CountTestCases - 1 do
+    (Result.Tests[i] as ITestCase_DBX2).SetTestData(aTestData1, aTestData2);
+end;
+
+{ TTestCase_DBX_Server_Embed }
+
+procedure TTestCase_DBX_Server_Embed.SetTestData(const I1, I2: ITestData);
+begin
+  FTestData1 := I1;
+  FTestData2 := I2;
+end;
+
+procedure TTestCase_DBX_Server_Embed.Test_Unavailable_Database;
+var C1, C2: TSQLConnection;
+begin
+  C1 := TSQLConnection.Create(nil);
+  C2 := TSQLConnection.Create(nil);
+  try
+    FTestData1.Setup(C1);
+    C1.Open;
+    CheckTrue(C1.Connected);
+
+    FTestData2.Setup(C2);
+    C2.Open;
+    CheckTrue(C2.Connected);
+  finally
+    C2.Free;
+    C1.Free;
+  end;
+end;
+
+class function TTestSuite_DBX1.NewTestDataList(const aParams: string): IInterfaceList;
+var F: TIniFile;
+    sDrivers, sServers, sEmbeds: TStringList;
+    i: integer;
+    j: Integer;
+    sParams: string;
+    sVer: string;
+begin
+  Result := TInterfaceList.Create;
+
+  F := TIniFile.Create(GetTestDataFileName);
+  sDrivers := TStringList.Create;
+  sServers := TStringList.Create;
+  sEmbeds := TStringList.Create;
+  try
+    F.ReadSectionValues('driver', sDrivers);
+    F.ReadSectionValues('server', sServers);
+    F.ReadSectionValues('embedded', sEmbeds);
+    for i := 0 to sDrivers.Count - 1 do begin
+      for j := 0 to sServers.Count - 1 do begin
+        sParams := GetParams(sServers.ValueFromIndex[j], aParams);
+
+        sVer := GetServerVersion(F.ReadString('vendor', 'default', ''), sParams);
+
+        Result.Add(
+          TTestData_SQLConnection.Create('INTERBASE', sDrivers.ValueFromIndex[i],
+          sDrivers.Names[i], F.ReadString('vendor', sVer, sVer), sParams)
+        );
+      end;
+      for j := 0 to sEmbeds.Count - 1 do begin
+        sParams := GetParams('', aParams);
+
+        sVer := GetServerVersion(sEmbeds.ValueFromIndex[j], sParams);
+
+        Result.Add(
+          TTestData_SQLConnection.Create('INTERBASE', sDrivers.ValueFromIndex[i],
+          sDrivers.Names[i], sEmbeds.ValueFromIndex[j], sParams)
+        );
+      end;
+    end;
+  finally
+    sDrivers.Free;
+    sServers.Free;
+    sEmbeds.Free;
+    F.Free;
+  end;
+end;
+
+class procedure TTestSuite_DBX1.RegisterTest(const aParams: string);
+var L: IInterfaceList;
+    i: integer;
+    T: ITestSuite;
+begin
+  T := TTestSuite.Create('TSQLConnection: ' + StringReplace(aParams, #13#10, ' , ', [rfReplaceAll]));
+  L := NewTestDataList(aParams);
+  for i := 0 to L.Count - 1 do
+    T.AddSuite(Suite(L[i] as ITestData));
+  TestFrameWork.RegisterTest(T);
+end;
+
+class procedure TTestSuite_DBX1.Setup;
+begin
+  RegisterTest('CommitRetain=False'
+    + #13#10 + WAITONLOCKS_KEY + '=False'
+    + #13#10 + 'Trim Char=False'
+  );
+
+  RegisterTest('CommitRetain=False'
+    + #13#10 + WAITONLOCKS_KEY + '=False'
+    + #13#10 + 'Trim Char=True'
+  );
+end;
+
+class function TTestSuite_DBX1.Suite(const aTestData: ITestData): ITestSuite;
+var S: TTestSuite;
+begin
+  S := TTestSuite.Create(aTestData.Name);
+  S.AddSuite(TTestCase_DBX_General.NewSuite(aTestData));
+  S.AddSuite(TTestCase_DBX_Transaction.NewSuite(aTestData));
+  S.AddSuite(TTestCase_DBX_FieldType.NewSuite(aTestData));
+  S.AddSuite(TTest_DBX_FieldType_NOT_NULL.NewSuite(aTestData));
+  S.AddSuite(TTestCase_DBX_TSQLDataSet.NewSuite(aTestData));
+  S.AddSuite(TTestCase_DBX_DataSnap.NewSuite(aTestData));
+//  S.AddSuite(TTestCase_DBX_TSQLStoredProc.NewSuite(aTestData));
+  Result := S as ITestSuite;
+end;
+
+class function TTestSuite_DBX2.NewTestDataList(const aParams: string): IInterfaceList;
+var F: TIniFile;
+    sDrivers, sServers, sEmbeds: TStringList;
+    i: integer;
+    j, k: Integer;
+    sParams1, sParams2: string;
+    sVer1: string;
+    L: IInterfaceList;
+begin
+  Result := TInterfaceList.Create;
+
+  F := TIniFile.Create(GetTestDataFileName);
+  sDrivers := TStringList.Create;
+  sServers := TStringList.Create;
+  sEmbeds := TStringList.Create;
+  try
+    F.ReadSectionValues('driver', sDrivers);
+    F.ReadSectionValues('server', sServers);
+    F.ReadSectionValues('embedded', sEmbeds);
+    for i := 0 to sDrivers.Count - 1 do begin
+      for j := 0 to sServers.Count - 1 do begin
+        sParams1 := GetParams(sServers.ValueFromIndex[j], aParams);
+        sVer1 := GetServerVersion(F.ReadString('vendor', 'default', ''), sParams1);
+
+        for k := 0 to sEmbeds.Count - 1 do begin
+          L := TInterfaceList.Create;
+
+          L.Add(
+            TTestData_SQLConnection.Create('INTERBASE', sDrivers.ValueFromIndex[i],
+            sDrivers.Names[i], F.ReadString('vendor', sVer1, sVer1), sParams1)
+          );
+
+          sParams2 := GetParams('', aParams);
+          L.Add(
+            TTestData_SQLConnection.Create('INTERBASE1', sDrivers.ValueFromIndex[i],
+            sDrivers.Names[i], sEmbeds.ValueFromIndex[k], sParams2)
+          );
+
+          Result.Add(L);
+        end;
+      end;
+    end;
+  finally
+    sDrivers.Free;
+    sServers.Free;
+    sEmbeds.Free;
+    F.Free;
+  end;
+end;
+
+class procedure TTestSuite_DBX2.Setup;
+var L, M: IInterfaceList;
+    i: integer;
+    T, S: ITestSuite;
+    D0, D1: ITestData;
+begin
+  T := TTestSuite.Create('Test Unavailable Database');
+  L := NewTestDataList('');
+  for i := 0 to L.Count - 1 do begin
+    M := L[i] as IInterfaceList;
+
+    D0 := M[0] as ITestData;
+    D1 := M[1] as ITestData;
+
+    S := TTestSuite.Create(D0.Name + '  ' + D1.Name);
+    S.AddSuite(
+      TTestCase_DBX_Server_Embed.NewSuite(D0, D1)
+    );
+
+    T.AddSuite(S);
+  end;
+  TestFrameWork.RegisterTest(T);
+end;
+
 initialization
-  TTestSuite_DBX_Factory.Setup;
+  TTestSuite_DBX.CheckTestDataFile;
+  TTestSuite_DBX1.Setup;
+  TTestSuite_DBX2.Setup;
 end.
