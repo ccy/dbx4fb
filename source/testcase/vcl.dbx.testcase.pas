@@ -255,9 +255,12 @@ begin
     sImpl := S.GetServerImplementation;
     if L.Values[HOSTNAME_KEY] = '' then
       sDatabase := IncludeTrailingPathDelimiter(GetEnvironmentVariable('TEMP'))
-    else if ContainsText(sImpl, 'Windows') then
-      sDatabase := 'c:\'
-    else if ContainsText(sImpl, 'Linux') then
+    else if ContainsText(sImpl, 'Windows') then begin
+      if SameText(L.Values[HOSTNAME_KEY], 'localhost') then
+        sDatabase := IncludeTrailingPathDelimiter(GetEnvironmentVariable('TEMP'))
+      else
+        sDatabase := 'c:\'
+    end else if ContainsText(sImpl, 'Linux') then
       sDatabase := '/tmp/'
     else
       Assert(False);
@@ -443,8 +446,8 @@ begin
       D.Free;
     end;
 
-    FConnection.ExecuteDirect('DROP TABLE T_TEST1');
   finally
+    FConnection.ExecuteDirect('DROP TABLE T_TEST1');
     Dispose(pD);
   end;
 end;
