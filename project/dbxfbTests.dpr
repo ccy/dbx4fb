@@ -8,7 +8,7 @@ Unit Output Directory: $(UnitOutputDir)\$(ActiveProjectModule)
 program dbxfbTests;
 
 uses
-  FastMM4,
+  SysUtils,
   Forms,
   TestFramework,
   GUITestRunner,
@@ -18,15 +18,20 @@ uses
 
 {$R *.RES}
 
+var P: array[0..1] of HMODULE;
+    H: HMODULE;
 begin
-  {$if CompilerVersion>=18}
-  if not IsConsole then
-    ReportMemoryLeaksOnShutdown := True;
-  {$ifend}
-  Application.Initialize;
-  if IsConsole then
-    TextTestRunner.RunRegisteredTests
-  else
-    GUITestRunner.RunRegisteredTests;
+  P[0] := LoadPackage('SQL.patch.vcl.bpl');
+  P[1] := LoadPackage('SQL.patch.dbx.bpl');
+  try
+    Application.Initialize;
+    if IsConsole then
+      TextTestRunner.RunRegisteredTests
+    else
+      GUITestRunner.RunRegisteredTests;
+  finally
+    for H in P do
+      UnloadPackage(H);
+  end;
 end.
 
