@@ -44,5 +44,4 @@ uses
 {$LIBSUFFIX '0'}
 
 begin
-  ReportMemoryLeaksOnShutdown := DebugHook <> 0;
 end.
