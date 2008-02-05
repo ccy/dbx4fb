@@ -34,7 +34,11 @@ uses
   dbx4.firebird.reader in '..\source\dbx4.firebird.reader.pas',
   dbx4.firebird.row in '..\source\dbx4.firebird.row.pas',
   dbx4.firebird.metadata in '..\source\dbx4.firebird.metadata.pas',
-  dbx4.firebird.base in '..\source\dbx4.firebird.base.pas';
+  dbx4.firebird.base in '..\source\dbx4.firebird.base.pas',
+  CodeRedirect in '..\..\core\source\patch\CodeRedirect.pas',
+  FmtBcd.QC50427 in '..\..\core\source\patch\FmtBcd.QC50427.pas',
+  FmtBcd.QC55176 in '..\..\core\source\patch\FmtBcd.QC55176.pas',
+  FmtBcd.QC55550 in '..\..\core\source\patch\FmtBcd.QC55550.pas';
 
 {$LIBPREFIX 'dbx'}
 {$LIBSUFFIX '0'}
