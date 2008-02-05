@@ -45,3 +45,9 @@
 4.0.0.6 Release on Aug 06 2007
 
 - If run DBX4 application compile with FastMM full debug mode, VARCHAR column may prompt corrupt memory block when TField.GetIsNull is invoked.  The cause is due to the VARCHAR column size returned was (ActualSize + 2) instead of (ActualSize + 1).
+
+4.0.0.7 Release on 04 Jan 2008
+
+- If perform massive database operation thru' the driver, the memory quickly climb up and cause out of memory.  This is due to function DBXBase_Close, the Handle is IDBXBase reference.  It should set to nil in this function: IDBXBase(Handle) := nil to free the instance.
+
+- Add FmtBcd patches

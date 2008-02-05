@@ -19,10 +19,6 @@
     <DCC_ObjOutput>$(UnitOutputDir)\$(ActiveProjectModule)</DCC_ObjOutput>
     <DCC_HppOutput>$(UnitOutputDir)\$(ActiveProjectModule)</DCC_HppOutput>
     <DCC_Optimize>False</DCC_Optimize>
-    <DCC_UnitSearchPath>$(IDE)\lib\Debug;$(IDE)\Lib\Debug\Indy10</DCC_UnitSearchPath>
-    <DCC_ResourcePath>$(IDE)\lib\Debug;$(IDE)\Lib\Debug\Indy10</DCC_ResourcePath>
-    <DCC_ObjPath>$(IDE)\lib\Debug;$(IDE)\Lib\Debug\Indy10</DCC_ObjPath>
-    <DCC_IncludePath>$(IDE)\lib\Debug;$(IDE)\Lib\Debug\Indy10</DCC_IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <Version>7.0</Version>
@@ -32,16 +28,32 @@
     <DCC_ObjOutput>$(UnitOutputDir)\$(ActiveProjectModule)</DCC_ObjOutput>
     <DCC_HppOutput>$(UnitOutputDir)\$(ActiveProjectModule)</DCC_HppOutput>
     <DCC_Optimize>False</DCC_Optimize>
-    <DCC_UnitSearchPath>$(BDS)\lib\Debug;$(BDS)\Lib\Debug\Indy10;$(ComponentDir)\dunit\lib\debug;$(IDE)\lib\Debug;$(IDE)\Lib\Debug\Indy10</DCC_UnitSearchPath>
-    <DCC_ResourcePath>$(BDS)\lib\Debug;$(BDS)\Lib\Debug\Indy10;$(ComponentDir)\dunit\lib\debug;$(IDE)\lib\Debug;$(IDE)\Lib\Debug\Indy10</DCC_ResourcePath>
-    <DCC_ObjPath>$(BDS)\lib\Debug;$(BDS)\Lib\Debug\Indy10;$(ComponentDir)\dunit\lib\debug;$(IDE)\lib\Debug;$(IDE)\Lib\Debug\Indy10</DCC_ObjPath>
-    <DCC_IncludePath>$(BDS)\lib\Debug;$(BDS)\Lib\Debug\Indy10;$(ComponentDir)\dunit\lib\debug;$(IDE)\lib\Debug;$(IDE)\Lib\Debug\Indy10</DCC_IncludePath>
+    <DCC_UnitSearchPath>$(ComponentDir)\FastMM\Lib\Debug;$(BDS)\lib\Debug;$(BDS)\Lib\Debug\Indy10</DCC_UnitSearchPath>
+    <DCC_ResourcePath>$(ComponentDir)\FastMM\Lib\Debug;$(BDS)\lib\Debug;$(BDS)\Lib\Debug\Indy10</DCC_ResourcePath>
+    <DCC_ObjPath>$(ComponentDir)\FastMM\Lib\Debug;$(BDS)\lib\Debug;$(BDS)\Lib\Debug\Indy10</DCC_ObjPath>
+    <DCC_IncludePath>$(ComponentDir)\FastMM\Lib\Debug;$(BDS)\lib\Debug;$(BDS)\Lib\Debug\Indy10</DCC_IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Profile|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_Optimize>False</DCC_Optimize>
+    <DCC_DebugInfoInExe>True</DCC_DebugInfoInExe>
+    <DCC_DebugVN>True</DCC_DebugVN>
+    <DCC_ExeOutput>$(OutputDir)\$(ActiveProjectModule)</DCC_ExeOutput>
+    <DCC_DcuOutput>$(UnitOutputDir)\$(ActiveProjectModule)</DCC_DcuOutput>
+    <DCC_ObjOutput>$(UnitOutputDir)\$(ActiveProjectModule)</DCC_ObjOutput>
+    <DCC_HppOutput>$(UnitOutputDir)\$(ActiveProjectModule)</DCC_HppOutput>
+    <DCC_UnitSearchPath>$(ComponentDir)\FastMM\Lib\Debug;$(BDS)\lib\Debug;$(BDS)\Lib\Debug\Indy10</DCC_UnitSearchPath>
+    <DCC_ResourcePath>$(ComponentDir)\FastMM\Lib\Debug;$(BDS)\lib\Debug;$(BDS)\Lib\Debug\Indy10</DCC_ResourcePath>
+    <DCC_ObjPath>$(ComponentDir)\FastMM\Lib\Debug;$(BDS)\lib\Debug;$(BDS)\Lib\Debug\Indy10</DCC_ObjPath>
+    <DCC_IncludePath>$(ComponentDir)\FastMM\Lib\Debug;$(BDS)\lib\Debug;$(BDS)\Lib\Debug\Indy10</DCC_IncludePath>
+    <DCC_Define>DEBUG</DCC_Define>
+    <DCC_GenerateStackFrames>True</DCC_GenerateStackFrames>
   </PropertyGroup>
   <ProjectExtensions>
     <Borland.Personality>Delphi.Personality</Borland.Personality>
     <Borland.ProjectType>VCLApplication</Borland.ProjectType>
     <BorlandProject>
-<BorlandProject><Delphi.Personality><Parameters><Parameters Name="UseLauncher">False</Parameters><Parameters Name="LoadAllSymbols">True</Parameters><Parameters Name="LoadUnspecifiedSymbols">False</Parameters><Parameters Name="HostApplication">G:\Project\output.d11\venus\SQLACC.exe</Parameters></Parameters><VersionInfo><VersionInfo Name="IncludeVerInfo">False</VersionInfo><VersionInfo Name="AutoIncBuild">False</VersionInfo><VersionInfo Name="MajorVer">1</VersionInfo><VersionInfo Name="MinorVer">0</VersionInfo><VersionInfo Name="Release">0</VersionInfo><VersionInfo Name="Build">0</VersionInfo><VersionInfo Name="Debug">False</VersionInfo><VersionInfo Name="PreRelease">False</VersionInfo><VersionInfo Name="Special">False</VersionInfo><VersionInfo Name="Private">False</VersionInfo><VersionInfo Name="DLL">False</VersionInfo><VersionInfo Name="Locale">1033</VersionInfo><VersionInfo Name="CodePage">1252</VersionInfo></VersionInfo><VersionInfoKeys><VersionInfoKeys Name="CompanyName"></VersionInfoKeys><VersionInfoKeys Name="FileDescription"></VersionInfoKeys><VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="InternalName"></VersionInfoKeys><VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys><VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys><VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys><VersionInfoKeys Name="ProductName"></VersionInfoKeys><VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="Comments"></VersionInfoKeys></VersionInfoKeys><Source><Source Name="MainSource">fb4.dpr</Source></Source><Excluded_Packages>
+<BorlandProject><Delphi.Personality><Parameters><Parameters Name="UseLauncher">False</Parameters><Parameters Name="LoadAllSymbols">True</Parameters><Parameters Name="LoadUnspecifiedSymbols">False</Parameters><Parameters Name="HostApplication">C:\Users\ccy\Documents\Project\output.d11\moon\dbxfbTests.exe</Parameters></Parameters><VersionInfo><VersionInfo Name="IncludeVerInfo">False</VersionInfo><VersionInfo Name="AutoIncBuild">False</VersionInfo><VersionInfo Name="MajorVer">1</VersionInfo><VersionInfo Name="MinorVer">0</VersionInfo><VersionInfo Name="Release">0</VersionInfo><VersionInfo Name="Build">0</VersionInfo><VersionInfo Name="Debug">False</VersionInfo><VersionInfo Name="PreRelease">False</VersionInfo><VersionInfo Name="Special">False</VersionInfo><VersionInfo Name="Private">False</VersionInfo><VersionInfo Name="DLL">False</VersionInfo><VersionInfo Name="Locale">1033</VersionInfo><VersionInfo Name="CodePage">1252</VersionInfo></VersionInfo><VersionInfoKeys><VersionInfoKeys Name="CompanyName"></VersionInfoKeys><VersionInfoKeys Name="FileDescription"></VersionInfoKeys><VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="InternalName"></VersionInfoKeys><VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys><VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys><VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys><VersionInfoKeys Name="ProductName"></VersionInfoKeys><VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="Comments"></VersionInfoKeys></VersionInfoKeys><Source><Source Name="MainSource">fb4.dpr</Source></Source><Excluded_Packages>
       
       
       
@@ -56,8 +68,46 @@
       
       
       
-      <Excluded_Packages Name="$(BDS)\bin\dclofficexp100.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       <Excluded_Packages Name="$(BDS)\bin\dcloffice2k100.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dclofficexp100.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+      <Excluded_Packages Name="C:\Users\ccy\Documents\Components\Components.d11\Developer Express inc\lib\dclcxPageControlD11.bpl">Express Cross Platform PageControl by Developer Express Inc.</Excluded_Packages>
     </Excluded_Packages></Delphi.Personality></BorlandProject></BorlandProject>
   </ProjectExtensions>
   <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />
@@ -68,6 +118,10 @@
     <RcCompile Include="fb4.rc">
       <Form>fb4.res</Form>
     </RcCompile>
+    <DCCReference Include="..\..\core\source\patch\CodeRedirect.pas" />
+    <DCCReference Include="..\..\core\source\patch\FmtBcd.QC50427.pas" />
+    <DCCReference Include="..\..\core\source\patch\FmtBcd.QC55176.pas" />
+    <DCCReference Include="..\..\core\source\patch\FmtBcd.QC55550.pas" />
     <DCCReference Include="..\..\core\source\rtl\firebird.client.debug.pas" />
     <DCCReference Include="..\..\core\source\rtl\firebird.client.pas" />
     <DCCReference Include="..\..\core\source\rtl\firebird.dsql.pas" />
