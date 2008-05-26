@@ -51,3 +51,7 @@
 - If perform massive database operation thru' the driver, the memory quickly climb up and cause out of memory.  This is due to function DBXBase_Close, the Handle is IDBXBase reference.  It should set to nil in this function: IDBXBase(Handle) := nil to free the instance.
 
 - Add FmtBcd patches
+
+4.1.0.8 Release on 26 May 2008
+
+- Connect to Firebird 2.1.0 will cause "Invalid parameter in Transaction parameter block" error.  This is due to the transaction parameter wasn't define properly.  A redundant parameter of isc_tpb_concurrency was added in previous version.
