@@ -8,11 +8,12 @@ uses Classes, TestFrameWork, TestExtensions, DB, SqlExpr, Provider, DBClient
      {$ifend}
      ;
 
-type
+type{$M+}
   EDBXError = {$if CompilerVersion<=18}EDatabaseError{$else}TDBXError{$ifend};
 
   ITestData = interface(IInterface)
   ['{2DCC2E1F-BCE2-4D04-A61E-03DBFC031D0E}']
+    function GetODS: string;
     function GetName: string;
     procedure Setup(const aConnection: TSQLConnection);
     property Name: string read GetName;
@@ -26,8 +27,10 @@ type
     FName: string;
     FParams: WideString;
     FVendorLib: string;
+    FODS: string;
     procedure CreateDatabase;
   protected
+    function GetODS: string;
     function GetName: string;
     procedure Setup(const aConnection: TSQLConnection);
   public
@@ -267,6 +270,8 @@ begin
     sDatabase := sDatabase + TUniqueName.New('T_');
 
     S.CreateDatabase(sDatabase);
+    FODS := S.GetODSVersion(sDatabase);
+
     L.Values[DATABASENAME_KEY] := sDatabase;
     FParams := L.Text;
 
@@ -279,6 +284,11 @@ end;
 function TTestData_SQLConnection.GetName: string;
 begin
   Result := FName;
+end;
+
+function TTestData_SQLConnection.GetODS: string;
+begin
+  Result := FODS;
 end;
 
 procedure TTestData_SQLConnection.Setup(const aConnection: TSQLConnection);
@@ -462,20 +472,25 @@ procedure TTestCase_DBX_General.Test_Execute;
 var pD: ^TSQLDataSet;
     D: TSQLDataSet;
     P: TParams;
+    iCount: integer;
 begin
+  iCount := 16;
+  if FTestData.GetODS >= '11.1' then
+    iCount := 17;
+
   New(pD);
   P := TParams.Create;
   try
     FConnection.Execute('SELECT * FROM RDB$RELATIONS', nil, pD);
     D := pD^;
-    CheckEquals(16, D.FieldCount);
+    CheckEquals(iCount, D.FieldCount);
     CheckFalse(D.Eof);
     D.Free;
 
     P.CreateParam(ftInteger, '1', ptInput).AsInteger := 1;
     FConnection.Execute('SELECT * FROM RDB$RELATIONS WHERE 1=?', P, pD);
     D := pD^;
-    CheckEquals(16, D.FieldCount);
+    CheckEquals(iCount, D.FieldCount);
     CheckFalse(D.Eof);
     D.Free;
   finally
@@ -511,6 +526,8 @@ begin
     L2.Add('RDB$FORMAT');
     L2.Add('RDB$FIELD_ID');
     L2.Add('RDB$RELATION_NAME');
+    if FTestData.GetODS >= '11.1' then
+      L2.Add('RDB$RELATION_TYPE');
     L2.Add('RDB$SECURITY_CLASS');
     L2.Add('RDB$EXTERNAL_FILE');
     L2.Add('RDB$RUNTIME');
