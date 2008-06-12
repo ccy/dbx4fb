@@ -211,6 +211,20 @@ type{$M+}
     procedure Test_Unavailable_Database;
   end;
 
+  TTestCase_DBX_TParam = class(TTestCase_DBX)
+  private
+    FCDS: TClientDataSet;
+    FDataSet: TSQLDataSet;
+    FDSP: TDataSetProvider;
+  protected
+    procedure SetUp; override;
+    procedure TearDown; override;
+  published
+    procedure Test_Param_Integer;
+    procedure Test_Param_LargeInt;
+    procedure Test_Param_String;
+  end;
+
 implementation
 
 uses SysUtils, DBXpress, SqlConst, Windows, StrUtils, FMTBcd,
@@ -1751,6 +1765,7 @@ begin
   S.AddSuite(TTest_DBX_FieldType_NOT_NULL.NewSuite(aTestData));
   S.AddSuite(TTestCase_DBX_TSQLDataSet.NewSuite(aTestData));
   S.AddSuite(TTestCase_DBX_DataSnap.NewSuite(aTestData));
+  S.AddSuite(TTestCase_DBX_TParam.NewSuite(aTestData));
 //  S.AddSuite(TTestCase_DBX_TSQLStoredProc.NewSuite(aTestData));
   Result := S as ITestSuite;
 end;
@@ -1827,6 +1842,80 @@ begin
     T.AddSuite(S);
   end;
   TestFrameWork.RegisterTest(T);
+end;
+
+procedure TTestCase_DBX_TParam.SetUp;
+var S: string;
+begin
+  inherited;
+  S := 'CREATE TABLE T_PARAM( ' +
+          'FIELD_INT INTEGER, ' +
+          'FIELD_STR VARCHAR(10), ' +
+          'FIELD_BIGINT BIGINT' +
+       ')';
+  FConnection.ExecuteDirect(S);
+
+  S := 'INSERT INTO T_PARAM VALUES(1, ''1'', 1)';
+  FConnection.ExecuteDirect(S);
+
+  FDataSet := TSQLDataSet.Create(nil);
+  FDataSet.SQLConnection := FConnection;
+  FDataSet.CommandType := ctTable;
+  FDataSet.CommandText := 'T_PARAM';
+
+  FDSP := TDataSetProvider.Create(nil);
+  FDSP.DataSet := FDataSet;
+
+  FCDS := TClientDataSet.Create(nil);
+  FCDS.SetProvider(FDSP);
+end;
+
+procedure TTestCase_DBX_TParam.TearDown;
+begin
+  FDSP.Free;
+  FCDS.Free;
+  FDataSet.Free;
+  FConnection.ExecuteDirect('DROP TABLE T_PARAM');
+  inherited;
+end;
+
+procedure TTestCase_DBX_TParam.Test_Param_Integer;
+var P: TParam;
+begin
+  FCDS.Close;
+  P := FCDS.Params.CreateParam(ftInteger, 'Field_Int', ptInput);
+  try
+    P.AsInteger := 1;
+    FCDS.Open;
+  finally
+    P.Free;
+  end;
+end;
+
+procedure TTestCase_DBX_TParam.Test_Param_LargeInt;
+var P: TParam;
+begin
+  FCDS.Close;
+  P := FCDS.Params.CreateParam(ftLargeInt, 'Field_BigInt', ptInput);
+  try
+    P.AsFmtBcd := StrToBcd('1');
+    FCDS.Open;
+  finally
+    P.Free;
+  end;
+end;
+
+procedure TTestCase_DBX_TParam.Test_Param_String;
+var P: TParam;
+begin
+  FCDS.Close;
+  P := FCDS.Params.CreateParam(ftString, 'Field_Str', ptInput);
+  try
+    P.AsString := '1';
+    FCDS.Open;
+  finally
+    P.Free;
+  end;
 end;
 
 initialization
