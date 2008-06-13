@@ -1888,6 +1888,7 @@ begin
   try
     P.AsInteger := 1;
     FCDS.Open;
+    CheckEquals(1, FCDS.FindField('Field_Int').AsInteger);
   finally
     P.Free;
   end;
@@ -1901,6 +1902,7 @@ begin
   try
     P.Value := 1;
     FCDS.Open;
+    CheckEquals('1', FCDS.FindField('Field_BigInt').AsString);
   finally
     P.Free;
   end;
@@ -1914,6 +1916,7 @@ begin
   try
     P.AsFmtBcd := StrToBcd('1');
     FCDS.Open;
+    CheckEquals('1', FCDS.FindField('Field_Int').AsString);
   finally
     P.Free;
   end;
@@ -1927,6 +1930,7 @@ begin
   try
     P.AsString := '1';
     FCDS.Open;
+    CheckEquals('1', FCDS.FindField('Field_Int').AsString);
   finally
     P.Free;
   end;
