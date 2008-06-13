@@ -221,7 +221,8 @@ type{$M+}
     procedure TearDown; override;
   published
     procedure Test_Param_Integer;
-    procedure Test_Param_LargeInt;
+    procedure Test_Param_LargeInt1;
+    procedure Test_Param_LargeInt2;
     procedure Test_Param_String;
   end;
 
@@ -1860,8 +1861,8 @@ begin
 
   FDataSet := TSQLDataSet.Create(nil);
   FDataSet.SQLConnection := FConnection;
-  FDataSet.CommandType := ctTable;
-  FDataSet.CommandText := 'T_PARAM';
+  FDataSet.CommandType := ctQuery;
+  FDataSet.CommandText := 'SELECT * FROM T_PARAM';
 
   FDSP := TDataSetProvider.Create(nil);
   FDSP.DataSet := FDataSet;
@@ -1892,7 +1893,20 @@ begin
   end;
 end;
 
-procedure TTestCase_DBX_TParam.Test_Param_LargeInt;
+procedure TTestCase_DBX_TParam.Test_Param_LargeInt1;
+var P: TParam;
+begin
+  FCDS.Close;
+  P := FCDS.Params.CreateParam(ftLargeInt, 'Field_BigInt', ptInput);
+  try
+    P.Value := 1;
+    FCDS.Open;
+  finally
+    P.Free;
+  end;
+end;
+
+procedure TTestCase_DBX_TParam.Test_Param_LargeInt2;
 var P: TParam;
 begin
   FCDS.Close;
