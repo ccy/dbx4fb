@@ -15,7 +15,9 @@ type{$M+}
   ['{2DCC2E1F-BCE2-4D04-A61E-03DBFC031D0E}']
     function GetODS: string;
     function GetName: string;
+    function GetServerVersion: string;
     procedure Setup(const aConnection: TSQLConnection);
+    property ServerVersion: string read GetServerVersion;
     property Name: string read GetName;
   end;
 
@@ -28,10 +30,12 @@ type{$M+}
     FParams: WideString;
     FVendorLib: string;
     FODS: string;
+    FServerVersion: string;
     procedure CreateDatabase;
   protected
     function GetODS: string;
     function GetName: string;
+    function GetServerVersion: string;
     procedure Setup(const aConnection: TSQLConnection);
   public
     constructor Create(const aDriverName, aLibraryName, aGetDriverFunc, aVendorLib,
@@ -88,6 +92,7 @@ type{$M+}
   protected
     procedure SetUp; override;
     procedure TearDown; override;
+    property GetTestData: ITestData read FTestData;
   public
     class function NewSuite(const aTestData: ITestData): ITestSuite;
   end;
@@ -139,6 +144,7 @@ type{$M+}
     procedure Test_BIGINT_Limit;
     procedure Test_BLOB;
     procedure Test_CHAR;
+    procedure Test_CHAR_UTF8;
     procedure Test_DATE;
     procedure Test_DATETIME;
     procedure Test_DECIMAL;
@@ -155,6 +161,7 @@ type{$M+}
     procedure Test_TIME;
     procedure Test_TIMESTAMP;
     procedure Test_VARCHAR;
+    procedure Test_VARCHAR_UTF8;
   end;
 
   TTest_DBX_FieldType_NOT_NULL = class(TTestCase_DBX_FieldType)
@@ -228,7 +235,7 @@ type{$M+}
 
 implementation
 
-uses SysUtils, DBXpress, SqlConst, Windows, StrUtils, FMTBcd,
+uses SysUtils, SqlConst, Windows, StrUtils, FMTBcd,
   SqlTimSt, DateUtils, Math, IniFiles, firebird.client, firebird.service,
   UniqueID;
 
@@ -290,7 +297,8 @@ begin
     L.Values[DATABASENAME_KEY] := sDatabase;
     FParams := L.Text;
 
-    FName := Format('%s (%s) Host: %s Database: %s', [S.GetServerVersion, sImpl, L.Values[HOSTNAME_KEY], sDatabase]);
+    FServerVersion := S.GetServerVersion;
+    FName := Format('%s (%s) Host: %s Database: %s', [FServerVersion, sImpl, L.Values[HOSTNAME_KEY], sDatabase]);
   finally
     L.Free;
   end;
@@ -304,6 +312,11 @@ end;
 function TTestData_SQLConnection.GetODS: string;
 begin
   Result := FODS;
+end;
+
+function TTestData_SQLConnection.GetServerVersion: string;
+begin
+  Result := FServerVersion;
 end;
 
 procedure TTestData_SQLConnection.Setup(const aConnection: TSQLConnection);
@@ -323,10 +336,10 @@ begin
 
   F := TIniFile.Create(GetTestDataFileName);
   try
-    F.WriteString('driver', 'getSQLDriverFIREBIRD', 'dbxfb30.dll');
+    F.WriteString('driver', 'getSQLDriverFIREBIRD', 'dbxfb40.dll');
     F.WriteString('embedded', 'embedded_1', 'fbembed.dll');
     F.WriteString('server', 'server_1', 'localhost');
-    F.WriteString('vendor', 'default', 'fbclient.1.5.3.dll');
+    F.WriteString('vendor', 'default', 'fbclient.1.5.5.dll');
     F.UpdateFile;
   finally
     F.Free;
@@ -374,8 +387,10 @@ begin
 end;
 
 function TTestCase_DBX.IsTrimChar: boolean;
+{$if CompilerVersion <= 18}
 var b: longint;
-    {$if CompilerVersion <= 18}iLen: Smallint;{$ifend}
+    iLen: Smallint;
+{$ifend}
 begin
   {$if CompilerVersion <= 18}
   Assert(FConnection.SQLConnection.GetOption(eConnTrimChar, @b, SizeOf(b), iLen) = DBXERR_NONE);
@@ -630,6 +645,7 @@ end;
 
 procedure TTestCase_DBX_FieldType.Execute;
 var S: string;
+    i: integer;
 begin
   if Assigned(FDataSet) then FreeAndNil(FDataSet);
 
@@ -637,7 +653,8 @@ begin
   FConnection.Execute(S, nil);
 
   S := 'INSERT INTO T_FIELD (FIELD) VALUES (:VALUE)';
-  CheckEquals(1, FConnection.Execute(S, FParams));
+  i := FConnection.Execute(S, FParams);
+  CheckEquals(1, i);
 
   S := 'SELECT * FROM T_FIELD';
   FConnection.Execute(S, nil, @FDataSet);
@@ -653,7 +670,9 @@ begin
   FRequired := False;
 
        if GetName = 'Test_CHAR'             then Result := 'CHAR(100)'
+  else if GetName = 'Test_CHAR_UTF8'        then Result := 'CHAR(100) CHARACTER SET UTF8'
   else if GetName = 'Test_VARCHAR'          then Result := 'VARCHAR(100)'
+  else if GetName = 'Test_VARCHAR_UTF8'     then Result := 'VARCHAR(100) CHARACTER SET UTF8'
   else if GetName = 'Test_SMALLINT'         then Result := 'SMALLINT'
   else if GetName = 'Test_INTEGER'          then Result := 'INTEGER'
   else if GetName = 'Test_BIGINT'           then Result := 'BIGINT'
@@ -721,6 +740,7 @@ begin
 
   CheckEquals(Param.AsInteger, Field.AsInteger);
   CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
   CheckEquals(Param.AsFloat, Field.AsFloat);
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
@@ -744,6 +764,10 @@ begin
   Execute;
   CheckEquals(1234567890, Field.AsInteger);
 
+  Param.AsWideString := '1234567890';
+  Execute;
+  CheckEquals(1234567890, Field.AsInteger);
+
   Test_Required;
 end;
 
@@ -757,10 +781,12 @@ begin
   CheckEquals(0, F.Size);
   CheckEquals(19, F.Precision);
   CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
 
   Param.AsFMTBCD := StrToBcd('-9223372036854775808');
   Execute;
   CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_BLOB;
@@ -793,11 +819,42 @@ begin
   CheckEquals(101, Field.DataSize);
   CheckEquals(100, Field.Size);
 
-  if IsTrimChar then
-    i := 0
-  else
-    i := 96;
+  i := 0;
+  if not IsTrimChar then
+    i := Field.Size - Length(Param.AsString);
+
   CheckEquals(Param.AsString + DupeString(' ', i), Field.AsString);
+  CheckEquals(Param.AsWideString + DupeString(' ', i), Field.AsWideString);
+
+  Test_Required;
+end;
+
+procedure TTestCase_DBX_FieldType.Test_CHAR_UTF8;
+var i: integer;
+    W: WideString;
+begin
+  if Pos('Firebird 1.', GetTestData.ServerVersion) <> 0 then Exit;
+  
+  Param.AsWideString := 'One World One Dream ' +
+                        #$540C + #$4E00 + #$4E2A + #$4E16 + #$754C + ' ' +
+                        #$540C + #$4E00 + #$4E2A + #$68A6 + #$60F3;
+                        
+  Execute;
+  CheckFalse(Field.IsNull);
+  CheckEquals(TWideStringField, Field.ClassType);
+  CheckEquals(202, Field.DataSize);
+  CheckEquals(100, Field.Size);
+
+  i := 0;
+  if not IsTrimChar then
+    i := Field.Size - Length(Param.AsWideString);
+
+  W := Param.AsWideString;
+  while i > 0 do begin
+    W := W + ' ';
+    Dec(i);
+  end;
+  CheckEquals(W, Field.AsWideString);
 
   Test_Required;
 end;
@@ -812,6 +869,7 @@ begin
   CheckEquals(Param.AsDate, Field.AsDateTime);
   CheckEquals(Param.AsDateTime, Field.AsDateTime);
   CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
   CheckEquals(Param.AsFloat, Field.AsFloat);
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
@@ -832,6 +890,7 @@ begin
   CheckEquals(Param.AsDate, Field.AsDateTime);
   CheckEquals(Param.AsDateTime, Field.AsDateTime);
   CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
   CheckEquals(Param.AsFloat, Field.AsFloat);
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
@@ -845,12 +904,13 @@ begin
   CheckEquals(TFMTBCDField, Field.ClassType);
   CheckEquals(SizeOf(TBcd), Field.DataSize);
   CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
   CheckEquals(Param.AsFloat, Field.AsFloat);
 
   Param.AsFMTBCD := StrToBcd('8000');
   Execute;
-  CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
 
   Param.AsCurrency := 12345678.1234;
   Execute;
@@ -863,10 +923,12 @@ begin
   Param.AsFloat := 123.123456;
   Execute;
   CheckEquals('123.1235', Field.AsString);
+  CheckEquals('123.1235', Field.AsWideString);
 
   Param.AsFloat := 123.123412;
   Execute;
   CheckEquals('123.1234', Field.AsString);
+  CheckEquals('123.1234', Field.AsWideString);
 
   Param.AsInteger := 1234567890;
   Execute;
@@ -879,6 +941,7 @@ begin
   Param.AsString := '56789.12349991234';
   Execute;
   CheckEquals('56789.1234', Field.AsString);
+  CheckEquals('56789.1234', Field.AsWideString);
 
   Param.AsString := '-3.41060513164848E-13';
   Execute;
@@ -932,6 +995,7 @@ begin
   Param.AsFMTBCD := StrToBcd('-922337203685477.5808');
   Execute;
   CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_DECIMAL_LONG;
@@ -940,10 +1004,12 @@ begin
   Execute;
   CheckEquals(TFMTBCDField, Field.ClassType);
   CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
 
   Param.AsFMTBCD := StrToBcd('2');
   Execute;
   CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_DOUBLE_PRECISION;
@@ -954,7 +1020,7 @@ begin
   CheckEquals(TFloatField, Field.ClassType);
   F := Field as TFloatField;
   CheckEquals(15, F.Precision);
-  
+
   CheckEquals(Param.AsFloat, Field.AsFloat, 0.00000001);
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
@@ -982,6 +1048,7 @@ begin
   CheckEquals(TIntegerField, Field.ClassType);
   CheckEquals(Param.AsInteger, Field.AsInteger);
   CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
   CheckEquals(Param.AsFloat, Field.AsFloat);
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
@@ -990,6 +1057,10 @@ begin
   CheckEquals(Param.AsInteger, Field.AsInteger);
 
   Param.AsString := '1290345678';
+  Execute;
+  CheckEquals(Param.AsInteger, Field.AsInteger);
+
+  Param.AsWideString := '1290345678';
   Execute;
   CheckEquals(Param.AsInteger, Field.AsInteger);
 
@@ -1004,12 +1075,14 @@ begin
   CheckEquals(SizeOf(TBcd), Field.DataSize);
 
   CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
   CheckEquals(Param.AsFloat, Field.AsFloat);
 
   Param.AsFMTBCD := StrToBcd('8000');
   Execute;
   CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
 
   Param.AsCurrency := 12345678.1234;
   Execute;
@@ -1022,10 +1095,12 @@ begin
   Param.AsFloat := 123.123456;
   Execute;
   CheckEquals('123.1235', Field.AsString);
+  CheckEquals('123.1235', Field.AsWideString);
 
   Param.AsFloat := 123.123412;
   Execute;
   CheckEquals('123.1234', Field.AsString);
+  CheckEquals('123.1234', Field.AsWideString);
 
   Param.AsInteger := 1234567890;
   Execute;
@@ -1038,6 +1113,7 @@ begin
   Param.AsString := '56789.12349991234';
   Execute;
   CheckEquals('56789.1234', Field.AsString);
+  CheckEquals('56789.1234', Field.AsWideString);
 
   Param.AsString := '-3.41060513164848E-13';
   Execute;
@@ -1096,10 +1172,12 @@ begin
   CheckEquals(19, F.Precision);
   CheckEquals(4, F.Size);
   CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
 
   Param.AsFMTBCD := StrToBcd('-922337203685477.5808');
   Execute;
   CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_NUMERIC_LONG;
@@ -1108,10 +1186,12 @@ begin
   Execute;
   CheckEquals(TFMTBCDField, Field.ClassType);
   CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
 
   Param.AsFMTBCD := StrToBcd('2');
   Execute;
   CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_NUMERIC_SHORT;
@@ -1124,6 +1204,7 @@ begin
   Param.AsFMTBCD := StrToBcd('2');
   Execute;
   CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_Required;
@@ -1149,6 +1230,10 @@ begin
   CheckEquals(Param.AsSmallInt, Field.AsInteger);
 
   Param.AsString := '32145';
+  Execute;
+  CheckEquals(Param.AsSmallInt, Field.AsInteger);
+
+  Param.AsWideString := '32145';
   Execute;
   CheckEquals(Param.AsSmallInt, Field.AsInteger);
 
@@ -1178,6 +1263,7 @@ begin
   CheckEquals(16, Field.DataSize);
 
   CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
 
   Test_Required;
 end;
@@ -1194,6 +1280,28 @@ begin
   CheckEquals(100, F.Size);
 
   CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
+
+  Test_Required;
+end;
+
+procedure TTestCase_DBX_FieldType.Test_VARCHAR_UTF8;
+var F: TStringField;
+begin
+  if Pos('Firebird 1.', GetTestData.ServerVersion) <> 0 then Exit;
+  
+  Param.AsWideString := 'One World One Dream ' +
+                        #$540C + #$4E00 + #$4E2A + #$4E16 + #$754C + ' ' +
+                        #$540C + #$4E00 + #$4E2A + #$68A6 + #$60F3;
+
+  Execute;
+  CheckFalse(Field.IsNull);
+  CheckEquals(TWideStringField, Field.ClassType);
+  F := Field as TStringField;
+  CheckEquals(202, F.DataSize);
+  CheckEquals(100, F.Size);
+
+  CheckEquals(Param.AsWideString, Field.AsWideString);
 
   Test_Required;
 end;
@@ -1895,8 +2003,9 @@ begin
 end;
 
 procedure TTestCase_DBX_TParam.Test_Param_LargeInt1;
-var P: TParam;
+{$if CompilerVersion >= 20}var P: TParam;{$ifend}
 begin
+  {$if CompilerVersion >= 20}
   FCDS.Close;
   P := FCDS.Params.CreateParam(ftLargeInt, 'Field_BigInt', ptInput);
   try
@@ -1906,6 +2015,7 @@ begin
   finally
     P.Free;
   end;
+  {$ifend}
 end;
 
 procedure TTestCase_DBX_TParam.Test_Param_LargeInt2;
