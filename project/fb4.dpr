@@ -1,10 +1,3 @@
-(* Build Instruction:
-
-     Output Directory: $(OutputDir)\$(ActiveProjectModule)
-Unit Output Directory: $(UnitOutputDir)\$(ActiveProjectModule)
-     Host Application: $(ActiveHostApplication)
-*)
-
 library fb4;
 
 { Important note about DLL memory management: ShareMem must be the
@@ -17,12 +10,15 @@ library fb4;
   with your DLL. To avoid using BORLNDMM.DLL, pass string information
   using PChar or ShortString parameters. }
 
-{$R 'fb4.res' 'fb4.rc'}
+
+
+{$R '..\..\build\rc\library.res' '..\..\build\rc\library.rc'}
 
 uses
   SysUtils,
   Windows,
   IB_Header in '..\..\core\source\rtl\IB_Header.pas',
+  firebird.charsets in '..\..\core\source\rtl\firebird.charsets.pas',
   firebird.client in '..\..\core\source\rtl\firebird.client.pas',
   firebird.client.debug in '..\..\core\source\rtl\firebird.client.debug.pas',
   firebird.dsql in '..\..\core\source\rtl\firebird.dsql.pas',

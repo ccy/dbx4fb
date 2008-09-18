@@ -3,7 +3,7 @@
   <PropertyGroup>
     <ProjectGuid>{549a3915-3fd5-480f-8c15-d7512ff09719}</ProjectGuid>
     <MainSource>fb4.dpr</MainSource>
-    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
     <DCC_DependencyCheckOutputName>..\..\..\..\output.d11\moon\dbxfb40.dll</DCC_DependencyCheckOutputName>
@@ -80,34 +80,8 @@
       
       
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
       <Excluded_Packages Name="$(BDS)\bin\dcloffice2k100.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
       <Excluded_Packages Name="$(BDS)\bin\dclofficexp100.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
-      <Excluded_Packages Name="C:\Users\ccy\Documents\Components\Components.d11\Developer Express inc\lib\dclcxPageControlD11.bpl">Express Cross Platform PageControl by Developer Express Inc.</Excluded_Packages>
     </Excluded_Packages></Delphi.Personality></BorlandProject></BorlandProject>
   </ProjectExtensions>
   <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />
@@ -115,30 +89,18 @@
     <DelphiCompile Include="fb4.dpr">
       <MainSource>MainSource</MainSource>
     </DelphiCompile>
-    <RcCompile Include="fb4.rc">
-      <Form>fb4.res</Form>
+    <RcCompile Include="..\..\build\rc\library.rc">
+      <Form>..\..\build\rc\library.res</Form>
     </RcCompile>
     <DCCReference Include="..\..\core\source\patch\CodeRedirect.pas" />
     <DCCReference Include="..\..\core\source\patch\FmtBcd.QC50427.pas" />
     <DCCReference Include="..\..\core\source\patch\FmtBcd.QC55176.pas" />
     <DCCReference Include="..\..\core\source\patch\FmtBcd.QC55550.pas" />
+    <DCCReference Include="..\..\core\source\rtl\firebird.charsets.pas" />
     <DCCReference Include="..\..\core\source\rtl\firebird.client.debug.pas" />
     <DCCReference Include="..\..\core\source\rtl\firebird.client.pas" />
     <DCCReference Include="..\..\core\source\rtl\firebird.dsql.pas" />
     <DCCReference Include="..\..\core\source\rtl\IB_Header.pas" />
-    <DCCReference Include="..\source\dbx.common.pas" />
-    <DCCReference Include="..\source\dbx.firebird.command25.pas" />
-    <DCCReference Include="..\source\dbx.firebird.command30.pas" />
-    <DCCReference Include="..\source\dbx.firebird.connection25.pas" />
-    <DCCReference Include="..\source\dbx.firebird.connection30.pas" />
-    <DCCReference Include="..\source\dbx.firebird.cursor25.pas" />
-    <DCCReference Include="..\source\dbx.firebird.cursor30.pas" />
-    <DCCReference Include="..\source\dbx.firebird.driver30.pas" />
-    <DCCReference Include="..\source\dbx.firebird.factory25.pas" />
-    <DCCReference Include="..\source\dbx.firebird.factory30.pas" />
-    <DCCReference Include="..\source\dbx.firebird.metadata25.pas" />
-    <DCCReference Include="..\source\dbx.firebird.metadata30.pas" />
-    <DCCReference Include="..\source\dbx.firebird.pas" />
     <DCCReference Include="..\source\dbx4.base.pas" />
     <DCCReference Include="..\source\dbx4.firebird.base.pas" />
     <DCCReference Include="..\source\dbx4.firebird.command.pas" />
