@@ -64,6 +64,8 @@ type
 
   IDBXWritableRow = interface(IDBXBase)
   ['{1B637B12-12B0-42AC-97F0-906C26D72F7E}']
+    function SetAnsiString(Ordinal: TInt32; const Value: TDBXAnsiString; Length:
+        Int64): TDBXErrorCode;
     function SetBcd(Ordinal: TInt32; Value: TBcd): TDBXErrorCode;
     function SetBytes(Ordinal: TInt32; BlobOffset: Int64; Value: TBytes; LastIndex:
         TInt32; ValueOffset, Length: Int64): TDBXErrorCode;
@@ -75,10 +77,10 @@ type
     function SetParameterType(Ordinal: TInt32; const Name: TDBXWideString;
         ChildPosition: TInt32; ParamDirection: TDBXParameterDirection; DBXType,
         DBXSubType: TInt32; Size, Precision: Int64; Scale: TInt32): TDBXErrorCode;
-    function SetString(Ordinal: TInt32; const Value: TDBXAnsiString; Length:
-        Int64): TDBXErrorCode;
     function SetTime(Ordinal: TInt32; Value: TDBXTime): TDBXErrorCode;
     function SetTimeStamp(Ordinal: TInt32; var Value: TSQLTimeStamp): TDBXErrorCode;
+    function SetWideString(Ordinal: TInt32; const Value: TDBXWideString; Length:
+        Int64): TDBXErrorCode;
   end;
 
   IDBXCommand = interface(IDBXBase)

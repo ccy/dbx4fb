@@ -70,8 +70,8 @@ type
         TDBXErrorCode;
     function GetInt32(Ordinal: TInt32; out Value: PLongint; out IsNull: LongBool):
         TDBXErrorCode; overload;
-    function GetString(Ordinal: TInt32; Value: TDBXAnsiStringBuilder; out IsNull:
-        LongBool): TDBXErrorCode;
+    function GetAnsiString(Ordinal: TInt32; Value: TDBXAnsiStringBuilder; out
+        IsNull: LongBool): TDBXErrorCode;
     function GetTime(Ordinal: TInt32; Value: PInteger; out IsNull: LongBool):
         TDBXErrorCode;
     function GetTimeStamp(Ordinal: TInt32; out Value: PSQLTimeStamp; out IsNull:
@@ -282,7 +282,7 @@ function TDBXReader_Firebird_DSQL.GetFixedBytes(Ordinal: TInt32; Value: TBytes;
     TDBXErrorCode;
 begin
   case FMetaData.GetColumnType(Ordinal) of
-    TDBXDataTypes.AnsiStringType: Result := GetString(Ordinal, Pointer(Value), IsNull);
+    TDBXDataTypes.AnsiStringType: Result := GetAnsiString(Ordinal, Pointer(Value), IsNull);
     TDBXDataTypes.WideStringType: Result := GetWideString(Ordinal, Pointer(Value), IsNull);
     TDBXDataTypes.BcdType:        Result := GetBcd(Ordinal, PBcd(Value), IsNull);
     TDBXDataTypes.DateType:       Result := GetDate(Ordinal, PDate(Value), IsNull);
@@ -314,12 +314,12 @@ begin
   Result := TDBXErrorCodes.None;
 end;
 
-function TDBXReader_Firebird_DSQL.GetString(Ordinal: TInt32; Value:
+function TDBXReader_Firebird_DSQL.GetAnsiString(Ordinal: TInt32; Value:
     TDBXAnsiStringBuilder; out IsNull: LongBool): TDBXErrorCode;
-var c: PChar;
+var c: PAnsiChar;
     B: Boolean;
 begin
-  FDSQL.o_SQLDA[Ordinal].GetString(Value, B);
+  FDSQL.o_SQLDA[Ordinal].GetAnsiString(Value, B);
   IsNull := B;
   if FTrimChar then begin
     c := Value + FDSQL.o_SQLDA[Ordinal].sqllen - 1;
@@ -351,26 +351,19 @@ end;
 
 function TDBXReader_Firebird_DSQL.GetWideString(Ordinal: TInt32; Value:
     TDBXWideStringBuilder; out IsNull: LongBool): TDBXErrorCode;
-//var B: boolean;
-//    S: AnsiString;
-//    W: WideString;
-//    i, iLen: Cardinal;
+var c: PWideChar;
+    B: Boolean;
 begin
-  Assert(False);
-//  iLen := FMetaData.GetColumnLength(Ordinal);
-//  SetLength(S, iLen);
-//  FDSQL.o_SQLDA[Ordinal].GetString(PAnsiChar(S), B);
-//  IsNull := B;
-//  if FTrimChar then begin
-//    i := iLen - 1;
-//    while S[i] = ' ' do begin
-//      S[i] := #0;
-//      i := i - 1;
-//    end;
-//  end;
-//  W := S;
-//  lstrcpyW(Value, PWideChar(W));
-//  Result := TDBXErrorCodes.None;
+  FDSQL.o_SQLDA[Ordinal].GetWideString(Value, B);
+  IsNull := B;
+  if FTrimChar then begin
+    c := Value + (FDSQL.o_SQLDA[Ordinal].sqllen div 4) - 1;
+    while c^ = ' ' do begin
+      c^ := #0;
+      c := c - 1;
+    end;
+  end;
+  Result := TDBXErrorCodes.None;
 end;
 
 function TDBXReader_Firebird_DSQL.Next: TDBXErrorCode;

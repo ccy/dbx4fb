@@ -380,7 +380,7 @@ end;
 function DBXWritableRow_SetString(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; const Value: TDBXAnsiString; Length: Int64): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXWritableRow(Handle).SetString(Ordinal, Value, Length);
+  Result := IDBXWritableRow(Handle).SetAnsiString(Ordinal, Value, Length);
 end;
 
 function DBXWritableRow_SetTime(Handle: TDBXWritableRowHandle; Ordinal: TInt32;
@@ -398,7 +398,7 @@ end;
 function DBXWritableRow_SetWideString(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; const Value: TDBXWideString; Length: Int64): TDBXErrorCode; stdcall;
 begin
-  Assert(False);
+  Result := IDBXWritableRow(Handle).SetWideString(Ordinal, Value, Length);
 end;
 
 exports

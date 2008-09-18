@@ -48,8 +48,8 @@ type
 
 implementation
 
-uses StrUtils, FMTBcd, SqlTimSt, dbx4.firebird.row,
-  dbx4.firebird.metadata, SysUtils, WideStrings;
+uses SysUtils, StrUtils, FMTBcd, SqlTimSt, WideStrings,
+     firebird.charsets, dbx4.firebird.row, dbx4.firebird.metadata;
 
 constructor TMetaDataProvider_Firebird.Create(const aSQLDA: TXSQLDA);
 begin
@@ -67,9 +67,7 @@ function TMetaDataProvider_Firebird.GetColumnLength(const aColNo: TInt32):
 var V: TXSQLVAR;
 begin
   V := FSQLDA.Vars[aColNo];
-  if V.CheckType(SQL_VARYING) then
-    Result := V.sqllen + 1
-  else if V.CheckType(SQL_INT64) then
+  if V.CheckType(SQL_INT64) then
     Result := SizeOf(TBcd)
   else if V.CheckType(SQL_FLOAT) then
     Result := SizeOf(Double)
@@ -104,7 +102,15 @@ function TMetaDataProvider_Firebird.GetColumnPrecision(const aColNo: TInt32):
 var V: TXSQLVAR;
 begin
   V := FSQLDA.Vars[aColNo];
-  if V.CheckType(SQL_INT64) then
+  if V.CheckType(SQL_TEXT) then begin
+    Result := V.sqllen;
+    if V.CheckCharSet(CS_UTF8) then
+      Result := V.sqllen div 4
+  end else if V.CheckType(SQL_VARYING) then begin
+    Result := V.sqllen;
+    if V.CheckCharSet(CS_UTF8) then
+      Result := V.sqllen div 4
+  end else if V.CheckType(SQL_INT64) then
     Result := 19
   else if V.CheckType(SQL_LONG) and (V.sqlscale <> 0) then
     Result := 9
@@ -139,8 +145,13 @@ begin
       else
         Result := TDBXDataTypes.BcdType;
     end;
-    SQL_TEXT: Result := TDBXDataTypes.AnsiStringType;
-    SQL_VARYING: Result := TDBXDataTypes.AnsiStringType;
+    SQL_TEXT,
+    SQL_VARYING: begin
+      if FSQLDA.Vars[aColNo].CheckCharSet(CS_UTF8) then
+        Result := TDBXDataTypes.WideStringType
+      else
+        Result := TDBXDataTypes.AnsiStringType;
+    end;
     SQL_LONG: begin
       if iScale = 0 then
         Result := TDBXDataTypes.Int32Type
@@ -302,11 +313,17 @@ begin
     end;
 
     S := 'SELECT 0, '''', '''', A.RDB$RELATION_NAME, A.RDB$INDEX_NAME, B.RDB$FIELD_NAME, ' +
-         '       B.RDB$FIELD_POSITION, '''', 0, A.RDB$INDEX_TYPE, '''', A.RDB$UNIQUE_FLAG, C.RDB$CONSTRAINT_NAME, C.RDB$CONSTRAINT_TYPE ' +
-           'FROM RDB$INDICES A, RDB$INDEX_SEGMENTS B FULL OUTER JOIN RDB$RELATION_CONSTRAINTS C ' +
-             'ON A.RDB$RELATION_NAME = C.RDB$RELATION_NAME AND C.RDB$CONSTRAINT_TYPE = ''PRIMARY KEY'' ' +
+         '       B.RDB$FIELD_POSITION, '''', 0, ' +
+                 'CASE A.RDB$INDEX_TYPE ' +
+                   'WHEN 1 THEN ''D'' ' +
+                   'ELSE ''A'' ' +
+                 'END, ' +
+                 ''''', A.RDB$UNIQUE_FLAG, C.RDB$CONSTRAINT_NAME, C.RDB$CONSTRAINT_TYPE ' +
+           'FROM RDB$INDICES A INNER JOIN RDB$INDEX_SEGMENTS B ' +
+                   'ON (A.RDB$INDEX_NAME = B.RDB$INDEX_NAME) ' +
+                 'FULL OUTER JOIN RDB$RELATION_CONSTRAINTS C ' +
+                   'ON (A.RDB$RELATION_NAME = C.RDB$RELATION_NAME AND C.RDB$CONSTRAINT_TYPE = ''PRIMARY KEY'') ' +
           'WHERE (A.RDB$SYSTEM_FLAG <> 1 OR A.RDB$SYSTEM_FLAG IS NULL) ' +
-            'AND (A.RDB$INDEX_NAME = B.RDB$INDEX_NAME) ' +
      Format('AND (A.RDB$RELATION_NAME = UPPER(''%s'')) ', [sTableName]) +
        'ORDER BY A.RDB$INDEX_NAME';
 
