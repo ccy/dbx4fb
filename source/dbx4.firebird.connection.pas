@@ -2,7 +2,8 @@ unit dbx4.firebird.connection;
 
 interface
 
-uses DBXCommon, DBXPlatform, DBXDynalink, IB_Header, firebird.client, dbx4.base, dbx4.firebird.base;
+uses DBXCommon, DBXPlatform, DBXDynalink, firebird.client, dbx4.base, dbx4.firebird.base,
+     firebird.ibase.h, firebird.consts_pub.h, firebird.types_pub.h;
 
 type
   TFirebirdClientDebuggerListener_DBXCallBack = class(TInterfacedObject, IFirebirdLibraryDebuggerListener)
@@ -33,7 +34,6 @@ type
     FTrimChar: boolean;
     FUserName: string;
     procedure CheckDebugger;
-    function IsLocalHost: boolean;
   protected
     function BeginTransaction(out TransactionHandle: TDBXTransactionHandle;
         IsolationLevel: TInt32): TDBXErrorCode;
@@ -121,7 +121,7 @@ end;
 function TDBXConnection_Firebird.Connect(Count: TInt32; Names, Values:
     TWideStringArray): TDBXErrorCode;
 var i: integer;
-    DPB, sServerName: string;
+    DPB, sServerName: AnsiString;
 begin
   for i := 0 to Count - 1 do begin
     if Names[i] = TDBXPropertyNames.Database then
@@ -163,7 +163,7 @@ begin
     sServerName := FHostName + ':' + sServerName;
 
   FDBHandle := nil;
-  FFirebirdLibrary.isc_attach_database(StatusVector.pValue, Length(sServerName), PAnsiChar(sServerName), GetDBHandle, Length(DPB), PAnsiChar(DPB));
+  FFirebirdLibrary.isc_attach_database(StatusVector.pValue, Length(sServerName), PISC_SCHAR(sServerName), GetDBHandle, Length(DPB), PISC_SCHAR(DPB));
   StatusVector.CheckResult(Result, TDBXErrorCodes.ConnectionFailed);
 
   FTransactionPool.Free;
@@ -193,15 +193,6 @@ end;
 function TDBXConnection_Firebird.GetTrimChar: Boolean;
 begin
   Result := FTrimChar;
-end;
-
-function TDBXConnection_Firebird.IsLocalHost: boolean;
-begin
-  Result := FHostName = '';
-  if not Result then
-    Result := FHostName = '127.0.0.1';
-  if not Result then
-    Result := SameText(FHostName, 'localhost');
 end;
 
 function TDBXConnection_Firebird.IsolationLevel: TInt32;

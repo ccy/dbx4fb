@@ -3,7 +3,8 @@ unit dbx4.firebird.row;
 interface
 
 uses SysUtils, FmtBcd, SqlTimSt, DBXCommon, DBXPlatform, dbx4.base,
-  dbx4.firebird.base, firebird.dsql, firebird.client, IB_Header;
+  dbx4.firebird.base, firebird.dsql, firebird.client,
+  firebird.ibase.h;
 
 type
   TDBXWritableRow_Firebird = class(TDBXBase_Firebird, IDBXWritableRow)

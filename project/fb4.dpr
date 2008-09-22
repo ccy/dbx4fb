@@ -17,7 +17,17 @@ library fb4;
 uses
   SysUtils,
   Windows,
-  IB_Header in '..\..\core\source\rtl\IB_Header.pas',
+  CodeRedirect in '..\..\core\source\patch\CodeRedirect.pas',
+  FmtBcd.QC50427 in '..\..\core\source\patch\FmtBcd.QC50427.pas',
+  FmtBcd.QC55176 in '..\..\core\source\patch\FmtBcd.QC55176.pas',
+  FmtBcd.QC55550 in '..\..\core\source\patch\FmtBcd.QC55550.pas',
+  firebird.ibase.h in '..\..\core\source\firebird\firebird.ibase.h.pas',
+  firebird.types_pub.h in '..\..\core\source\firebird\firebird.types_pub.h.pas',
+  firebird.sqlda_pub.h in '..\..\core\source\firebird\firebird.sqlda_pub.h.pas',
+  firebird.time.h in '..\..\core\source\firebird\firebird.time.h.pas',
+  firebird.consts_pub.h in '..\..\core\source\firebird\firebird.consts_pub.h.pas',
+  firebird.iberror.h in '..\..\core\source\firebird\firebird.iberror.h.pas',
+  firebird.inf_pub.h in '..\..\core\source\firebird\firebird.inf_pub.h.pas',
   firebird.charsets in '..\..\core\source\rtl\firebird.charsets.pas',
   firebird.client in '..\..\core\source\rtl\firebird.client.pas',
   firebird.client.debug in '..\..\core\source\rtl\firebird.client.debug.pas',
@@ -30,11 +40,7 @@ uses
   dbx4.firebird.reader in '..\source\dbx4.firebird.reader.pas',
   dbx4.firebird.row in '..\source\dbx4.firebird.row.pas',
   dbx4.firebird.metadata in '..\source\dbx4.firebird.metadata.pas',
-  dbx4.firebird.base in '..\source\dbx4.firebird.base.pas',
-  CodeRedirect in '..\..\core\source\patch\CodeRedirect.pas',
-  FmtBcd.QC50427 in '..\..\core\source\patch\FmtBcd.QC50427.pas',
-  FmtBcd.QC55176 in '..\..\core\source\patch\FmtBcd.QC55176.pas',
-  FmtBcd.QC55550 in '..\..\core\source\patch\FmtBcd.QC55550.pas';
+  dbx4.firebird.base in '..\source\dbx4.firebird.base.pas';
 
 {$LIBPREFIX 'dbx'}
 {$LIBSUFFIX '0'}

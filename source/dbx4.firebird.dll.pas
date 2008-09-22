@@ -89,6 +89,7 @@ function DBXCommand_GetNextReader(Handle: TDBXCommandHandle; out Reader:
     TDBXReaderHandle): TDBXErrorCode; stdcall;
 begin
   Assert(False);
+  Result := TDBXErrorCodes.None;
 end;
 
 function DBXCommand_GetRowsAffected(Handle: TDBXCommandHandle; out Rows:
@@ -107,12 +108,14 @@ function DBXCommand_SetMaxBlobSize(Handle: TDBXCommandHandle; MaxBlobSize:
     Int64): TDBXErrorCode; stdcall;
 begin
   Assert(False);
+  Result := TDBXErrorCodes.None;
 end;
 
 function DBXCommand_SetRowSetSize(Handle: TDBXCommandHandle; RowSetSize:
     Int64): TDBXErrorCode; stdcall;
 begin
   Assert(False);
+  Result := TDBXErrorCodes.None;
 end;
 
 function DBXConnection_BeginTransaction(Handle: TDBXConnectionHandle; out
@@ -147,6 +150,7 @@ function DBXConnection_Disconnect(Handle: TDBXConnectionHandle): TDBXErrorCode;
     stdcall;
 begin
   Assert(False);
+  Result := TDBXErrorCodes.None;
 end;
 
 function DBXConnection_GetIsolation(Handle: TDBXConnectionHandle; out
@@ -182,6 +186,7 @@ function DBXDriver_GetVersion(Handle: TDBXDriverHandle; Version:
     TDBXWideStringBuilder; MaxLength: TInt32): TDBXErrorCode; stdcall;
 begin
   Assert(False);
+  Result := TDBXErrorCodes.None;
 end;
 
 function DBXLoader_GetDriver(Count: TInt32; Names, Values: TWideStringArray;
@@ -232,6 +237,7 @@ function DBXRow_GetBcd(Handle: TDBXRowHandle; Ordinal: TInt32; out Value: TBcd;
     out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
   Assert(False);
+  Result := TDBXErrorCodes.None;
 end;
 
 function DBXRow_GetBoolean(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
@@ -258,12 +264,14 @@ function DBXRow_GetDate(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
     TDBXDate; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
   Assert(False);
+  Result := TDBXErrorCodes.None;
 end;
 
 function DBXRow_GetDouble(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
     double; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
   Assert(False);
+  Result := TDBXErrorCodes.None;
 end;
 
 function DBXRow_GetFixedBytes(Handle: TDBXRowHandle; Ordinal: TInt32; Value:
@@ -277,6 +285,7 @@ function DBXRow_GetInt16(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
     SmallInt; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
   Assert(False);
+  Result := TDBXErrorCodes.None;
 end;
 
 function DBXRow_GetInt32(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
@@ -289,30 +298,35 @@ function DBXRow_GetInt64(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
     Int64; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
   Assert(False);
+  Result := TDBXErrorCodes.None;
 end;
 
 function DBXRow_GetObjectTypeName(Handle: TDBXRowHandle; Ordinal: TInt32;
     Value: TDBXWideStringBuilder; MaxLength: Integer): TDBXErrorCode; stdcall;
 begin
   Assert(False);
+  Result := TDBXErrorCodes.None;
 end;
 
 function DBXRow_GetString(Handle: TDBXRowHandle; Ordinal: TInt32; Value:
     TDBXAnsiStringBuilder; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
   Assert(False);
+  Result := TDBXErrorCodes.None;
 end;
 
 function DBXRow_GetTime(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
     TDBXTime; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
   Assert(False);
+  Result := TDBXErrorCodes.None;
 end;
 
 function DBXRow_GetTimeStamp(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
     TSQLTimeStamp; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
   Assert(False);
+  Result := TDBXErrorCodes.None;
 end;
 
 function DBXRow_GetWideString(Handle: TDBXRowHandle; Ordinal: TInt32; Value:
@@ -331,6 +345,7 @@ function DBXWritableRow_SetBoolean(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; Value: LongBool): TDBXErrorCode; stdcall;
 begin
   Assert(False);
+  Result := TDBXErrorCodes.None;
 end;
 
 function DBXWritableRow_SetBytes(Handle: TDBXWritableRowHandle; Ordinal:
@@ -369,6 +384,7 @@ function DBXWritableRow_SetInt64(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; Value: Int64): TDBXErrorCode; stdcall;
 begin
   Assert(False);
+  Result := TDBXErrorCodes.None;
 end;
 
 function DBXWritableRow_SetNull(Handle: TDBXWritableRowHandle; Ordinal:

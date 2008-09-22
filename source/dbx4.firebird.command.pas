@@ -2,8 +2,9 @@ unit dbx4.firebird.command;
 
 interface
 
-uses DBXCommon, DBXPlatform, IB_Header, firebird.client, firebird.dsql, dbx4.base,
-  dbx4.firebird.connection, dbx4.firebird.reader, dbx4.firebird.base;
+uses DBXCommon, DBXPlatform, firebird.client, firebird.dsql, dbx4.base,
+  dbx4.firebird.connection, dbx4.firebird.reader, dbx4.firebird.base,
+  firebird.ibase.h;
 
 type
   TMetaDataProvider_Firebird = class(TInterfacedObject, IMetaDataProvider)
@@ -49,7 +50,8 @@ type
 implementation
 
 uses SysUtils, StrUtils, FMTBcd, SqlTimSt, WideStrings,
-     firebird.charsets, dbx4.firebird.row, dbx4.firebird.metadata;
+     firebird.charsets, dbx4.firebird.row, dbx4.firebird.metadata,
+     firebird.sqlda_pub.h;
 
 constructor TMetaDataProvider_Firebird.Create(const aSQLDA: TXSQLDA);
 begin
@@ -83,12 +85,8 @@ end;
 
 function TMetaDataProvider_Firebird.GetColumnName(const aColNo: TInt32):
     WideString;
-var S: string;
-    P: TIB_Identifier;
 begin
-  P := FSQLDA.Vars[aColNo].aliasname;
-  SetString(S, P, FSQLDA.Vars[aColNo].aliasname_length);
-  Result := S;
+  Result := Copy(FSQLDA.Vars[aColNo].aliasname, 1, FSQLDA.Vars[aColNo].aliasname_length);
 end;
 
 function TMetaDataProvider_Firebird.GetColumnNameLength(const aColNo: TInt32):
@@ -165,8 +163,10 @@ begin
     SQL_TYPE_DATE: Result := TDBXDataTypes.DateType;
     SQL_TYPE_TIME: Result := TDBXDataTypes.TimeType;
     SQL_TIMESTAMP: Result := TDBXDataTypes.TimeStampType;
-    else
+    else begin
       Assert(False, 'Unsupported data type');
+      Result := TDBXDataTypes.UnknownType;
+    end;
   end;
 end;
 

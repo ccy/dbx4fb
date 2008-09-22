@@ -2,7 +2,8 @@ unit dbx4.firebird.base;
 
 interface
 
-uses DBXCommon, DBXPlatform, dbx4.base, IB_Header, firebird.client;
+uses DBXCommon, DBXPlatform, dbx4.base,
+     firebird.client, firebird.ibase.h;
 
 type
   IDBXBase_Firebird = interface(IDBXBase)
@@ -36,7 +37,7 @@ type
         TDBXWideStringBuilder): TDBXErrorCode; override;
     function GetErrorMessageLength(LastErrorCode: TDBXErrorCode; out ErrorLen:
         TInt32): TDBXErrorCode; override;
-    function GetFirebirdLibrary: IFirebirdLibrary; virtual; abstract;
+    function GetFirebirdLibrary: IFirebirdLibrary; virtual; 
     function StatusVector: IStatusVector;
   end;
 
@@ -54,6 +55,11 @@ function TDBXBase_Firebird.GetErrorMessageLength(
 begin
   ErrorLen := StatusVector.GetError(GetFirebirdLibrary).GetLength;
   Result := TDBXErrorCodes.None;
+end;
+
+function TDBXBase_Firebird.GetFirebirdLibrary: IFirebirdLibrary;
+begin
+  Result := nil;
 end;
 
 function TDBXBase_Firebird.StatusVector: IStatusVector;

@@ -12,6 +12,10 @@ type
     procedure LoadDriver;
   protected
     function Close: TDBXErrorCode; override;
+    function GetErrorMessage(LastErrorCode: TDBXErrorCode; ErrorMessage:
+        TDBXWideStringBuilder): TDBXErrorCode; override;
+    function GetErrorMessageLength(LastErrorCode: TDBXErrorCode; out ErrorLen:
+        TInt32): TDBXErrorCode; override;
     function Loaded: boolean;
     function NewLibrary: IFirebirdLibrary;
   public
@@ -41,6 +45,18 @@ begin
       FVendorLib := Values[i];
   end;
   LoadDriver;
+end;
+
+function TDBXDriver_Firebird.GetErrorMessage(LastErrorCode: TDBXErrorCode;
+    ErrorMessage: TDBXWideStringBuilder): TDBXErrorCode;
+begin
+  Result := TDBXErrorCodes.None;
+end;
+
+function TDBXDriver_Firebird.GetErrorMessageLength(LastErrorCode:
+    TDBXErrorCode; out ErrorLen: TInt32): TDBXErrorCode;
+begin
+  Result := TDBXErrorCodes.None;
 end;
 
 function TDBXDriver_Firebird.Loaded: boolean;
