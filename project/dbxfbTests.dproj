@@ -8,7 +8,7 @@
     <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
     <DCC_DependencyCheckOutputName>..\..\..\..\output.d11\moon\dbxfbTests.exe</DCC_DependencyCheckOutputName>
     <DCC_EnabledPackages>true</DCC_EnabledPackages>
-    <DCC_UsePackage>vcl;rtl;dunit;DbxCommonDriver;DbxDynalinkDriver</DCC_UsePackage>
+    <DCC_UsePackage>vcl;rtl;dunit;DbxCommonDriver;DbxDynalinkDriver;oofirebird;oortl</DCC_UsePackage>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Version>7.0</Version>
@@ -32,10 +32,10 @@
     <DCC_DcuOutput>$(UnitOutputDir)\$(ActiveProjectModule)</DCC_DcuOutput>
     <DCC_ObjOutput>$(UnitOutputDir)\$(ActiveProjectModule)</DCC_ObjOutput>
     <DCC_HppOutput>$(UnitOutputDir)\$(ActiveProjectModule)</DCC_HppOutput>
-    <DCC_UnitSearchPath>$(ComponentDir)\FastMM\Lib\Debug;$(BDS)\lib\Debug;..\..\core\source\rtl</DCC_UnitSearchPath>
-    <DCC_ResourcePath>$(ComponentDir)\FastMM\Lib\Debug;$(BDS)\lib\Debug;..\..\core\source\rtl</DCC_ResourcePath>
-    <DCC_ObjPath>$(ComponentDir)\FastMM\Lib\Debug;$(BDS)\lib\Debug;..\..\core\source\rtl</DCC_ObjPath>
-    <DCC_IncludePath>$(ComponentDir)\FastMM\Lib\Debug;$(BDS)\lib\Debug;..\..\core\source\rtl</DCC_IncludePath>
+    <DCC_UnitSearchPath>$(BDS)\lib\Debug;$(OutputDir)\$(ActiveProjectModule)\lib</DCC_UnitSearchPath>
+    <DCC_ResourcePath>$(BDS)\lib\Debug;$(OutputDir)\$(ActiveProjectModule)\lib</DCC_ResourcePath>
+    <DCC_ObjPath>$(BDS)\lib\Debug;$(OutputDir)\$(ActiveProjectModule)\lib</DCC_ObjPath>
+    <DCC_IncludePath>$(BDS)\lib\Debug;$(OutputDir)\$(ActiveProjectModule)\lib</DCC_IncludePath>
     <DCC_Optimize>False</DCC_Optimize>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Profile|AnyCPU' ">
@@ -65,9 +65,9 @@
       
       
       
-      <Excluded_Packages Name="$(BDS)\bin\dcloffice2k100.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-      <Excluded_Packages Name="$(BDS)\bin\dclofficexp100.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
-      <Excluded_Packages Name="C:\Users\ccy\Documents\Components\Components.d11\Developer Express inc\lib\dclcxPageControlD11.bpl">Express Cross Platform PageControl by Developer Express Inc.</Excluded_Packages>
+      
+      
+      
     </Excluded_Packages></Delphi.Personality></BorlandProject></BorlandProject>
   </ProjectExtensions>
   <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />

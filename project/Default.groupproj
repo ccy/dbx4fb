@@ -4,6 +4,8 @@
   </PropertyGroup>
   <ItemGroup />
   <ItemGroup>
+    <Projects Include="..\..\core\project\oofirebird.dproj" />
+    <Projects Include="..\..\core\project\oortl.dproj" />
     <Projects Include="..\..\core\project\patch.dbx.dproj" />
     <Projects Include="..\..\core\project\patch.vcl.dproj" />
     <Projects Include="dbxfbTests.dproj">
@@ -44,6 +46,24 @@
   <Target Name="patch_dbx:Make">
     <MSBuild Projects="..\..\core\project\patch.dbx.dproj" Targets="Make" />
   </Target>
+  <Target Name="oortl">
+    <MSBuild Projects="..\..\core\project\oortl.dproj" Targets="" />
+  </Target>
+  <Target Name="oortl:Clean">
+    <MSBuild Projects="..\..\core\project\oortl.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="oortl:Make">
+    <MSBuild Projects="..\..\core\project\oortl.dproj" Targets="Make" />
+  </Target>
+  <Target Name="oofirebird">
+    <MSBuild Projects="..\..\core\project\oofirebird.dproj" Targets="" />
+  </Target>
+  <Target Name="oofirebird:Clean">
+    <MSBuild Projects="..\..\core\project\oofirebird.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="oofirebird:Make">
+    <MSBuild Projects="..\..\core\project\oofirebird.dproj" Targets="Make" />
+  </Target>
   <Target Name="dbxfbTests" DependsOnTargets="fb4">
     <MSBuild Projects="dbxfbTests.dproj" Targets="" />
   </Target>
@@ -54,13 +74,13 @@
     <MSBuild Projects="dbxfbTests.dproj" Targets="Make" />
   </Target>
   <Target Name="Build">
-    <CallTarget Targets="fb4;patch_vcl;patch_dbx;dbxfbTests" />
+    <CallTarget Targets="fb4;patch_vcl;patch_dbx;oortl;oofirebird;dbxfbTests" />
   </Target>
   <Target Name="Clean">
-    <CallTarget Targets="fb4:Clean;patch_vcl:Clean;patch_dbx:Clean;dbxfbTests:Clean" />
+    <CallTarget Targets="fb4:Clean;patch_vcl:Clean;patch_dbx:Clean;oortl:Clean;oofirebird:Clean;dbxfbTests:Clean" />
   </Target>
   <Target Name="Make">
-    <CallTarget Targets="fb4:Make;patch_vcl:Make;patch_dbx:Make;dbxfbTests:Make" />
+    <CallTarget Targets="fb4:Make;patch_vcl:Make;patch_dbx:Make;oortl:Make;oofirebird:Make;dbxfbTests:Make" />
   </Target>
   <Import Condition="Exists('$(MSBuildBinPath)\Borland.Group.Targets')" Project="$(MSBuildBinPath)\Borland.Group.Targets" />
 </Project>
