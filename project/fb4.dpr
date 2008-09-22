@@ -28,10 +28,6 @@ uses
   firebird.consts_pub.h in '..\..\core\source\firebird\firebird.consts_pub.h.pas',
   firebird.iberror.h in '..\..\core\source\firebird\firebird.iberror.h.pas',
   firebird.inf_pub.h in '..\..\core\source\firebird\firebird.inf_pub.h.pas',
-  firebird.charsets in '..\..\core\source\rtl\firebird.charsets.pas',
-  firebird.client in '..\..\core\source\rtl\firebird.client.pas',
-  firebird.client.debug in '..\..\core\source\rtl\firebird.client.debug.pas',
-  firebird.dsql in '..\..\core\source\rtl\firebird.dsql.pas',
   dbx4.base in '..\source\dbx4.base.pas',
   dbx4.firebird.dll in '..\source\dbx4.firebird.dll.pas',
   dbx4.firebird.driver in '..\source\dbx4.firebird.driver.pas',
@@ -40,7 +36,11 @@ uses
   dbx4.firebird.reader in '..\source\dbx4.firebird.reader.pas',
   dbx4.firebird.row in '..\source\dbx4.firebird.row.pas',
   dbx4.firebird.metadata in '..\source\dbx4.firebird.metadata.pas',
-  dbx4.firebird.base in '..\source\dbx4.firebird.base.pas';
+  dbx4.firebird.base in '..\source\dbx4.firebird.base.pas',
+  firebird.client.debug in '..\..\core\source\firebird\firebird.client.debug.pas',
+  firebird.client in '..\..\core\source\firebird\firebird.client.pas',
+  firebird.dsql in '..\..\core\source\firebird\firebird.dsql.pas',
+  firebird.charsets in '..\..\core\source\firebird\firebird.charsets.pas';
 
 {$LIBPREFIX 'dbx'}
 {$LIBSUFFIX '0'}
