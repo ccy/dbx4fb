@@ -77,7 +77,7 @@ begin
   try
     SetCurrentDir(ExtractFilePath(FVendorLib));
     V := FVendorLib;
-    FHandle := LoadLibrary(PAnsiChar(V));
+    FHandle := LoadLibrary(PChar(V));
   finally
     SetCurrentDir(sDir);
   end;
