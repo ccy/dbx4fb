@@ -272,12 +272,12 @@ begin
     W := SQL;
     Delete(W, 1, Pos('%', W));
     W := Trim(W);
-    if (Pos(TDBXMetadataTableTypes.SystemTable, W) > 0) and
-       (Pos(TDBXMetadataTableTypes.Table, W) > 0) then
+    if (Pos(string(TDBXMetadataTableTypes.SystemTable), string(W)) > 0) and
+       (Pos(string(TDBXMetadataTableTypes.Table), string(W)) > 0) then
       sFlag := ' '
-    else if Pos(TDBXMetadataTableTypes.SystemTable, W) > 0 then
+    else if Pos(string(TDBXMetadataTableTypes.SystemTable), string(W)) > 0 then
       sFlag := 'AND (A.RDB$SYSTEM_FLAG = 1) '
-    else if Pos(TDBXMetadataTableTypes.Table, W) > 0 then
+    else if Pos(string(TDBXMetadataTableTypes.Table), string(W)) > 0 then
       sFlag := 'AND (A.RDB$SYSTEM_FLAG = 0) '
     else
       sFlag := ' ';
