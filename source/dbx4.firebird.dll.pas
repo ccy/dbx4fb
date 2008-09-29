@@ -8,44 +8,12 @@ uses SysUtils, FmtBcd, SqlTimSt, DBXCommon, DBXPlatform, DBXDynalink,
   dbx4.firebird.driver, dbx4.firebird.connection, dbx4.firebird.command,
   dbx4.firebird.reader, dbx4.base;
 
-{$region ''}
-//type
-//  TDBXWideStringBuilder  = PWideChar;
-//  TInt32                 = Longint;
-//  TDBXWideString         = PWideChar;
-//  TDBXAnsiString         = PChar;
-//  TDBXAnsiStringBuilder  = PChar;
-//
-//  TDBXHandle             = pointer;
-//  TDBXCommonHandle       = TDBXHandle;
-//  TDBXCommandHandle      = TDBXHandle;
-//  TDBXRowHandle          = TDBXHandle;
-//  TDBXReaderHandle       = TDBXHandle;
-//  TDBXConnectionHandle   = TDBXHandle;
-//  TDBXTransactionHandle  = TDBXHandle;
-//  TDBXDriverHandle       = TDBXHandle;
-//  TDBXWritableRowHandle  = TDBXHandle;
-//  DBXCallbackHandle      = TDBXHandle;
-//
-//  CBRType = (                           { Call-back return type }
-//    cbrUSEDEF,                          { Take default action }
-//    cbrCONTINUE,                        { Continue }
-//    cbrABORT,                           { Abort the operation }
-//    cbrCHKINPUT,                        { Input given }
-//    cbrYES,                             { Take requested action }
-//    cbrNO,                              { Do not take requested action }
-//    cbrPARTIALASSIST,                   { Assist in completing the job }
-//    cbrSKIP,                            { Skip this operation }
-//    cbrRETRY                            { Retry this operation }
-//  );
-//
-//  DBXTraceCallback      = function(Handle: DBXCallbackHandle; TraceCategory: TInt32; TraceMessage: TDBXWideString): CBRType; stdcall;
-{$endregion}
-
 function DBXBase_Close(Handle: TDBXCommonHandle): TDBXErrorCode; stdcall;
+var B: IDBXBase;
 begin
-  Result := IDBXBase(Handle).Close;
-  IDBXBase(Handle) := nil;
+  B := IDBXBase(Handle);
+  Result := B.Close;
+  B := nil;
 end;
 
 function DBXBase_GetErrorMessage(Handle: TDBXCommonHandle; LastErrorCode:
