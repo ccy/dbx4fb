@@ -1,13 +1,7 @@
-(* Build Instruction:
-
-     Output Directory: $(OutputDir)\$(ActiveProjectModule)
-Unit Output Directory: $(UnitOutputDir)\$(ActiveProjectModule)
-          Search Path: ..\..\core\source\rtl
-*)
-
 program dbxfbTests;
 
 uses
+  FastMM4,
   SysUtils,
   Forms,
   TestFramework,
@@ -17,11 +11,12 @@ uses
 
 {$R *.RES}
 
-var P: array[0..1] of HMODULE;
+var P: array[0..2] of HMODULE;
     H: HMODULE;
 begin
-  P[0] := LoadPackage('SQL.patch.vcl.bpl');
-  P[1] := LoadPackage('SQL.patch.dbx.bpl');
+  P[0] := LoadPackage('SQL.patch.rtl.bpl');
+  P[1] := LoadPackage('SQL.patch.vcl.bpl');
+  P[2] := LoadPackage('SQL.patch.dbx.bpl');
   try
     Application.Initialize;
     if IsConsole then
