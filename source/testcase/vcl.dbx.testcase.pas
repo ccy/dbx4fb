@@ -80,7 +80,7 @@ type{$M+}
   TTestCase_DBX = class(TTestCase, ITestCase_DBX1)
   private
     FConnection: TSQLConnection;
-    FTestData: ITestData;                                           
+    FTestData: ITestData;
     FSQLMonitor: TSQLMonitor;
     {$if CompilerVersion <= 18}
     procedure SQLMonitorOnLogTrace(Sender: TObject; CBInfo: pSQLTRACEDesc);
