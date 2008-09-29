@@ -790,21 +790,36 @@ begin
 end;
 
 procedure TTestCase_DBX_FieldType.Test_BLOB;
-var S: TStringStream;
+var M: TStringStream;
+    S: AnsiString;
 begin
   Param.LoadFromFile('c:\windows\notepad.exe', ftBlob);
   Execute;
   CheckEquals(TBlobField, Field.ClassType);
-  CheckEquals(Param.AsString, Field.AsString);
 
-  S := TStringStream.Create(DupeString('a', 65535));
+  {$if CompilerVersion <= 18.5}
+  S := Param.AsString;
+  {$else}
+  SetLength(S, Param.GetDataSize);
+  Move(Param.AsBlob[0], S[1], Param.GetDataSize);
+  {$ifend}
+  CheckEquals(S, Field.AsString);
+
+  M := TStringStream.Create(DupeString('a', 65535));
   try
-    Param.LoadFromStream(S, ftBlob);
+    Param.LoadFromStream(M, ftBlob);
   finally
-    S.Free;
+    M.Free;
   end;
   Execute;
-  CheckEquals(Param.AsString, Field.AsString);
+
+  {$if CompilerVersion <= 18.5}
+  S := Param.AsString;
+  {$else}
+  SetLength(S, Param.GetDataSize);
+  Move(Param.AsBlob[0], S[1], Param.GetDataSize);
+  {$ifend}
+  CheckEquals(S, Field.AsString);
 
   Test_Required;
 end;
