@@ -24,15 +24,15 @@ type
     FCallbackEvent: DBXTraceCallback;
     FCallbackHandle: DBXCallbackHandle;
     FDebuggerListener: IFirebirdLibraryDebuggerListener;
-    FDatabase: string;
+    FDatabase: WideString;
     FFirebirdLibrary: IFirebirdLibrary;
-    FHostName: string;
+    FHostName: WideString;
     FIsolationLevel: TInt32;
-    FPassword: string;
+    FPassword: WideString;
     FSQLDialect: integer;
     FTransactionPool: TFirebirdTransactionPool;
     FTrimChar: boolean;
-    FUserName: string;
+    FUserName: WideString;
     procedure CheckDebugger;
   protected
     function BeginTransaction(out TransactionHandle: TDBXTransactionHandle;
