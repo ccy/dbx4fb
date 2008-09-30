@@ -9,11 +9,9 @@ uses SysUtils, FmtBcd, SqlTimSt, DBXCommon, DBXPlatform, DBXDynalink,
   dbx4.firebird.reader, dbx4.base;
 
 function DBXBase_Close(Handle: TDBXCommonHandle): TDBXErrorCode; stdcall;
-var B: IDBXBase;
 begin
-  B := IDBXBase(Handle);
-  Result := B.Close;
-  B := nil;
+  Result := IDBXBase(Handle).Close;
+  IDBXBase(Handle) := nil;
 end;
 
 function DBXBase_GetErrorMessage(Handle: TDBXCommonHandle; LastErrorCode:
