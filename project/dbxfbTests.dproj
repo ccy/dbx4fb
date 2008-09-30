@@ -32,10 +32,10 @@
     <DCC_DcuOutput>$(UnitOutputDir)\$(ActiveProjectModule)</DCC_DcuOutput>
     <DCC_ObjOutput>$(UnitOutputDir)\$(ActiveProjectModule)</DCC_ObjOutput>
     <DCC_HppOutput>$(UnitOutputDir)\$(ActiveProjectModule)</DCC_HppOutput>
-    <DCC_UnitSearchPath>$(LibraryDir)\FastMM.Debug;$(BDS)\lib\Debug;$(OutputDir)\$(ActiveProjectModule)\lib</DCC_UnitSearchPath>
-    <DCC_ResourcePath>$(LibraryDir)\FastMM.Debug;$(BDS)\lib\Debug;$(OutputDir)\$(ActiveProjectModule)\lib</DCC_ResourcePath>
-    <DCC_ObjPath>$(LibraryDir)\FastMM.Debug;$(BDS)\lib\Debug;$(OutputDir)\$(ActiveProjectModule)\lib</DCC_ObjPath>
-    <DCC_IncludePath>$(LibraryDir)\FastMM.Debug;$(BDS)\lib\Debug;$(OutputDir)\$(ActiveProjectModule)\lib</DCC_IncludePath>
+    <DCC_UnitSearchPath>$(LibraryDir)\FastMM.FullDebug;$(BDS)\lib\Debug;$(OutputDir)\$(ActiveProjectModule)\lib</DCC_UnitSearchPath>
+    <DCC_ResourcePath>$(LibraryDir)\FastMM.FullDebug;$(BDS)\lib\Debug;$(OutputDir)\$(ActiveProjectModule)\lib</DCC_ResourcePath>
+    <DCC_ObjPath>$(LibraryDir)\FastMM.FullDebug;$(BDS)\lib\Debug;$(OutputDir)\$(ActiveProjectModule)\lib</DCC_ObjPath>
+    <DCC_IncludePath>$(LibraryDir)\FastMM.FullDebug;$(BDS)\lib\Debug;$(OutputDir)\$(ActiveProjectModule)\lib</DCC_IncludePath>
     <DCC_Optimize>False</DCC_Optimize>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Profile|AnyCPU' ">
