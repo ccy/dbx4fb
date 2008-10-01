@@ -849,11 +849,11 @@ var i: integer;
     W: WideString;
 begin
   if Pos('Firebird 1.', GetTestData.ServerVersion) <> 0 then Exit;
-  
+
   Param.AsWideString := 'One World One Dream ' +
                         #$540C + #$4E00 + #$4E2A + #$4E16 + #$754C + ' ' +
                         #$540C + #$4E00 + #$4E2A + #$68A6 + #$60F3;
-                        
+
   Execute;
   CheckFalse(Field.IsNull);
   CheckEquals(TWideStringField, Field.ClassType);
@@ -870,6 +870,10 @@ begin
     Dec(i);
   end;
   CheckEquals(W, Field.AsWideString);
+
+  Param.AsWideString := DupeString(#$540C, 100);
+  Execute;
+  CheckEquals(Param.AsWideString, Field.AsWideString);
 
   Test_Required;
 end;
