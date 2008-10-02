@@ -154,13 +154,13 @@ begin
     end;
   end;
 
-  DPB := char(isc_dpb_version1) +
-         char(isc_dpb_user_name) + char(Length(FUserName)) + FUserName +
-         char(isc_dpb_password) + char(Length(FPassword)) + FPassword;
+  DPB := AnsiChar(isc_dpb_version1) +
+         AnsiChar(isc_dpb_user_name) + AnsiChar(Length(FUserName)) + AnsiString(FUserName) +
+         AnsiChar(isc_dpb_password) + AnsiChar(Length(FPassword)) + AnsiString(FPassword);
 
-  sServerName := FDatabase;
+  sServerName := AnsiString(FDatabase);
   if FHostName <> '' then
-    sServerName := FHostName + ':' + sServerName;
+    sServerName := AnsiString(FHostName) + ':' + AnsiString(sServerName);
 
   FDBHandle := nil;
   FFirebirdLibrary.isc_attach_database(StatusVector.pValue, Length(sServerName), PISC_SCHAR(sServerName), GetDBHandle, Length(DPB), PISC_SCHAR(DPB));
