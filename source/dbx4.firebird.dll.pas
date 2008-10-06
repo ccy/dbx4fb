@@ -4,9 +4,11 @@ interface
 
 implementation
 
-uses SysUtils, FmtBcd, SqlTimSt, DBXCommon, DBXPlatform, DBXDynalink,
-  dbx4.firebird.driver, dbx4.firebird.connection, dbx4.firebird.command,
-  dbx4.firebird.reader, dbx4.base;
+uses SysUtils, FmtBcd, SqlTimSt,
+     {$if CompilerVersion=18.5}WideStrUtils,{$ifend}
+     DBXCommon, DBXPlatform, DBXDynalink,
+     dbx4.firebird.driver, dbx4.firebird.connection, dbx4.firebird.command,
+     dbx4.firebird.reader, dbx4.base;
 
 function DBXBase_Close(Handle: TDBXCommonHandle): TDBXErrorCode; stdcall;
 begin
@@ -172,7 +174,8 @@ begin
 
     for i := 0 to Count - 1 do begin
       if Names[i] = TDBXPropertyNames.VendorLib then begin
-        StrPCopy(ErrorMessage, Format(sDLLLoadError, [Values[i], Result]));
+        {$if CompilerVersion=18.5}WStrPCopy(ErrorMessage, Format(sDLLLoadError, [Values[i], Result]));{$ifend}
+        {$if CompilerVersion>=20}StrPCopy(ErrorMessage, Format(sDLLLoadError, [Values[i], Result]));{$ifend}
         Break;
       end;
     end;
