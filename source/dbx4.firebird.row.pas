@@ -23,6 +23,7 @@ type
     function SetDouble(Ordinal: TInt32; Value: Double): TDBXErrorCode;
     function SetInt16(Ordinal: TInt32; Value: SmallInt): TDBXErrorCode;
     function SetInt32(Ordinal: TInt32; Value: LongInt): TDBXErrorCode;
+    function SetInt64(Ordinal: TInt32; Value: Int64): TDBXErrorCode;
     function SetNull(Ordinal: TInt32): TDBXErrorCode;
     function SetParameterType(Ordinal: TInt32; const Name: TDBXWideString;
         ChildPosition: TInt32; ParamDirection: TDBXParameterDirection; DBXType,
@@ -96,6 +97,13 @@ end;
 function TDBXWritableRow_Firebird.SetInt32(Ordinal: TInt32; Value: Integer): TDBXErrorCode;
 begin
   FSQLDA[Ordinal].SetInteger(@Value, SizeOf(Value), False);
+  Result := TDBXErrorCodes.None;
+end;
+
+function TDBXWritableRow_Firebird.SetInt64(Ordinal: TInt32;
+  Value: Int64): TDBXErrorCode;
+begin
+  FSQLDA[Ordinal].SetInt64(@Value, SizeOf(Value), False);
   Result := TDBXErrorCodes.None;
 end;
 

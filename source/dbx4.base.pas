@@ -73,6 +73,7 @@ type
     function SetDouble(Ordinal: TInt32; Value: Double): TDBXErrorCode;
     function SetInt16(Ordinal: TInt32; Value: SmallInt): TDBXErrorCode;
     function SetInt32(Ordinal: TInt32; Value: LongInt): TDBXErrorCode;
+    function SetInt64(Ordinal: TInt32; Value: Int64): TDBXErrorCode;
     function SetNull(Ordinal: TInt32): TDBXErrorCode;
     function SetParameterType(Ordinal: TInt32; const Name: TDBXWideString;
         ChildPosition: TInt32; ParamDirection: TDBXParameterDirection; DBXType,

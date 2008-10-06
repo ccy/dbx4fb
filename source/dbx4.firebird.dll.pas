@@ -159,6 +159,7 @@ function DBXLoader_GetDriver(Count: TInt32; Names, Values: TWideStringArray;
     ErrorMessage: TDBXWideStringBuilder; out pDriver: TDBXDriverHandle):
     TDBXErrorCode; stdcall;
 var o: IDBXDriver;
+    i: integer;
 begin
   o := TDBXDriver_Firebird.Create(Count, Names, Values);
   if o.Loaded then begin
@@ -168,6 +169,13 @@ begin
   end else begin
     pDriver := nil;
     Result := TDBXErrorCodes.DriverInitFailed;
+
+    for i := 0 to Count - 1 do begin
+      if Names[i] = TDBXPropertyNames.VendorLib then begin
+        StrPCopy(ErrorMessage, Format(sDLLLoadError, [Values[i], Result]));
+        Break;
+      end;
+    end;
   end;
 end;
 
@@ -349,8 +357,7 @@ end;
 function DBXWritableRow_SetInt64(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; Value: Int64): TDBXErrorCode; stdcall;
 begin
-  Assert(False);
-  Result := TDBXErrorCodes.None;
+  Result := IDBXWritableRow(Handle).SetInt64(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetNull(Handle: TDBXWritableRowHandle; Ordinal:
