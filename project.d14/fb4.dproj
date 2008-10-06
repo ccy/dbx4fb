@@ -1,0 +1,152 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{549a3915-3fd5-480f-8c15-d7512ff09719}</ProjectGuid>
+			<MainSource>fb4.dpr</MainSource>
+			<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+			<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+			<DCC_DependencyCheckOutputName>..\..\..\..\output.d11\moon\dbxfb40.dll</DCC_DependencyCheckOutputName>
+			<ProjectVersion>12.0</ProjectVersion>
+			<Config Condition="'$(Config)'==''">Debug</Config>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_1)'!=''">
+			<Cfg_1>true</Cfg_1>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_2)'!=''">
+			<Cfg_2>true</Cfg_2>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Profile' or '$(Cfg_3)'!=''">
+			<Cfg_3>true</Cfg_3>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<Import Project="..\..\build\optset\Base.optset" Condition="'$(Base)'!='' And Exists('..\..\build\optset\Base.optset')"/>
+		<PropertyGroup Condition="'$(Base)'!=''">
+			<DllPrefixDefined>true</DllPrefixDefined>
+			<DllSuffix>0</DllSuffix>
+			<DCC_DependencyCheckOutputName>..\..\..\..\output.d12\moon\dbxfb40.dll</DCC_DependencyCheckOutputName>
+			<DllPrefix>dbx</DllPrefix>
+			<GenDll>true</GenDll>
+			<CfgDependentOn>..\..\build\optset\Base.optset</CfgDependentOn>
+		</PropertyGroup>
+		<Import Project="..\..\build\optset\Debug.optset" Condition="'$(Cfg_1)'!='' And Exists('..\..\build\optset\Debug.optset')"/>
+		<PropertyGroup Condition="'$(Cfg_1)'!=''">
+			<CfgDependentOn>..\..\build\optset\Debug.optset</CfgDependentOn>
+		</PropertyGroup>
+		<Import Project="..\..\build\optset\Release.optset" Condition="'$(Cfg_2)'!='' And Exists('..\..\build\optset\Release.optset')"/>
+		<PropertyGroup Condition="'$(Cfg_2)'!=''">
+			<CfgDependentOn>..\..\build\optset\Release.optset</CfgDependentOn>
+		</PropertyGroup>
+		<Import Project="..\..\build\optset\Profile.optset" Condition="'$(Cfg_3)'!='' And Exists('..\..\build\optset\Profile.optset')"/>
+		<PropertyGroup Condition="'$(Cfg_3)'!=''">
+			<CfgDependentOn>..\..\build\optset\Profile.optset</CfgDependentOn>
+		</PropertyGroup>
+		<ItemGroup>
+			<DelphiCompile Include="fb4.dpr">
+				<MainSource>MainSource</MainSource>
+			</DelphiCompile>
+			<RcCompile Include="..\..\build\rc\library.rc">
+				<Form>..\..\build\rc\library.res</Form>
+			</RcCompile>
+			<DCCReference Include="..\..\core\source\patch\CodeRedirect.pas"/>
+			<DCCReference Include="..\..\core\source\patch\FmtBcd.QC50427.pas"/>
+			<DCCReference Include="..\..\core\source\patch\FmtBcd.QC55176.pas"/>
+			<DCCReference Include="..\..\core\source\patch\FmtBcd.QC55550.pas"/>
+			<DCCReference Include="..\..\core\source\firebird\firebird.ibase.h.pas"/>
+			<DCCReference Include="..\..\core\source\firebird\firebird.types_pub.h.pas"/>
+			<DCCReference Include="..\..\core\source\firebird\firebird.sqlda_pub.h.pas"/>
+			<DCCReference Include="..\..\core\source\firebird\firebird.time.h.pas"/>
+			<DCCReference Include="..\..\core\source\firebird\firebird.consts_pub.h.pas"/>
+			<DCCReference Include="..\..\core\source\firebird\firebird.iberror.h.pas"/>
+			<DCCReference Include="..\..\core\source\firebird\firebird.inf_pub.h.pas"/>
+			<DCCReference Include="..\source\dbx4.base.pas"/>
+			<DCCReference Include="..\source\dbx4.firebird.dll.pas"/>
+			<DCCReference Include="..\source\dbx4.firebird.driver.pas"/>
+			<DCCReference Include="..\source\dbx4.firebird.connection.pas"/>
+			<DCCReference Include="..\source\dbx4.firebird.command.pas"/>
+			<DCCReference Include="..\source\dbx4.firebird.reader.pas"/>
+			<DCCReference Include="..\source\dbx4.firebird.row.pas"/>
+			<DCCReference Include="..\source\dbx4.firebird.metadata.pas"/>
+			<DCCReference Include="..\source\dbx4.firebird.base.pas"/>
+			<DCCReference Include="..\..\core\source\firebird\firebird.client.debug.pas"/>
+			<DCCReference Include="..\..\core\source\firebird\firebird.client.pas"/>
+			<DCCReference Include="..\..\core\source\firebird\firebird.dsql.pas"/>
+			<DCCReference Include="..\..\core\source\firebird\firebird.charsets.pas"/>
+			<BuildConfiguration Include="Base">
+				<Key>Base</Key>
+				<DependentOn>..\..\build\optset\Base.optset</DependentOn>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Profile">
+				<Key>Cfg_3</Key>
+				<CfgParent>Base</CfgParent>
+				<DependentOn>..\..\build\optset\Profile.optset</DependentOn>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Release">
+				<Key>Cfg_2</Key>
+				<CfgParent>Base</CfgParent>
+				<DependentOn>..\..\build\optset\Release.optset</DependentOn>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Debug">
+				<Key>Cfg_1</Key>
+				<CfgParent>Base</CfgParent>
+				<DependentOn>..\..\build\optset\Debug.optset</DependentOn>
+			</BuildConfiguration>
+		</ItemGroup>
+		<Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+		<ProjectExtensions>
+			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
+			<Borland.ProjectType>VCLApplication</Borland.ProjectType>
+			<BorlandProject>
+				<Delphi.Personality>
+					<Parameters>
+						<Parameters Name="UseLauncher">False</Parameters>
+						<Parameters Name="LoadAllSymbols">True</Parameters>
+						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+						<Parameters Name="HostApplication">C:\Users\ccy\Documents\Project\output.d11\moon\dbxfbTests.exe</Parameters>
+					</Parameters>
+					<VersionInfo>
+						<VersionInfo Name="IncludeVerInfo">False</VersionInfo>
+						<VersionInfo Name="AutoIncBuild">False</VersionInfo>
+						<VersionInfo Name="MajorVer">1</VersionInfo>
+						<VersionInfo Name="MinorVer">0</VersionInfo>
+						<VersionInfo Name="Release">0</VersionInfo>
+						<VersionInfo Name="Build">0</VersionInfo>
+						<VersionInfo Name="Debug">False</VersionInfo>
+						<VersionInfo Name="PreRelease">False</VersionInfo>
+						<VersionInfo Name="Special">False</VersionInfo>
+						<VersionInfo Name="Private">False</VersionInfo>
+						<VersionInfo Name="DLL">False</VersionInfo>
+						<VersionInfo Name="Locale">1033</VersionInfo>
+						<VersionInfo Name="CodePage">1252</VersionInfo>
+					</VersionInfo>
+					<VersionInfoKeys>
+						<VersionInfoKeys Name="CompanyName"/>
+						<VersionInfoKeys Name="FileDescription"/>
+						<VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
+						<VersionInfoKeys Name="InternalName"/>
+						<VersionInfoKeys Name="LegalCopyright"/>
+						<VersionInfoKeys Name="LegalTrademarks"/>
+						<VersionInfoKeys Name="OriginalFilename"/>
+						<VersionInfoKeys Name="ProductName"/>
+						<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+						<VersionInfoKeys Name="Comments"/>
+					</VersionInfoKeys>
+					<Source>
+						<Source Name="MainSource">fb4.dpr</Source>
+					</Source>
+					<Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dcloffice2k100.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclofficexp100.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+					</Excluded_Packages>
+				</Delphi.Personality>
+			</BorlandProject>
+			<ProjectFileVersion>12</ProjectFileVersion>
+		</ProjectExtensions>
+	</Project>
