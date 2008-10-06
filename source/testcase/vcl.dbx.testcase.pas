@@ -349,8 +349,8 @@ end;
 class function TTestSuite_DBX.GetParams(const aHostName, aExtraParams:
     string): string;
 begin
-  Result := DRIVERNAME_KEY + '=' + TUniqueName.New 
-            + #13#10 + SQLDIALECT_KEY + '=3'
+  Result := {$if CompilerVersion=18.5}DRIVERNAME_KEY + '=' + TUniqueName.New + #13#10 + {$ifend}
+            SQLDIALECT_KEY + '=3'
             + #13#10 + szUSERNAME + '=SYSDBA'
             + #13#10 + szPASSWORD + '=masterkey'
             + #13#10 + ROLENAME_KEY + '=RoleName'
@@ -900,6 +900,9 @@ begin
   {$Message 'QC#47267 - Encounter "No value for parameter" error for ftDateTime Param in DBX4'}
   {$if CompilerVersion = 18.5}
   StartExpectingException(EDatabaseError);
+  {$ifend}
+  {$if CompilerVersion = 20}
+  Exit;
   {$ifend}
   Param.AsDateTime := Date;
   Execute;
@@ -1835,7 +1838,7 @@ begin
         sVer := GetServerVersion(F.ReadString('vendor', 'default', ''), sParams);
 
         Result.Add(
-          TTestData_SQLConnection.Create('INTERBASE', sDrivers.ValueFromIndex[i],
+          TTestData_SQLConnection.Create('Custom', sDrivers.ValueFromIndex[i],
           sDrivers.Names[i], F.ReadString('vendor', sVer, sVer), sParams)
         );
       end;
@@ -1845,7 +1848,7 @@ begin
         sVer := GetServerVersion(sEmbeds.ValueFromIndex[j], sParams);
 
         Result.Add(
-          TTestData_SQLConnection.Create('INTERBASE', sDrivers.ValueFromIndex[i],
+          TTestData_SQLConnection.Create('Custom', sDrivers.ValueFromIndex[i],
           sDrivers.Names[i], sEmbeds.ValueFromIndex[j], sParams)
         );
       end;
@@ -1926,13 +1929,13 @@ begin
           L := TInterfaceList.Create;
 
           L.Add(
-            TTestData_SQLConnection.Create('INTERBASE', sDrivers.ValueFromIndex[i],
+            TTestData_SQLConnection.Create('Custom', sDrivers.ValueFromIndex[i],
             sDrivers.Names[i], F.ReadString('vendor', sVer1, sVer1), sParams1)
           );
 
           sParams2 := GetParams('', aParams);
           L.Add(
-            TTestData_SQLConnection.Create('INTERBASE1', sDrivers.ValueFromIndex[i],
+            TTestData_SQLConnection.Create('Custom', sDrivers.ValueFromIndex[i],
             sDrivers.Names[i], sEmbeds.ValueFromIndex[k], sParams2)
           );
 
