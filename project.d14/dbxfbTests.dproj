@@ -33,7 +33,7 @@
 			<DCC_UsePackage>vcl;rtl;dunit;DbxCommonDriver;oortl;oofirebird</DCC_UsePackage>
 			<DllPrefixDefined>true</DllPrefixDefined>
 			<RuntimeOnlyPackage>true</RuntimeOnlyPackage>
-			<DCC_DependencyCheckOutputName>..\..\..\..\output.d12\earth\dbxfbTests.exe</DCC_DependencyCheckOutputName>
+			<DCC_DependencyCheckOutputName>..\..\..\..\output.d12\moon\dbxfbTests.exe</DCC_DependencyCheckOutputName>
 			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
 			<DCC_Description>E Stream Software - RTL Patcher</DCC_Description>
 			<DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
