@@ -3,9 +3,8 @@ unit vcl.dbx.testcase;
 interface
 
 uses Classes, TestFrameWork, TestExtensions, DB, SqlExpr, Provider, DBClient
-     {$if CompilerVersion > 18}
-     , DBXCommon
-     {$ifend}
+     {$if CompilerVersion > 18}, DBXCommon{$ifend}
+     {$if CompilerVersion >= 20}, dbx.firebird{$ifend}
      ;
 
 type{$M+}
@@ -322,7 +321,6 @@ end;
 procedure TTestData_SQLConnection.Setup(const aConnection: TSQLConnection);
 begin
   aConnection.DriverName := FDriverName;
-  aConnection.ConnectionName := Self.ClassName;
   aConnection.LibraryName := FLibraryName;
   aConnection.GetDriverFunc := FGetDriverFunc;
   aConnection.VendorLib := FVendorLib;
@@ -331,12 +329,14 @@ end;
 
 class procedure TTestSuite_DBX.CheckTestDataFile;
 var F: TIniFile;
+    sDriver: string;
 begin
   if FileExists(GetTestDataFileName) then Exit;
 
   F := TIniFile.Create(GetTestDataFileName);
   try
-    F.WriteString('driver', 'getSQLDriverFIREBIRD', 'dbxfb40.dll');
+    sDriver := {$if CompilerVersion<=18.5}'dbxfb40.dll'{$else}'dbxfbu40.dll'{$ifend};
+    F.WriteString('driver', 'getSQLDriverFIREBIRD', sDriver);
     F.WriteString('embedded', 'embedded_1', 'fbembed.dll');
     F.WriteString('server', 'server_1', 'localhost');
     F.WriteString('vendor', 'default', 'fbclient.1.5.5.dll');
@@ -1838,7 +1838,7 @@ begin
         sVer := GetServerVersion(F.ReadString('vendor', 'default', ''), sParams);
 
         Result.Add(
-          TTestData_SQLConnection.Create('Custom', sDrivers.ValueFromIndex[i],
+          TTestData_SQLConnection.Create(sVer, sDrivers.ValueFromIndex[i],
           sDrivers.Names[i], F.ReadString('vendor', sVer, sVer), sParams)
         );
       end;
@@ -1848,7 +1848,7 @@ begin
         sVer := GetServerVersion(sEmbeds.ValueFromIndex[j], sParams);
 
         Result.Add(
-          TTestData_SQLConnection.Create('Custom', sDrivers.ValueFromIndex[i],
+          TTestData_SQLConnection.Create(sVer, sDrivers.ValueFromIndex[i],
           sDrivers.Names[i], sEmbeds.ValueFromIndex[j], sParams)
         );
       end;
@@ -1907,7 +1907,7 @@ var F: TIniFile;
     i: integer;
     j, k: Integer;
     sParams1, sParams2: string;
-    sVer1: string;
+    sVer1, sVer2: string;
     L: IInterfaceList;
 begin
   Result := TInterfaceList.Create;
@@ -1929,13 +1929,15 @@ begin
           L := TInterfaceList.Create;
 
           L.Add(
-            TTestData_SQLConnection.Create('Custom', sDrivers.ValueFromIndex[i],
+            TTestData_SQLConnection.Create(sVer1, sDrivers.ValueFromIndex[i],
             sDrivers.Names[i], F.ReadString('vendor', sVer1, sVer1), sParams1)
           );
 
+          sVer2 := TFirebirdServiceFactory.New(sEmbeds.ValueFromIndex[k], '', 'SYSDBA', 'masterkey').GetServerVersion + ' Embedded';
+
           sParams2 := GetParams('', aParams);
           L.Add(
-            TTestData_SQLConnection.Create('Custom', sDrivers.ValueFromIndex[i],
+            TTestData_SQLConnection.Create(sVer2, sDrivers.ValueFromIndex[i],
             sDrivers.Names[i], sEmbeds.ValueFromIndex[k], sParams2)
           );
 
