@@ -31,8 +31,8 @@
 		<PropertyGroup Condition="'$(Base)'!=''">
 			<DllPrefixDefined>true</DllPrefixDefined>
 			<DllSuffix>0</DllSuffix>
-			<DCC_DependencyCheckOutputName>..\..\..\..\output.d12\moon\dbxfb40.dll</DCC_DependencyCheckOutputName>
-			<DllPrefix>dbx</DllPrefix>
+			<DCC_DependencyCheckOutputName>..\..\..\..\output.d12\moon\dbxufb40.dll</DCC_DependencyCheckOutputName>
+			<DllPrefix>dbxu</DllPrefix>
 			<GenDll>true</GenDll>
 			<CfgDependentOn>..\..\build\optset\Base.optset</CfgDependentOn>
 		</PropertyGroup>

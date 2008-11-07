@@ -42,7 +42,7 @@ uses
   firebird.dsql in '..\..\core\source\firebird\firebird.dsql.pas',
   firebird.charsets in '..\..\core\source\firebird\firebird.charsets.pas';
 
-{$LIBPREFIX 'dbx'}
+{$LIBPREFIX 'dbxu'}
 {$LIBSUFFIX '0'}
 
 begin
