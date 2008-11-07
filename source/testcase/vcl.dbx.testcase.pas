@@ -234,7 +234,7 @@ type{$M+}
 
 implementation
 
-uses SysUtils, SqlConst, Windows, StrUtils, FMTBcd,
+uses SysUtils, SqlConst, Windows, StrUtils, FMTBcd, WideStrings,
   SqlTimSt, DateUtils, Math, IniFiles, firebird.client, firebird.service,
   UniqueID;
 
@@ -540,11 +540,11 @@ begin
 end;
 
 procedure TTestCase_DBX_General.Test_GetFieldNames;
-var L1, L2: TStringList;
+var L1, L2: TWideStringList;
 begin
   FConnection.Open;
-  L1 := TStringList.Create;
-  L2 := TStringList.Create;
+  L1 := TWideStringList.Create;
+  L2 := TWideStringList.Create;
   try
     FConnection.GetFieldNames('RDB$RELATIONS', L1);
     L2.Add('RDB$VIEW_BLR');
@@ -577,9 +577,9 @@ begin
 end;
 
 procedure TTestCase_DBX_General.Test_GetIndexNames;
-var L: TStringList;
+var L: TWideStringList;
 begin
-  L := TStringList.Create;
+  L := TWideStringList.Create;
   try
     FConnection.GetIndexNames('RDB$RELATIONS', L);
     CheckEquals('', L.Text);
@@ -803,7 +803,7 @@ begin
   SetLength(S, Param.GetDataSize);
   Move(Param.AsBlob[0], S[1], Param.GetDataSize);
   {$ifend}
-  CheckEquals(S, Field.AsString);
+  CheckEquals(string(S), Field.AsString);
 
   M := TStringStream.Create(DupeString('a', 65535));
   try
@@ -819,7 +819,7 @@ begin
   SetLength(S, Param.GetDataSize);
   Move(Param.AsBlob[0], S[1], Param.GetDataSize);
   {$ifend}
-  CheckEquals(S, Field.AsString);
+  CheckEquals(string(S), Field.AsString);
 
   Test_Required;
 end;
@@ -1445,36 +1445,27 @@ begin
 end;
 
 procedure TTestCase_DBX_Transaction.Test_Transaction;
-var T: TTransactionDesc;
+var T: TDBXTransaction;
 begin
-  ZeroMemory(@T, SizeOf(T));
-  T.TransactionID := 1;
-  T.IsolationLevel := xilREADCOMMITTED;
-  FConnection.StartTransaction(T);
-  FConnection.Commit(T);
+  T := FConnection.BeginTransaction;
+  FConnection.CommitFreeAndNil(T);
 
-  ZeroMemory(@T, SizeOf(T));
-  T.TransactionID := 1;
-  T.IsolationLevel := xilREADCOMMITTED;
-  FConnection.StartTransaction(T);
-  FConnection.Rollback(T);
+  T := FConnection.BeginTransaction;
+  FConnection.RollbackFreeAndNil(T);
 end;
 
 procedure TTestCase_DBX_Transaction.Test_Transaction_1;
-var T: TTransactionDesc;
+var T: TDBXTransaction;
 begin
-  ZeroMemory(@T, SizeOf(T));
-  T.TransactionID := 1;
-  T.IsolationLevel := xilREADCOMMITTED;
   Self.StartExpectingException(EDBXError);
   try
-    FConnection.StartTransaction(T);
+    T := FConnection.BeginTransaction;
     try
       FConnection.ExecuteDirect('CREATE TABLE T_TRANSACTION(FIELD INTEGER)');
       FConnection.ExecuteDirect('INSERT INTO T_TRANSACTION VALUES(123)');
-      FConnection.Commit(T);
+      FConnection.CommitFreeAndNil(T);
     except
-      FConnection.Rollback(T);
+      FConnection.RollbackFreeAndNil(T);
       raise;
     end;
   finally
@@ -1483,19 +1474,15 @@ begin
 end;
 
 procedure TTestCase_DBX_Transaction.Test_Transaction_2;
-var T: TTransactionDesc;
+var T: TDBXTransaction;
     pD: ^TSQLDataSet;
 begin
-  ZeroMemory(@T, SizeOf(T));
-  T.TransactionID := 1;
-  T.IsolationLevel := xilREADCOMMITTED;
-
   FConnection.ExecuteDirect('CREATE TABLE T_TRANSACTION(FIELD INTEGER)');
   FConnection.ExecuteDirect('INSERT INTO T_TRANSACTION VALUES(123)');
 
-  FConnection.StartTransaction(T);
+  FConnection.BeginTransaction;
   FConnection.ExecuteDirect('INSERT INTO T_TRANSACTION VALUES(456)');
-  FConnection.Rollback(T);
+  FConnection.RollbackFreeAndNil(T);
 
   New(pD);
   try
@@ -1510,7 +1497,7 @@ begin
 end;
 
 procedure TTestCase_DBX_Transaction.Test_Transaction_ReadCommitted;
-var TTestSuite_DBX1, TTestSuite_DBX2: TTransactionDesc;
+var TTestSuite_DBX1, TTestSuite_DBX2: TDBXTransaction;
     D: ^TSQLDataSet;
     V1, V2: string;
 begin
@@ -1519,23 +1506,19 @@ begin
 
   New(D);
   try
-    TTestSuite_DBX1.TransactionID := 1;
-    TTestSuite_DBX1.IsolationLevel := xilREADCOMMITTED;
-    FConnection.StartTransaction(TTestSuite_DBX1);
+    TTestSuite_DBX1 := FConnection.BeginTransaction;
     FConnection.Execute('SELECT * FROM T_REPEAT', nil, D);
     V1 := D^.Fields[0].AsString;
     D^.Free;
 
-    TTestSuite_DBX2.TransactionID := 2;
-    TTestSuite_DBX2.IsolationLevel := xilREADCOMMITTED;
-    FConnection.StartTransaction(TTestSuite_DBX2);
+    TTestSuite_DBX2 := FConnection.BeginTransaction;
     FConnection.ExecuteDirect('UPDATE T_REPEAT SET FIELD1=''ITEM-02''');
-    FConnection.Commit(TTestSuite_DBX2);
+    FConnection.CommitFreeAndNil(TTestSuite_DBX2);
 
     FConnection.Execute('SELECT * FROM T_REPEAT', nil, D);
     V2 := D^.Fields[0].AsString;
     D^.Free;
-    FConnection.Commit(TTestSuite_DBX1);
+    FConnection.CommitFreeAndNil(TTestSuite_DBX1);
 
     CheckEquals('ITEM-01', V1);
     CheckEquals('ITEM-02', V2);
@@ -1546,7 +1529,7 @@ begin
 end;
 
 procedure TTestCase_DBX_Transaction.Test_Transaction_RepeatableRead;
-var TTestSuite_DBX1, TTestSuite_DBX2: TTransactionDesc;
+var TTestSuite_DBX1, TTestSuite_DBX2: TDBXTransaction;
     D: ^TSQLDataSet;
     V1, V2: string;
 begin
@@ -1555,23 +1538,19 @@ begin
 
   New(D);
   try
-    TTestSuite_DBX1.TransactionID := 1;
-    TTestSuite_DBX1.IsolationLevel := xilREPEATABLEREAD;
-    FConnection.StartTransaction(TTestSuite_DBX1);
+    TTestSuite_DBX1 := FConnection.BeginTransaction(TDBXIsolations.RepeatableRead);
     FConnection.Execute('SELECT * FROM T_REPEAT', nil, D);
     V1 := D^.Fields[0].AsString;
     D^.Free;
 
-    TTestSuite_DBX2.TransactionID := 2;
-    TTestSuite_DBX2.IsolationLevel := xilREPEATABLEREAD;
-    FConnection.StartTransaction(TTestSuite_DBX2);
+    TTestSuite_DBX2 := FConnection.BeginTransaction(TDBXIsolations.RepeatableRead);
     FConnection.ExecuteDirect('UPDATE T_REPEAT SET FIELD1=''ITEM-02''');
-    FConnection.Commit(TTestSuite_DBX2);
+    FConnection.CommitFreeAndNil(TTestSuite_DBX2);
 
     FConnection.Execute('SELECT * FROM T_REPEAT', nil, D);
     V2 := D^.Fields[0].AsString;
     D^.Free;
-    FConnection.Commit(TTestSuite_DBX1);
+    FConnection.CommitFreeAndNil(TTestSuite_DBX1);
 
     CheckEquals(V1, V2);
   finally
@@ -1581,7 +1560,7 @@ begin
 end;
 
 procedure TTestCase_DBX_Transaction.Test_Transaction_WaitLock;
-var TTestSuite_DBX1, TTestSuite_DBX2: TTransactionDesc;
+var TTestSuite_DBX1, TTestSuite_DBX2: TDBXTransaction;
     D: ^TSQLDataSet;
     V1: integer;
 begin
@@ -1589,28 +1568,24 @@ begin
 
   New(D);
   try
-    TTestSuite_DBX1.TransactionID := 1;
-    TTestSuite_DBX1.IsolationLevel := xilREADCOMMITTED;
-    FConnection.StartTransaction(TTestSuite_DBX1);
+    TTestSuite_DBX1 := FConnection.BeginTransaction;
     try
       FConnection.ExecuteDirect('INSERT INTO T_LOCK VALUES(''ITEM-01'', 1)');
 
-      TTestSuite_DBX2.TransactionID := 2;
-      TTestSuite_DBX2.IsolationLevel := xilREADCOMMITTED;
-      FConnection.StartTransaction(TTestSuite_DBX2);
+      TTestSuite_DBX2 := FConnection.BeginTransaction;
       try
         FConnection.Execute('SELECT COUNT(*) FROM T_LOCK', nil, D);
         V1 := D^.Fields[0].AsInteger;
         D^.Free;
-        FConnection.Commit(TTestSuite_DBX2);
+        FConnection.CommitFreeAndNil(TTestSuite_DBX2);
         CheckEquals(0, V1);
       except
-        FConnection.Rollback(TTestSuite_DBX2);
+        FConnection.RollbackFreeAndNil(TTestSuite_DBX2);
         raise;
       end;
-      FConnection.Commit(TTestSuite_DBX1);
+      FConnection.CommitFreeAndNil(TTestSuite_DBX1);
     except
-      FConnection.Rollback(TTestSuite_DBX1);
+      FConnection.RollbackFreeAndNil(TTestSuite_DBX1);
       raise;
     end;
   finally
@@ -1709,20 +1684,18 @@ begin
 end;
 
 procedure TTestCase_DBX_DataSnap.Test_Self_Manage_Transaction;
-var T: TTransactionDesc;
+var T: TDBXTransaction;
     i: integer;
 begin
   for i := 1 to 10 do begin
-    T.GlobalID := 1;
-    T.IsolationLevel := xilREADCOMMITTED;
-    FConnection.StartTransaction(T);
+    T := FConnection.BeginTransaction;
     try
       FCDS.SetProvider(FDSP);
       FCDS.Open;
       FCDS.Close;
-      FConnection.Commit(T);
+      FConnection.CommitFreeAndNil(T);
     except
-      FConnection.Rollback(T);
+      FConnection.RollbackFreeAndNil(T);
       raise;
     end;
   end;

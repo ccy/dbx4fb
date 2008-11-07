@@ -1,96 +1,120 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <ProjectGuid>{69c7e279-5fcd-4b25-bcc0-8c2286502fe1}</ProjectGuid>
-  </PropertyGroup>
-  <ItemGroup />
-  <ItemGroup>
-    <Projects Include="..\..\core\project.d12\oofirebird.dproj" />
-    <Projects Include="..\..\core\project.d12\oortl.dproj" />
-    <Projects Include="..\..\core\project.d12\patch.dbx.dproj" />
-    <Projects Include="..\..\core\project.d12\patch.rtl.dproj" />
-    <Projects Include="..\..\core\project.d12\patch.vcl.dproj" />
-    <Projects Include="dbxfbTests.dproj">
-      <Dependencies>fb4.dproj</Dependencies>
-    </Projects>
-    <Projects Include="fb4.dproj" />
-  </ItemGroup>
-  <ProjectExtensions>
-    <Borland.Personality>Default.Personality</Borland.Personality>
-    <Borland.ProjectType />
-    <BorlandProject>
-<BorlandProject xmlns=""><Default.Personality></Default.Personality></BorlandProject></BorlandProject>
-  </ProjectExtensions>
-  <Target Name="fb4">
-    <MSBuild Projects="fb4.dproj" Targets="" />
-  </Target>
-  <Target Name="fb4:Clean">
-    <MSBuild Projects="fb4.dproj" Targets="Clean" />
-  </Target>
-  <Target Name="fb4:Make">
-    <MSBuild Projects="fb4.dproj" Targets="Make" />
-  </Target>
-  <Target Name="patch_rtl">
-    <MSBuild Projects="..\..\core\project.d12\patch.rtl.dproj" Targets="" />
-  </Target>
-  <Target Name="patch_rtl:Clean">
-    <MSBuild Projects="..\..\core\project.d12\patch.rtl.dproj" Targets="Clean" />
-  </Target>
-  <Target Name="patch_rtl:Make">
-    <MSBuild Projects="..\..\core\project.d12\patch.rtl.dproj" Targets="Make" />
-  </Target>
-  <Target Name="patch_vcl">
-    <MSBuild Projects="..\..\core\project.d12\patch.vcl.dproj" Targets="" />
-  </Target>
-  <Target Name="patch_vcl:Clean">
-    <MSBuild Projects="..\..\core\project.d12\patch.vcl.dproj" Targets="Clean" />
-  </Target>
-  <Target Name="patch_vcl:Make">
-    <MSBuild Projects="..\..\core\project.d12\patch.vcl.dproj" Targets="Make" />
-  </Target>
-  <Target Name="patch_dbx">
-    <MSBuild Projects="..\..\core\project.d12\patch.dbx.dproj" Targets="" />
-  </Target>
-  <Target Name="patch_dbx:Clean">
-    <MSBuild Projects="..\..\core\project.d12\patch.dbx.dproj" Targets="Clean" />
-  </Target>
-  <Target Name="patch_dbx:Make">
-    <MSBuild Projects="..\..\core\project.d12\patch.dbx.dproj" Targets="Make" />
-  </Target>
-  <Target Name="oortl">
-    <MSBuild Projects="..\..\core\project.d12\oortl.dproj" Targets="" />
-  </Target>
-  <Target Name="oortl:Clean">
-    <MSBuild Projects="..\..\core\project.d12\oortl.dproj" Targets="Clean" />
-  </Target>
-  <Target Name="oortl:Make">
-    <MSBuild Projects="..\..\core\project.d12\oortl.dproj" Targets="Make" />
-  </Target>
-  <Target Name="oofirebird">
-    <MSBuild Projects="..\..\core\project.d12\oofirebird.dproj" Targets="" />
-  </Target>
-  <Target Name="oofirebird:Clean">
-    <MSBuild Projects="..\..\core\project.d12\oofirebird.dproj" Targets="Clean" />
-  </Target>
-  <Target Name="oofirebird:Make">
-    <MSBuild Projects="..\..\core\project.d12\oofirebird.dproj" Targets="Make" />
-  </Target>
-  <Target Name="dbxfbTests" DependsOnTargets="fb4">
-    <MSBuild Projects="dbxfbTests.dproj" Targets="" />
-  </Target>
-  <Target Name="dbxfbTests:Clean" DependsOnTargets="fb4:Clean">
-    <MSBuild Projects="dbxfbTests.dproj" Targets="Clean" />
-  </Target>
-  <Target Name="dbxfbTests:Make" DependsOnTargets="fb4:Make">
-    <MSBuild Projects="dbxfbTests.dproj" Targets="Make" />
-  </Target>
-  <Target Name="Build">
-    <CallTarget Targets="fb4;patch_rtl;patch_vcl;patch_dbx;oortl;oofirebird;dbxfbTests" />
-  </Target>
-  <Target Name="Clean">
-    <CallTarget Targets="fb4:Clean;patch_rtl:Clean;patch_vcl:Clean;patch_dbx:Clean;oortl:Clean;oofirebird:Clean;dbxfbTests:Clean" />
-  </Target>
-  <Target Name="Make">
-    <CallTarget Targets="fb4:Make;patch_rtl:Make;patch_vcl:Make;patch_dbx:Make;oortl:Make;oofirebird:Make;dbxfbTests:Make" />
-  </Target>
-  <Import Condition="Exists('$(MSBuildBinPath)\Borland.Group.Targets')" Project="$(MSBuildBinPath)\Borland.Group.Targets" />
-</Project>
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{69c7e279-5fcd-4b25-bcc0-8c2286502fe1}</ProjectGuid>
+		</PropertyGroup>
+		<ItemGroup>
+			<Projects Include="fb4.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="..\..\core\project.d12\patch.rtl.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="..\..\core\project.d12\patch.vcl.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="..\..\core\project.d12\patch.dbx.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="..\..\core\project.d12\oortl.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="..\..\core\project.d12\oofirebird.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="..\..\core\project.d12\DBXFirebirdDriver.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="dbxfbTests.dproj">
+				<Dependencies>fb4.dproj</Dependencies>
+			</Projects>
+		</ItemGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Default.Personality.12</Borland.Personality>
+			<Borland.ProjectType/>
+			<BorlandProject>
+				<Default.Personality/>
+			</BorlandProject>
+		</ProjectExtensions>
+		<Target Name="fb4">
+			<MSBuild Projects="fb4.dproj"/>
+		</Target>
+		<Target Name="fb4:Clean">
+			<MSBuild Targets="Clean" Projects="fb4.dproj"/>
+		</Target>
+		<Target Name="fb4:Make">
+			<MSBuild Targets="Make" Projects="fb4.dproj"/>
+		</Target>
+		<Target Name="patch_rtl">
+			<MSBuild Projects="..\..\core\project.d12\patch.rtl.dproj"/>
+		</Target>
+		<Target Name="patch_rtl:Clean">
+			<MSBuild Targets="Clean" Projects="..\..\core\project.d12\patch.rtl.dproj"/>
+		</Target>
+		<Target Name="patch_rtl:Make">
+			<MSBuild Targets="Make" Projects="..\..\core\project.d12\patch.rtl.dproj"/>
+		</Target>
+		<Target Name="patch_vcl">
+			<MSBuild Projects="..\..\core\project.d12\patch.vcl.dproj"/>
+		</Target>
+		<Target Name="patch_vcl:Clean">
+			<MSBuild Targets="Clean" Projects="..\..\core\project.d12\patch.vcl.dproj"/>
+		</Target>
+		<Target Name="patch_vcl:Make">
+			<MSBuild Targets="Make" Projects="..\..\core\project.d12\patch.vcl.dproj"/>
+		</Target>
+		<Target Name="patch_dbx">
+			<MSBuild Projects="..\..\core\project.d12\patch.dbx.dproj"/>
+		</Target>
+		<Target Name="patch_dbx:Clean">
+			<MSBuild Targets="Clean" Projects="..\..\core\project.d12\patch.dbx.dproj"/>
+		</Target>
+		<Target Name="patch_dbx:Make">
+			<MSBuild Targets="Make" Projects="..\..\core\project.d12\patch.dbx.dproj"/>
+		</Target>
+		<Target Name="oortl">
+			<MSBuild Projects="..\..\core\project.d12\oortl.dproj"/>
+		</Target>
+		<Target Name="oortl:Clean">
+			<MSBuild Targets="Clean" Projects="..\..\core\project.d12\oortl.dproj"/>
+		</Target>
+		<Target Name="oortl:Make">
+			<MSBuild Targets="Make" Projects="..\..\core\project.d12\oortl.dproj"/>
+		</Target>
+		<Target Name="oofirebird">
+			<MSBuild Projects="..\..\core\project.d12\oofirebird.dproj"/>
+		</Target>
+		<Target Name="oofirebird:Clean">
+			<MSBuild Targets="Clean" Projects="..\..\core\project.d12\oofirebird.dproj"/>
+		</Target>
+		<Target Name="oofirebird:Make">
+			<MSBuild Targets="Make" Projects="..\..\core\project.d12\oofirebird.dproj"/>
+		</Target>
+		<Target Name="DBXFirebirdDriver">
+			<MSBuild Projects="..\..\core\project.d12\DBXFirebirdDriver.dproj"/>
+		</Target>
+		<Target Name="DBXFirebirdDriver:Clean">
+			<MSBuild Targets="Clean" Projects="..\..\core\project.d12\DBXFirebirdDriver.dproj"/>
+		</Target>
+		<Target Name="DBXFirebirdDriver:Make">
+			<MSBuild Targets="Make" Projects="..\..\core\project.d12\DBXFirebirdDriver.dproj"/>
+		</Target>
+		<Target DependsOnTargets="fb4" Name="dbxfbTests">
+			<MSBuild Projects="dbxfbTests.dproj"/>
+		</Target>
+		<Target DependsOnTargets="fb4:Clean" Name="dbxfbTests:Clean">
+			<MSBuild Targets="Clean" Projects="dbxfbTests.dproj"/>
+		</Target>
+		<Target DependsOnTargets="fb4:Make" Name="dbxfbTests:Make">
+			<MSBuild Targets="Make" Projects="dbxfbTests.dproj"/>
+		</Target>
+		<Target Name="Build">
+			<CallTarget Targets="fb4;patch_rtl;patch_vcl;patch_dbx;oortl;oofirebird;DBXFirebirdDriver;dbxfbTests"/>
+		</Target>
+		<Target Name="Clean">
+			<CallTarget Targets="fb4:Clean;patch_rtl:Clean;patch_vcl:Clean;patch_dbx:Clean;oortl:Clean;oofirebird:Clean;DBXFirebirdDriver:Clean;dbxfbTests:Clean"/>
+		</Target>
+		<Target Name="Make">
+			<CallTarget Targets="fb4:Make;patch_rtl:Make;patch_vcl:Make;patch_dbx:Make;oortl:Make;oofirebird:Make;DBXFirebirdDriver:Make;dbxfbTests:Make"/>
+		</Target>
+		<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+	</Project>

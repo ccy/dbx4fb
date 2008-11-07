@@ -30,7 +30,7 @@
 		<Import Project="..\..\build\optset\Base.optset" Condition="'$(Base)'!='' And Exists('..\..\build\optset\Base.optset')"/>
 		<PropertyGroup Condition="'$(Base)'!=''">
 			<UsePackages>true</UsePackages>
-			<DCC_UsePackage>vcl;rtl;dunit;DbxCommonDriver;oortl;oofirebird</DCC_UsePackage>
+			<DCC_UsePackage>vcl;rtl;dunit;DbxCommonDriver;oortl;oofirebird;DBXFirebirdDriver</DCC_UsePackage>
 			<DllPrefixDefined>true</DllPrefixDefined>
 			<RuntimeOnlyPackage>true</RuntimeOnlyPackage>
 			<DCC_DependencyCheckOutputName>..\..\..\..\output.d12\moon\dbxfbTests.exe</DCC_DependencyCheckOutputName>
