@@ -110,6 +110,7 @@ type{$M+}
     procedure Test_Open_Close;
     procedure Test_RecordCount;
     procedure Test_GetIndexNames;
+    procedure Test_ServerCharSet;
   end;
 
   TTestCase_DBX_Transaction = class(TTestCase_DBX)
@@ -354,7 +355,7 @@ begin
             + #13#10 + szUSERNAME + '=SYSDBA'
             + #13#10 + szPASSWORD + '=masterkey'
             + #13#10 + ROLENAME_KEY + '=RoleName'
-            + #13#10 + 'ServerCharSet='
+            + #13#10 + SQLSERVER_CHARSET_KEY + '=NONE'
             + #13#10 + 'BlobSize=-1'
             + #13#10 + 'LocaleCode=0000'
             + #13#10 + 'Interbase TransIsolation=ReadCommited'
@@ -490,6 +491,60 @@ begin
     FConnection.ExecuteDirect('DROP TABLE T_TEST1');
     Dispose(pD);
   end;
+end;
+
+procedure TTestCase_DBX_General.Test_ServerCharSet;
+var S: string;
+    K: AnsiString;
+    pD: ^TSQLDataSet;
+    D: TSQLDataSet;
+begin
+  FConnection.Close;
+  FConnection.Params.Values[SQLSERVER_CHARSET_KEY] := 'WIN1252';
+  FConnection.Open;
+
+  S := 'CREATE TABLE T_TEST_CHARSET ( ' +
+         'S_WIN1252 CHAR(1) CHARACTER SET WIN1252, ' +
+         'S_ISO8859_13 CHAR(1) CHARACTER SET ISO8859_13 ' +
+       ') ';
+  FConnection.ExecuteDirect(S);
+
+  S := Format('INSERT INTO T_TEST_CHARSET(S_WIN1252, S_ISO8859_13) VALUES (''%s'', ''%s'')', [#$9E, #$9E]);
+  FConnection.ExecuteDirect(S);
+
+  // Test WIN1252 Transliteration
+  New(pD);
+  try
+    FConnection.Execute('SELECT S_WIN1252, S_ISO8859_13 FROM T_TEST_CHARSET', nil, pD);
+    D := pD^;
+
+    CheckEquals(#$9E, D.Fields[0].AsString);
+    CheckEquals(#$9E, D.Fields[1].AsString);
+
+  finally
+    D.Free;
+    Dispose(pD);
+  end;
+
+  // Test NONE Transliteration
+  FConnection.Close;
+  FConnection.Params.Values[SQLSERVER_CHARSET_KEY] := 'NONE';
+  FConnection.Open;
+
+  New(pD);
+  try
+    FConnection.Execute('SELECT S_WIN1252, S_ISO8859_13 FROM T_TEST_CHARSET', nil, pD);
+    D := pD^;
+
+    CheckEquals(#$9E, D.Fields[0].AsString);
+    CheckEquals(#$FE, D.Fields[1].AsString);
+
+  finally
+    D.Free;
+    Dispose(pD);
+  end;
+
+  FConnection.ExecuteDirect('DROP TABLE T_TEST_CHARSET');
 end;
 
 procedure TTestCase_DBX_General.Test_Connection_Property;
@@ -1818,7 +1873,7 @@ begin
       for j := 0 to sEmbeds.Count - 1 do begin
         sParams := GetParams('', aParams);
 
-        sVer := GetServerVersion(sEmbeds.ValueFromIndex[j], sParams);
+        sVer := GetServerVersion(sEmbeds.ValueFromIndex[j], sParams) + ' Embedded';
 
         Result.Add(
           TTestData_SQLConnection.Create(sVer, sDrivers.ValueFromIndex[i],
@@ -1906,9 +1961,9 @@ begin
             sDrivers.Names[i], F.ReadString('vendor', sVer1, sVer1), sParams1)
           );
 
-          sVer2 := TFirebirdServiceFactory.New(sEmbeds.ValueFromIndex[k], '', 'SYSDBA', 'masterkey').GetServerVersion + ' Embedded';
-
           sParams2 := GetParams('', aParams);
+          sVer2 := GetServerVersion(sEmbeds.ValueFromIndex[k], sParams2) + ' Embedded';
+
           L.Add(
             TTestData_SQLConnection.Create(sVer2, sDrivers.ValueFromIndex[i],
             sDrivers.Names[i], sEmbeds.ValueFromIndex[k], sParams2)

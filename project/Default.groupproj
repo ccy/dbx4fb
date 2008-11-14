@@ -9,9 +9,7 @@
     <Projects Include="..\..\core\project\patch.dbx.dproj" />
     <Projects Include="..\..\core\project\patch.rtl.dproj" />
     <Projects Include="..\..\core\project\patch.vcl.dproj" />
-    <Projects Include="dbxfbTests.dproj">
-      <Dependencies>fb4.dproj</Dependencies>
-    </Projects>
+    <Projects Include="dbxfbTests.dproj" />
     <Projects Include="fb4.dproj" />
   </ItemGroup>
   <ProjectExtensions>
@@ -74,13 +72,13 @@
   <Target Name="oofirebird:Make">
     <MSBuild Projects="..\..\core\project\oofirebird.dproj" Targets="Make" />
   </Target>
-  <Target Name="dbxfbTests" DependsOnTargets="fb4">
+  <Target Name="dbxfbTests">
     <MSBuild Projects="dbxfbTests.dproj" Targets="" />
   </Target>
-  <Target Name="dbxfbTests:Clean" DependsOnTargets="fb4:Clean">
+  <Target Name="dbxfbTests:Clean">
     <MSBuild Projects="dbxfbTests.dproj" Targets="Clean" />
   </Target>
-  <Target Name="dbxfbTests:Make" DependsOnTargets="fb4:Make">
+  <Target Name="dbxfbTests:Make">
     <MSBuild Projects="dbxfbTests.dproj" Targets="Make" />
   </Target>
   <Target Name="Build">
