@@ -33,6 +33,7 @@ type
     FTransactionPool: TFirebirdTransactionPool;
     FTrimChar: boolean;
     FUserName: WideString;
+    FServerCharSet: WideString;
     procedure CheckDebugger;
   protected
     function BeginTransaction(out TransactionHandle: TDBXTransactionHandle;
@@ -123,6 +124,7 @@ function TDBXConnection_Firebird.Connect(Count: TInt32; Names, Values:
 var i: integer;
     DPB, sServerName: AnsiString;
 begin
+  FServerCharSet := 'None';
   for i := 0 to Count - 1 do begin
     if Names[i] = TDBXPropertyNames.Database then
       FDatabase := Values[i]
@@ -132,6 +134,8 @@ begin
       FUserName := Values[i]
     else if Names[i] = TDBXPropertyNames.Password then
       FPassword := Values[i]
+    else if SameText(Names[i], SQLSERVER_CHARSET_KEY) then
+      FServerCharSet := Values[i]
     else if SameText(Names[i], SQLDIALECT_KEY) then begin
       if not TryStrToInt(Values[i], FSQLDialect) then
         FSQLDialect := 3;
@@ -155,6 +159,7 @@ begin
   end;
 
   DPB := AnsiChar(isc_dpb_version1) +
+         AnsiChar(isc_dpb_lc_ctype) + AnsiChar(Length(FServerCharSet)) + AnsiString(FServerCharSet) +
          AnsiChar(isc_dpb_user_name) + AnsiChar(Length(FUserName)) + AnsiString(FUserName) +
          AnsiChar(isc_dpb_password) + AnsiChar(Length(FPassword)) + AnsiString(FPassword);
 

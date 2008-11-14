@@ -53,7 +53,7 @@
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
 			<RcCompile Include="..\..\build\rc\library.rc">
-				<Form>..\..\build\rc\library.res</Form>
+				<Form>library.res</Form>
 			</RcCompile>
 			<DCCReference Include="..\..\core\source\patch\CodeRedirect.pas"/>
 			<DCCReference Include="..\..\core\source\patch\FmtBcd.QC50427.pas"/>

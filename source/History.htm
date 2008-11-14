@@ -69,7 +69,13 @@
 
 - Access violation in TStatusVector.GetError method using malform error string
 
-4.1.0.12 Release on 07 Nov 2008
+4.1.0.12 / 4.1.2009.1 Release on 07 Nov 2008
 
 - Maintenance Release - minor update for Delphi 2007 and Delphi 2009
 
+4.1.0.13 / 4.1.2009.2 Release on 14 Nov 2008
+
+- Fixed: ServerCharSet doesn't function and cause transliteration fail
+- Workaound: http://tracker.firebirdsql.org/browse/CORE-2186
+  fbintl.dll didn't unload after fbembed.dll was released
+- 3 environment variables "FIREBIRD", "FIREBIRD_MSG" and "FIREBIRD_TMP" wasn't unset properly if these variables never exist in current process.

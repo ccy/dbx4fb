@@ -12,7 +12,7 @@ library fb4;
 
 
 
-{$R '..\..\build\rc\library.res' '..\..\build\rc\library.rc'}
+{$R 'library.res' '..\..\build\rc\library.rc'}
 
 uses
   SysUtils,
