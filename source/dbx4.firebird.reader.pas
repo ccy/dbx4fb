@@ -7,79 +7,76 @@ uses SysUtils, FmtBcd, SqlTimSt, DBXCommon, DBXPlatform,
      firebird.dsql, firebird.client, firebird.ibase.h;
 
 type
-  TDBXReader_Firebird = class abstract(TDBXBase_Firebird, IDBXReader)
+  TDBXReader_Firebird = class abstract(TDBXBase_Firebird)
   private
+    FConnection: IDBXConnection;
     FMetaData: IMetaDataProvider;
-  protected
+  protected  // IDBXBase_Firebird
+    function GetFirebirdLibrary: IFirebirdLibrary; override;
+  protected  // IDBXReader2
     function ColumnCount: TInt32;
-    function GetBoolean(Ordinal: TInt32; out Value, IsNull: LongBool):
-        TDBXErrorCode; virtual;
-    function GetBytes(Ordinal: TInt32; Offset: Int64; Value: TBytes; const
-        LastIndex: TInt32; ValueOffset, Length: Int64; out ReturnLength: Int64; out
-        IsNull: LongBool): TDBXErrorCode; virtual;
-    function GetByteLength(Ordinal: TInt32; out Length: Int64; out IsNull:
-        LongBool): TDBXErrorCode; virtual;
     function GetColumnMetadata(Ordinal: TInt32; Name: TDBXWideStringBuilder; out
         ColumnType, ColumnSubType, Length, precision, scale, flags: TInt32):
         TDBXErrorCode;
-    function GetFixedBytes(Ordinal: TInt32; Value: TBytes; const LastIndex: TInt32;
-        ValueOffset: TInt32; out IsNull: LongBool): TDBXErrorCode; virtual;
-    function GetInt32(Ordinal: TInt32; out Value: LongInt; out IsNull: LongBool):
-        TDBXErrorCode; overload; virtual; 
-    function GetWideString(Ordinal: TInt32; Value: TDBXWideStringBuilder; out
-        IsNull: LongBool): TDBXErrorCode; virtual;
-    function Next: TDBXErrorCode; virtual;
   public
-    constructor Create(const aMetaData: IMetaDataProvider);
+    constructor Create(const aConnection: IDBXConnection; const aMetaData:
+        IMetaDataProvider);
   end;
 
-  TDBXReader_Firebird_GetDatabase = class(TDBXReader_Firebird)
+  TDBXReader_Firebird_GetDatabase = class(TDBXReader_Firebird, IDBXReader)
+  private
+    FRow: IDBXRow;
   protected
     function Close: TDBXErrorCode; override;
-    function GetBoolean(Ordinal: TInt32; out Value, IsNull: LongBool):
-        TDBXErrorCode; override;
-    function GetInt32(Ordinal: TInt32; out Value: LongInt; out IsNull: LongBool):
-        TDBXErrorCode; override;
-    function GetWideString(Ordinal: TInt32; Value: TDBXWideStringBuilder; out
-        IsNull: LongBool): TDBXErrorCode; override;
-    function Next: TDBXErrorCode; override;
+    function Next: TDBXErrorCode;
+    function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
+  public
+    procedure AfterConstruction; override;
   end;
 
-  TDBXReader_Firebird_DSQL = class(TDBXReader_Firebird)
+  TDBXRow_Firebird_GetDatabase = class(TDBXBase_Firebird, IDBXRow)
+  protected
+    function GetAnsiString(Ordinal: TInt32; Value: TDBXAnsiStringBuilder; out
+        IsNull: LongBool): TDBXErrorCode;
+    function GetBoolean(Ordinal: TInt32; out Value, IsNull: LongBool):
+        TDBXErrorCode;
+    function GetByteLength(Ordinal: TInt32; out Length: Int64; out IsNull:
+        LongBool): TDBXErrorCode;
+    function GetBytes(Ordinal: TInt32; Offset: Int64; Value: TBytes; const
+        LastIndex: TInt32; ValueOffset, Length: Int64; out ReturnLength: Int64; out
+        IsNull: LongBool): TDBXErrorCode;
+    function GetBcd(Ordinal: TInt32; out Value: TBcd; out IsNull: LongBool):
+        TDBXErrorCode;
+    function GetDate(Ordinal: TInt32; out Value: TDBXDate; out IsNull: LongBool):
+        TDBXErrorCode;
+    function GetDouble(Ordinal: TInt32; out Value: Double; out IsNull: LongBool):
+        TDBXErrorCode;
+    function GetFixedBytes(Ordinal: TInt32; Value: TBytes; const LastIndex: TInt32;
+        ValueOffset: TInt32; out IsNull: LongBool): TDBXErrorCode;
+    function GetInt16(Ordinal: TInt32; out Value: SmallInt; out IsNull: LongBool):
+        TDBXErrorCode;
+    function GetInt32(Ordinal: TInt32; out Value: LongInt; out IsNull: LongBool):
+        TDBXErrorCode;
+    function GetInt64(Ordinal: TInt32; out Value: Int64; out IsNull: LongBool):
+        TDBXErrorCode;
+    function GetTime(Ordinal: TInt32; out Value: TDBXTime; out IsNull: LongBool):
+        TDBXErrorCode;
+    function GetTimeStamp(Ordinal: TInt32; out Value: TSQLTimeStamp; out IsNull:
+        LongBool): TDBXErrorCode;
+    function GetWideString(Ordinal: TInt32; Value: TDBXWideStringBuilder; out
+        IsNull: LongBool): TDBXErrorCode;
+  end;
+
+  TDBXReader_Firebird_DSQL = class(TDBXReader_Firebird, IDBXReader)
   private
-    FConnection: IDBXConnection;
     FDBHandle: pisc_db_handle;
     FDSQL: IFirebird_DSQL;
+    FRow: IDBXRow;
     FTrimChar: boolean;
   protected
     function Close: TDBXErrorCode; override;
-    function GetBcd(Ordinal: TInt32; out Value: PBcd; out IsNull: LongBool):
-        TDBXErrorCode;
-    function GetBytes(Ordinal: TInt32; Offset: Int64; Value: TBytes; const
-        LastIndex: TInt32; ValueOffset, Length: Int64; out ReturnLength: Int64; out
-        IsNull: LongBool): TDBXErrorCode; override;
-    function GetByteLength(Ordinal: TInt32; out Length: Int64; out IsNull:
-        LongBool): TDBXErrorCode; override;
-    function GetDate(Ordinal: TInt32; out Value: PDate; out IsNull: LongBool):
-        TDBXErrorCode;
-    function GetDouble(Ordinal: TInt32; out Value: PDouble; out IsNull: LongBool):
-        TDBXErrorCode;
-    function GetFirebirdLibrary: IFirebirdLibrary; override;
-    function GetFixedBytes(Ordinal: TInt32; Value: TBytes; const LastIndex: TInt32;
-        ValueOffset: TInt32; out IsNull: LongBool): TDBXErrorCode; override;
-    function GetInt16(Ordinal: TInt32; out Value: PShortInt; out IsNull: LongBool):
-        TDBXErrorCode;
-    function GetInt32(Ordinal: TInt32; out Value: PLongint; out IsNull: LongBool):
-        TDBXErrorCode; overload;
-    function GetAnsiString(Ordinal: TInt32; Value: TDBXAnsiStringBuilder; out
-        IsNull: LongBool): TDBXErrorCode;
-    function GetTime(Ordinal: TInt32; Value: PInteger; out IsNull: LongBool):
-        TDBXErrorCode;
-    function GetTimeStamp(Ordinal: TInt32; out Value: PSQLTimeStamp; out IsNull:
-        LongBool): TDBXErrorCode; overload;
-    function GetWideString(Ordinal: TInt32; Value: TDBXWideStringBuilder; out
-        IsNull: LongBool): TDBXErrorCode; override;
-    function Next: TDBXErrorCode; override;
+    function Next: TDBXErrorCode;
+    function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
   public
     constructor Create(const aConnection: IDBXConnection; const aDBHandle:
         pisc_db_handle; const aMetaData: IMetaDataProvider; const aDSQL:
@@ -88,44 +85,24 @@ type
 
 implementation
 
-uses Windows;
+uses Windows, dbx4.firebird.row;
+
+constructor TDBXReader_Firebird.Create(const aConnection: IDBXConnection;
+    const aMetaData: IMetaDataProvider);
+begin
+  inherited Create;
+  FConnection := aConnection;
+  FMetaData := aMetaData;
+end;
 
 function TDBXReader_Firebird.ColumnCount: TInt32;
 begin
   Result := FMetaData.GetColumnCount;
 end;
 
-constructor TDBXReader_Firebird.Create(const aMetaData: IMetaDataProvider);
-begin
-  inherited Create;
-  FMetaData := aMetaData;
-end;
-
-function TDBXReader_Firebird.GetBoolean(Ordinal: TInt32; out Value, IsNull: LongBool):
-    TDBXErrorCode;
-begin
-  Assert(False);
-  Result := TDBXErrorCodes.None;
-end;
-
-function TDBXReader_Firebird.GetByteLength(Ordinal: TInt32; out Length: Int64; out
-    IsNull: LongBool): TDBXErrorCode;
-begin
-  Assert(False);
-  Result := TDBXErrorCodes.None;
-end;
-
-function TDBXReader_Firebird.GetBytes(Ordinal: TInt32; Offset: Int64; Value: TBytes;
-    const LastIndex: TInt32; ValueOffset, Length: Int64; out ReturnLength:
-    Int64; out IsNull: LongBool): TDBXErrorCode;
-begin
-  Assert(False);
-  Result := TDBXErrorCodes.None;
-end;
-
-function TDBXReader_Firebird.GetColumnMetadata(Ordinal: TInt32;
-  Name: TDBXWideStringBuilder; out ColumnType, ColumnSubType, Length,
-  precision, scale, flags: TInt32): TDBXErrorCode;
+function TDBXReader_Firebird.GetColumnMetadata(Ordinal: TInt32; Name:
+    TDBXWideStringBuilder; out ColumnType, ColumnSubType, Length, precision,
+    scale, flags: TInt32): TDBXErrorCode;
 begin
   lstrcpyW(Name, PWideChar(FMetaData.GetColumnName(Ordinal)));
   ColumnType := FMetaData.GetColumnType(Ordinal);
@@ -141,65 +118,19 @@ begin
   Result := TDBXErrorCodes.None;
 end;
 
-function TDBXReader_Firebird.GetFixedBytes(Ordinal: TInt32; Value: TBytes; const
-    LastIndex: TInt32; ValueOffset: TInt32; out IsNull: LongBool):
-    TDBXErrorCode;
+function TDBXReader_Firebird.GetFirebirdLibrary: IFirebirdLibrary;
 begin
-  Assert(False);
-  Result := TDBXErrorCodes.None;
+  Result := (FConnection as IDBXBase_Firebird).FirebirdLibrary;
 end;
 
-function TDBXReader_Firebird.GetInt32(Ordinal: TInt32; out Value: LongInt; out IsNull:
-    LongBool): TDBXErrorCode;
+procedure TDBXReader_Firebird_GetDatabase.AfterConstruction;
 begin
-  Assert(False);
-  Result := TDBXErrorCodes.None;
-end;
-
-function TDBXReader_Firebird.GetWideString(Ordinal: TInt32; Value:
-    TDBXWideStringBuilder; out IsNull: LongBool): TDBXErrorCode;
-begin
-  Assert(False);
-  Result := TDBXErrorCodes.None;
-end;
-
-function TDBXReader_Firebird.Next: TDBXErrorCode;
-begin
-  Assert(False);
-  Result := TDBXErrorCodes.None;
+  inherited;
+  FRow := TDBXRow_Firebird_GetDatabase.Create;
 end;
 
 function TDBXReader_Firebird_GetDatabase.Close: TDBXErrorCode;
 begin
-  Result := TDBXErrorCodes.None;
-end;
-
-function TDBXReader_Firebird_GetDatabase.GetBoolean(Ordinal: TInt32; out
-    Value, IsNull: LongBool): TDBXErrorCode;
-begin
-  if (Ordinal = 3) or (Ordinal = 4) then
-    Value := True
-  else
-    Value := False;
-  IsNull := False;
-  Result := TDBXErrorCodes.None;
-end;
-
-function TDBXReader_Firebird_GetDatabase.GetInt32(Ordinal: TInt32; out Value:
-    LongInt; out IsNull: LongBool): TDBXErrorCode;
-begin
-  Value := 0;
-  IsNull := False;
-  Result := TDBXErrorCodes.None;
-end;
-
-function TDBXReader_Firebird_GetDatabase.GetWideString(Ordinal: TInt32; Value:
-    TDBXWideStringBuilder; out IsNull: LongBool): TDBXErrorCode;
-var W: WideString;
-begin
-  W := '"';
-  lstrcpyW(Value, PWideChar(W));
-  IsNull := False;
   Result := TDBXErrorCodes.None;
 end;
 
@@ -208,172 +139,33 @@ begin
   Result := TDBXErrorCodes.None;
 end;
 
-constructor TDBXReader_Firebird_DSQL.Create(const aConnection: IDBXConnection;
-    const aDBHandle: pisc_db_handle; const aMetaData: IMetaDataProvider; const
-    aDSQL: IFirebird_DSQL; const aTrimChar: boolean);
+function TDBXReader_Firebird_GetDatabase.QueryInterface(const IID: TGUID; out
+    Obj): HResult;
 begin
-  inherited Create(aMetaData);
+  if IsEqualGUID(IID, IDBXRow) then begin
+    IDBXRow(Obj) := FRow;
+    Result := S_OK;
+  end else
+    Result := inherited QueryInterface(IID, Obj);
+end;
+
+constructor TDBXReader_Firebird_DSQL.Create(const aConnection:
+    IDBXConnection; const aDBHandle: pisc_db_handle; const aMetaData:
+    IMetaDataProvider; const aDSQL: IFirebird_DSQL; const aTrimChar: boolean);
+begin
+  inherited Create(aConnection, aMetaData);
   FConnection := aConnection;
   FDBHandle := aDBHandle;
   FDSQL := aDSQL;
   FTrimChar := aTrimChar;
+
+  FRow := TDBXRow_Firebird.Create(FConnection, FDBHandle, FMetaData, FDSQL, FTrimChar);
 end;
 
 function TDBXReader_Firebird_DSQL.Close: TDBXErrorCode;
 begin
   FDSQL.Close(StatusVector);
   StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError);
-end;
-
-function TDBXReader_Firebird_DSQL.GetBcd(Ordinal: TInt32; out Value: PBcd; out
-    IsNull: LongBool): TDBXErrorCode;
-var B: boolean;
-begin
-  FDSQL.o_SQLDA[Ordinal].GetBCD(Value, B);
-  IsNull := B;
-  Result := TDBXErrorCodes.None;
-end;
-
-function TDBXReader_Firebird_DSQL.GetByteLength(Ordinal: TInt32; out Length: Int64;
-    out IsNull: LongBool): TDBXErrorCode;
-var i: Cardinal;
-    B: Boolean;
-begin
-  FDSQL.o_SQLDA[Ordinal].GetBlobSize(StatusVector, FDBHandle, FDSQL.Transaction, i, B);
-  if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
-
-  IsNull := B;
-  Length := i;
-  Result := TDBXErrorCodes.None;
-end;
-
-function TDBXReader_Firebird_DSQL.GetBytes(Ordinal: TInt32; Offset: Int64; Value:
-    TBytes; const LastIndex: TInt32; ValueOffset, Length: Int64; out
-    ReturnLength: Int64; out IsNull: LongBool): TDBXErrorCode;
-var B: Boolean;
-begin
-  Assert(Offset = 0);
-  Assert(ValueOffSet = 0);
-  FDSQL.o_SQLDA[Ordinal].GetBlob(StatusVector, FDBHandle, FDSQL.Transaction, Value, B, Length);
-  if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
-  
-  ReturnLength := Length;
-  IsNull := B;
-  Result := TDBXErrorCodes.None;
-end;
-
-function TDBXReader_Firebird_DSQL.GetDate(Ordinal: TInt32; out Value: PDate; out
-    IsNull: LongBool): TDBXErrorCode;
-var B: boolean;
-begin
-  FDSQL.o_SQLDA[Ordinal].GetDate(Value, B);
-  IsNull := B;
-  Result := TDBXErrorCodes.None;
-end;
-
-function TDBXReader_Firebird_DSQL.GetDouble(Ordinal: TInt32; out Value: PDouble;
-    out IsNull: LongBool): TDBXErrorCode;
-var B: Boolean;
-begin
-  FDSQL.o_SQLDA[Ordinal].GetDouble(Value, B);
-  IsNull := B;
-  Result := TDBXErrorCodes.None;
-end;
-
-function TDBXReader_Firebird_DSQL.GetFirebirdLibrary: IFirebirdLibrary;
-begin
-  Result := (FConnection as IDBXBase_Firebird).FirebirdLibrary;
-end;
-
-function TDBXReader_Firebird_DSQL.GetFixedBytes(Ordinal: TInt32; Value: TBytes;
-    const LastIndex: TInt32; ValueOffset: TInt32; out IsNull: LongBool):
-    TDBXErrorCode;
-begin
-  case FMetaData.GetColumnType(Ordinal) of
-    TDBXDataTypes.AnsiStringType: Result := GetAnsiString(Ordinal, Pointer(Value), IsNull);
-    TDBXDataTypes.WideStringType: Result := GetWideString(Ordinal, Pointer(Value), IsNull);
-    TDBXDataTypes.BcdType:        Result := GetBcd(Ordinal, PBcd(Value), IsNull);
-    TDBXDataTypes.DateType:       Result := GetDate(Ordinal, PDate(Value), IsNull);
-    TDBXDataTypes.Int16Type:      Result := GetInt16(Ordinal, PShortInt(Value), IsNull);
-    TDBXDataTypes.Int32Type:      Result := GetInt32(Ordinal, PLongint(Value), IsNull);
-    TDBXDataTypes.TimeStampType:  Result := GetTimeStamp(Ordinal, PSQLTimeStamp(Value), IsNull);
-    TDBXDataTypes.TimeType:       Result := GetTime(Ordinal, PInteger(Value), IsNull);
-    TDBXDataTypes.DoubleType:     Result := GetDouble(Ordinal, PDouble(Value), IsNull);
-    else begin
-      Assert(False);
-      Result := TDBXErrorCodes.NotSupported;
-    end;
-  end;
-end;
-
-function TDBXReader_Firebird_DSQL.GetInt16(Ordinal: TInt32; out Value: PShortInt;
-    out IsNull: LongBool): TDBXErrorCode;
-var B: Boolean;
-begin
-  FDSQL.o_SQLDA[Ordinal].GetShort(Value, B);
-  IsNull := B;
-  Result := TDBXErrorCodes.None;
-end;
-
-function TDBXReader_Firebird_DSQL.GetInt32(Ordinal: TInt32; out Value: PLongint;
-    out IsNull: LongBool): TDBXErrorCode;
-var B: Boolean;
-begin
-  FDSQL.o_SQLDA[Ordinal].GetInteger(Value, B);
-  IsNull := B;
-  Result := TDBXErrorCodes.None;
-end;
-
-function TDBXReader_Firebird_DSQL.GetAnsiString(Ordinal: TInt32; Value:
-    TDBXAnsiStringBuilder; out IsNull: LongBool): TDBXErrorCode;
-var c: PAnsiChar;
-    B: Boolean;
-begin
-  FDSQL.o_SQLDA[Ordinal].GetAnsiString(Value, B);
-  IsNull := B;
-  if FTrimChar then begin
-    c := Value + FDSQL.o_SQLDA[Ordinal].sqllen - 1;
-    while c^ = ' ' do begin
-      c^ := #0;
-      c := c - 1;
-    end;
-  end;
-  Result := TDBXErrorCodes.None;
-end;
-
-function TDBXReader_Firebird_DSQL.GetTime(Ordinal: TInt32; Value: PInteger; out
-    IsNull: LongBool): TDBXErrorCode;
-var B: Boolean;
-begin
-  FDSQL.o_SQLDA[Ordinal].GetTime(Value, B);
-  IsNull := B;
-  Result := TDBXErrorCodes.None;
-end;
-
-function TDBXReader_Firebird_DSQL.GetTimeStamp(Ordinal: TInt32; out Value:
-    PSQLTimeStamp; out IsNull: LongBool): TDBXErrorCode;
-var B: Boolean;
-begin
-  FDSQL.o_SQLDA[Ordinal].GetTimeStamp(Value, B);
-  IsNull := B;
-  Result := TDBXErrorCodes.None;
-end;
-
-function TDBXReader_Firebird_DSQL.GetWideString(Ordinal: TInt32; Value:
-    TDBXWideStringBuilder; out IsNull: LongBool): TDBXErrorCode;
-var c: PWideChar;
-    B: Boolean;
-begin
-  FDSQL.o_SQLDA[Ordinal].GetWideString(Value, B);
-  IsNull := B;
-  if FTrimChar then begin
-    c := Value + (FDSQL.o_SQLDA[Ordinal].sqllen div 4) - 1;
-    while c^ = ' ' do begin
-      c^ := #0;
-      c := c - 1;
-    end;
-  end;
-  Result := TDBXErrorCodes.None;
 end;
 
 function TDBXReader_Firebird_DSQL.Next: TDBXErrorCode;
@@ -386,6 +178,114 @@ begin
     Result := TDBXErrorCodes.EOF
   else
    Result := TDBXErrorCodes.None;
+end;
+
+function TDBXReader_Firebird_DSQL.QueryInterface(const IID: TGUID; out Obj):
+    HResult;
+begin
+  if IsEqualGUID(IID, IDBXRow) then begin
+    IDBXRow(Obj) := FRow;
+    Result := S_OK;
+  end else
+    Result := inherited QueryInterface(IID, Obj);
+end;
+
+function TDBXRow_Firebird_GetDatabase.GetAnsiString(Ordinal: TInt32;
+  Value: TDBXAnsiStringBuilder; out IsNull: LongBool): TDBXErrorCode;
+begin
+  Result := NotSupported;
+end;
+
+function TDBXRow_Firebird_GetDatabase.GetBcd(Ordinal: TInt32;
+  out Value: TBcd; out IsNull: LongBool): TDBXErrorCode;
+begin
+  Result := NotSupported;
+end;
+
+function TDBXRow_Firebird_GetDatabase.GetBoolean(Ordinal: TInt32; out Value,
+    IsNull: LongBool): TDBXErrorCode;
+begin
+  if (Ordinal = 3) or (Ordinal = 4) then
+    Value := True
+  else
+    Value := False;
+  IsNull := False;
+  Result := TDBXErrorCodes.None;
+end;
+
+function TDBXRow_Firebird_GetDatabase.GetByteLength(Ordinal: TInt32;
+  out Length: Int64; out IsNull: LongBool): TDBXErrorCode;
+begin
+  Result := NotSupported;
+end;
+
+function TDBXRow_Firebird_GetDatabase.GetBytes(Ordinal: TInt32;
+  Offset: Int64; Value: TBytes; const LastIndex: TInt32; ValueOffset,
+  Length: Int64; out ReturnLength: Int64;
+  out IsNull: LongBool): TDBXErrorCode;
+begin
+  Result := NotSupported;
+end;
+
+function TDBXRow_Firebird_GetDatabase.GetDate(Ordinal: TInt32;
+  out Value: TDBXDate; out IsNull: LongBool): TDBXErrorCode;
+begin
+  Result := NotSupported;
+end;
+
+function TDBXRow_Firebird_GetDatabase.GetDouble(Ordinal: TInt32;
+  out Value: Double; out IsNull: LongBool): TDBXErrorCode;
+begin
+  Result := NotSupported;
+end;
+
+function TDBXRow_Firebird_GetDatabase.GetFixedBytes(Ordinal: TInt32;
+  Value: TBytes; const LastIndex: TInt32; ValueOffset: TInt32;
+  out IsNull: LongBool): TDBXErrorCode;
+begin
+  Result := NotSupported;
+end;
+
+function TDBXRow_Firebird_GetDatabase.GetInt16(Ordinal: TInt32; out Value:
+    SmallInt; out IsNull: LongBool): TDBXErrorCode;
+begin
+  Result := NotSupported;
+end;
+
+function TDBXRow_Firebird_GetDatabase.GetInt32(Ordinal: TInt32; out Value:
+    LongInt; out IsNull: LongBool): TDBXErrorCode;
+begin
+  Value := 0;
+  IsNull := False;
+  Result := TDBXErrorCodes.None;
+end;
+
+function TDBXRow_Firebird_GetDatabase.GetInt64(Ordinal: TInt32;
+  out Value: Int64; out IsNull: LongBool): TDBXErrorCode;
+begin
+  Result := NotSupported;
+end;
+
+function TDBXRow_Firebird_GetDatabase.GetTime(Ordinal: TInt32;
+  out Value: TDBXTime; out IsNull: LongBool): TDBXErrorCode;
+begin
+  Result := NotSupported;
+end;
+
+function TDBXRow_Firebird_GetDatabase.GetTimeStamp(Ordinal: TInt32;
+  out Value: TSQLTimeStamp; out IsNull: LongBool): TDBXErrorCode;
+begin
+  Result := NotSupported;
+end;
+
+function TDBXRow_Firebird_GetDatabase.GetWideString(Ordinal: TInt32; Value:
+    TDBXWideStringBuilder; out IsNull: LongBool): TDBXErrorCode;
+var W: WideString;
+begin
+  W := '"';
+  lstrcpyW(Value, PWideChar(W));
+  IsNull := False;
+  Result := TDBXErrorCodes.None;
 end;
 
 end.

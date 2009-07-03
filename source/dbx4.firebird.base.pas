@@ -32,16 +32,20 @@ type
   TDBXBase_Firebird = class abstract(TDBXBase, IDBXBase_Firebird)
   private
     FStatusVector: IStatusVector;
+  protected // IDBXBase_Firebird
+    function GetFirebirdLibrary: IFirebirdLibrary; virtual;
   protected
     function GetErrorMessage(LastErrorCode: TDBXErrorCode; ErrorMessage:
         TDBXWideStringBuilder): TDBXErrorCode; override;
     function GetErrorMessageLength(LastErrorCode: TDBXErrorCode; out ErrorLen:
         TInt32): TDBXErrorCode; override;
-    function GetFirebirdLibrary: IFirebirdLibrary; virtual; 
     function StatusVector: IStatusVector;
+    function NotSupported: TDBXErrorCode;
   end;
 
 implementation
+
+uses firebird.iberror.h;
 
 function TDBXBase_Firebird.GetErrorMessage(LastErrorCode: TDBXErrorCode;
   ErrorMessage: TDBXWideStringBuilder): TDBXErrorCode;
@@ -60,6 +64,14 @@ end;
 function TDBXBase_Firebird.GetFirebirdLibrary: IFirebirdLibrary;
 begin
   Result := nil;
+end;
+
+function TDBXBase_Firebird.NotSupported: TDBXErrorCode;
+begin
+  StatusVector.pValue[0] := 1;
+  StatusVector.pValue[1] := isc_wish_list;
+
+  Result := TDBXErrorCodes.NotSupported;
 end;
 
 function TDBXBase_Firebird.StatusVector: IStatusVector;

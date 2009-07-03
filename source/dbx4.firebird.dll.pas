@@ -30,11 +30,11 @@ end;
 
 function DBXCommand_CreateParameterRow(Handle: TDBXCommandHandle; out
     Parameters: TDBXRowHandle): TDBXErrorCode; stdcall;
-var o: IDBXWritableRow;
+var o: IDBXBase;
 begin
   Result := IDBXCommand(Handle).CreateParameterRow(o);
   Parameters := nil;
-  IDBXWritableRow(Parameters) := o;
+  IDBXBase(Parameters) := o;
 end;
 
 function DBXCommand_Execute(Handle: TDBXCommandHandle; out Reader:
@@ -187,7 +187,7 @@ function DBXParameterRow_SetParameterType(Handle: TDBXRowHandle;Ordinal:
     TDBXParameterDirection; DBXType: TInt32; DBXSubType: TInt32; Size: Int64;
     Precision: Int64; Scale: TInt32): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXWritableRow(Handle).SetParameterType(Ordinal, Name, ChildPosition, ParamDirection, DBXType, DBXSubType, Size, Precision, Scale);
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetParameterType(Ordinal, Name, ChildPosition, ParamDirection, DBXType, DBXSubType, Size, Precision, Scale);
 end;
 
 function DBXReader_GetColumnCount(Handle: TDBXReaderHandle; out ColumnCount:
@@ -213,20 +213,19 @@ end;
 function DBXRow_GetBcd(Handle: TDBXRowHandle; Ordinal: TInt32; out Value: TBcd;
     out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
-  Assert(False);
-  Result := TDBXErrorCodes.None;
+  Result := (IDBXBase(Handle) as IDBXRow).GetBcd(Ordinal, Value, IsNull);
 end;
 
 function DBXRow_GetBoolean(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
     LongBool; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXReader(Handle).GetBoolean(Ordinal, Value, IsNull);
+  Result := (IDBXBase(Handle) as IDBXRow).GetBoolean(Ordinal, Value, IsNull);
 end;
 
 function DBXRow_GetByteLength(Handle: TDBXRowHandle; Ordinal: TInt32; out
     Length: Int64; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXReader(Handle).GetByteLength(Ordinal, Length, IsNull);
+  Result := (IDBXBase(Handle) as IDBXRow).GetByteLength(Ordinal, Length, IsNull);
 end;
 
 function DBXRow_GetBytes(Handle: TDBXRowHandle; Ordinal: TInt32; Offset: Int64;
@@ -234,48 +233,44 @@ function DBXRow_GetBytes(Handle: TDBXRowHandle; Ordinal: TInt32; Offset: Int64;
     {dummy to simulate native "open array"} ValueOffset, Length: Int64; out
     ReturnLength: Int64; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXReader(Handle).GetBytes(Ordinal, Offset, Value, LastIndex, ValueOffset, Length, ReturnLength, IsNull);
+  Result := (IDBXBase(Handle) as IDBXRow).GetBytes(Ordinal, Offset, Value, LastIndex, ValueOffset, Length, ReturnLength, IsNull);
 end;
 
 function DBXRow_GetDate(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
     TDBXDate; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
-  Assert(False);
-  Result := TDBXErrorCodes.None;
+  Result := (IDBXBase(Handle) as IDBXRow).getDate(Ordinal, Value, IsNull);
 end;
 
 function DBXRow_GetDouble(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
     double; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
-  Assert(False);
-  Result := TDBXErrorCodes.None;
+  Result := (IDBXBase(Handle) as IDBXRow).GetDouble(Ordinal, Value, IsNull);
 end;
 
 function DBXRow_GetFixedBytes(Handle: TDBXRowHandle; Ordinal: TInt32; Value:
     TBytes; const LastIndex: TInt32;{dummy to simulate native "open array"}
     ValueOffset: TInt32; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXReader(Handle).GetFixedBytes(Ordinal, Value, LastIndex, ValueOffset, IsNull);
+  Result := (IDBXBase(Handle) as IDBXRow).GetFixedBytes(Ordinal, Value, LastIndex, ValueOffset, IsNull);
 end;
 
 function DBXRow_GetInt16(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
     SmallInt; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
-  Assert(False);
-  Result := TDBXErrorCodes.None;
+  Result := (IDBXBase(Handle) as IDBXRow).GetInt16(Ordinal, Value, IsNull);
 end;
 
 function DBXRow_GetInt32(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
     LongInt; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXReader(Handle).GetInt32(Ordinal, Value, IsNull);
+  Result := (IDBXBase(Handle) as IDBXRow).GetInt32(Ordinal, Value, IsNull);
 end;
 
 function DBXRow_GetInt64(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
     Int64; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
-  Assert(False);
-  Result := TDBXErrorCodes.None;
+  Result := (IDBXBase(Handle) as IDBXRow).GetInt64(Ordinal, Value, IsNull);
 end;
 
 function DBXRow_GetObjectTypeName(Handle: TDBXRowHandle; Ordinal: TInt32;
@@ -288,34 +283,31 @@ end;
 function DBXRow_GetString(Handle: TDBXRowHandle; Ordinal: TInt32; Value:
     TDBXAnsiStringBuilder; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
-  Assert(False);
-  Result := TDBXErrorCodes.None;
+  Result := (IDBXBase(Handle) as IDBXRow).GetAnsiString(Ordinal, Value, IsNull);
 end;
 
 function DBXRow_GetTime(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
     TDBXTime; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
-  Assert(False);
-  Result := TDBXErrorCodes.None;
+  Result := (IDBXBase(Handle) as IDBXRow).GetTime(Ordinal, Value, IsNull);
 end;
 
 function DBXRow_GetTimeStamp(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
     TSQLTimeStamp; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
-  Assert(False);
-  Result := TDBXErrorCodes.None;
+  Result := (IDBXBase(Handle) as IDBXRow).GetTimeStamp(Ordinal, Value, IsNull);
 end;
 
 function DBXRow_GetWideString(Handle: TDBXRowHandle; Ordinal: TInt32; Value:
     TDBXWideStringBuilder; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXReader(Handle).GetWideString(Ordinal, Value, IsNull);
+  Result := (IDBXBase(Handle) as IDBXRow).GetWideString(Ordinal, Value, IsNull);
 end;
 
 function DBXWritableRow_SetBcd(Handle: TDBXWritableRowHandle; Ordinal: TInt32;
     Value: TBcd): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXWritableRow(Handle).SetBcd(Ordinal, Value);
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetBcd(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetBoolean(Handle: TDBXWritableRowHandle; Ordinal:
@@ -330,67 +322,67 @@ function DBXWritableRow_SetBytes(Handle: TDBXWritableRowHandle; Ordinal:
     {dummy to simulate native "open array"} ValueOffset: Int64; Length: Int64):
     TDBXErrorCode; stdcall;
 begin
-  Result := IDBXWritableRow(Handle).SetBytes(Ordinal, BlobOffset, Value, LastIndex, ValueOffset, Length);
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetBytes(Ordinal, BlobOffset, Value, LastIndex, ValueOffset, Length);
 end;
 
 function DBXWritableRow_SetDate(Handle: TDBXWritableRowHandle; Ordinal: TInt32;
     Value: TDBXDate): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXWritableRow(Handle).SetDate(Ordinal, Value);
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetDate(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetDouble(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; Value: double): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXWritableRow(Handle).SetDouble(Ordinal, Value);
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetDouble(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetInt16(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; Value: SmallInt): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXWritableRow(Handle).SetInt16(Ordinal, Value);
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetInt16(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetInt32(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; Value: LongInt): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXWritableRow(Handle).SetInt32(Ordinal, Value);
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetInt32(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetInt64(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; Value: Int64): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXWritableRow(Handle).SetInt64(Ordinal, Value);
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetInt64(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetNull(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXWritableRow(Handle).SetNull(Ordinal);
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetNull(Ordinal);
 end;
 
 function DBXWritableRow_SetString(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; const Value: TDBXAnsiString; Length: Int64): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXWritableRow(Handle).SetAnsiString(Ordinal, Value, Length);
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetAnsiString(Ordinal, Value, Length);
 end;
 
 function DBXWritableRow_SetTime(Handle: TDBXWritableRowHandle; Ordinal: TInt32;
     Value: TDBXTime): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXWritableRow(Handle).SetTime(Ordinal, Value);
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetTime(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetTimeStamp(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; var Value: TSQLTimeStamp): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXWritableRow(Handle).SetTimeStamp(Ordinal, Value);
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetTimeStamp(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetWideString(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; const Value: TDBXWideString; Length: Int64): TDBXErrorCode; stdcall;
 begin
-  Result := IDBXWritableRow(Handle).SetWideString(Ordinal, Value, Length);
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetWideString(Ordinal, Value, Length);
 end;
 
 exports

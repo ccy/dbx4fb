@@ -15,10 +15,7 @@ type
 
   TMetaData_Firebird_Factory = class abstract
   public
-    class function New_getColumns(const aTableName: WideString): TFieldColumns;
     class function New_GetDatabase: TFieldColumns;
-    class function New_getIndices(const aTableName: WideString): TFieldColumns;
-    class function New_getTables: TFieldColumns;
   end;
 
   TMetaDataProvider_FieldColumns = class(TInterfacedObject, IMetaDataProvider)
@@ -38,39 +35,6 @@ type
   end;
 
 implementation
-
-class function TMetaData_Firebird_Factory.New_getColumns(const aTableName:
-    WideString): TFieldColumns;
-var iIndex: integer;
-
-  procedure Add(const aFieldName: string; const aColumnType, aPrecision: TInt32);
-  begin
-    with Result[iIndex] do begin
-      Name := aFieldName;
-      ColumnType := aColumnType;
-      Precision := aPrecision;
-    end;
-    Inc(iIndex);
-  end;
-
-begin
-  SetLength(Result, 14);
-  iIndex := 0;
-  Add('RECNO',             TDBXDataTypes.Int32Type,       0);
-  Add('CATALOG_NAME',      TDBXDataTypes.AnsiStringType,  128);
-  Add('SCHEMA_NAME',       TDBXDataTypes.AnsiStringType,  128);
-  Add('TABLE_NAME',        TDBXDataTypes.AnsiStringType,  128);
-  Add('COLUMN_NAME',       TDBXDataTypes.AnsiStringType,  128);
-  Add('COLUMN_POSITION',   TDBXDataTypes.Int16Type,       0);
-  Add('COLUMN_TYPE',       TDBXDataTypes.Int16Type,       0);
-  Add('COLUMN_DATATYPE',   TDBXDataTypes.Int16Type,       0);
-  Add('COLUMN_TYPENAME',   TDBXDataTypes.AnsiStringType,  128);
-  Add('COLUMN_SUBTYPE',    TDBXDataTypes.Int16Type,       0);
-  Add('COLUMN_LENGTH',     TDBXDataTypes.Int32Type,       0);
-  Add('COLUMN_PRECISION',  TDBXDataTypes.Int16Type,       0);
-  Add('COLUMN_SCALE',      TDBXDataTypes.Int16Type,       0);
-  Add('COLUMN_NULLABLE',   TDBXDataTypes.Int16Type,       0);
-end;
 
 class function TMetaData_Firebird_Factory.New_GetDatabase: TFieldColumns;
 var iIndex: integer;
@@ -96,59 +60,6 @@ begin
   Add('SupportsRowSetSize',          TDBXDataTypes.BooleanType,    0);
 end;
 
-class function TMetaData_Firebird_Factory.New_getIndices(const aTableName:
-    WideString): TFieldColumns;
-var iIndex: integer;
-
-  procedure Add(const aFieldName: string; const aColumnType, aPrecision: TInt32);
-  begin
-    with Result[iIndex] do begin
-      Name := aFieldName;
-      ColumnType := aColumnType;
-      Precision := aPrecision;
-    end;
-    Inc(iIndex);
-  end;
-
-begin
-  SetLength(Result, 11);
-  iIndex := 0;
-  Add('RECNO',             TDBXDataTypes.Int32Type,       0);
-  Add('CATALOG_NAME',      TDBXDataTypes.AnsiStringType,  128);
-  Add('SCHEMA_NAME',       TDBXDataTypes.AnsiStringType,  128);
-  Add('TABLE_NAME',        TDBXDataTypes.AnsiStringType,  128);
-  Add('INDEX_NAME',        TDBXDataTypes.AnsiStringType,  128);
-  Add('COLUMN_NAME',       TDBXDataTypes.AnsiStringType,  128);
-  Add('COLUMN_POSITION',   TDBXDataTypes.Int16Type,       0);
-  Add('PKEY_NAME',         TDBXDataTypes.AnsiStringType,  128);
-  Add('INDEX_TYPE',        TDBXDataTypes.Int32Type,       0);
-  Add('SORT_ORDER',        TDBXDataTypes.AnsiStringType,  3);
-  Add('FILTER',            TDBXDataTypes.AnsiStringType,  6);
-end;
-
-class function TMetaData_Firebird_Factory.New_getTables: TFieldColumns;
-var iIndex: integer;
-
-  procedure Add(const aFieldName: string; const aColumnType, aPrecision: TInt32);
-  begin
-    with Result[iIndex] do begin
-      Name := aFieldName;
-      ColumnType := aColumnType;
-      Precision := aPrecision;
-    end;
-    Inc(iIndex);
-  end;
-
-begin
-  SetLength(Result, 5);
-  iIndex := 0;
-  Add('RECNO',             TDBXDataTypes.Int32Type,       0);
-  Add('CATALOG_NAME',      TDBXDataTypes.AnsiStringType,  128);
-  Add('SCHEMA_NAME',       TDBXDataTypes.AnsiStringType,  128);
-  Add('TABLE_NAME',        TDBXDataTypes.AnsiStringType,  128);
-  Add('TABLE_TYPE',        TDBXDataTypes.Int32Type,       0);
-end;
-
 constructor TMetaDataProvider_FieldColumns.Create(const aColumns: TFieldColumns);
 begin
   inherited Create;
@@ -165,6 +76,10 @@ begin
   if (FColumns[aColNo].ColumnType = TDBXDataTypes.AnsiStringType) or
      (FColumns[aColNo].ColumnType = TDBXDataTypes.WideStringType) then
     Result := FColumns[aColNo].Precision + 1
+  else if (FColumns[aColNo].ColumnType = TDBXDataTypes.Int16Type) then
+    Result := SizeOf(SmallInt)
+  else if (FColumns[aColNo].ColumnType = TDBXDataTypes.Int32Type) then
+    Result := SizeOf(TInt32)
   else
     Result := 0;
 end;

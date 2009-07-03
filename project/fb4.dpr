@@ -40,7 +40,8 @@ uses
   firebird.client.debug in '..\..\core\source\firebird\firebird.client.debug.pas',
   firebird.client in '..\..\core\source\firebird\firebird.client.pas',
   firebird.dsql in '..\..\core\source\firebird\firebird.dsql.pas',
-  firebird.charsets in '..\..\core\source\firebird\firebird.charsets.pas';
+  firebird.charsets in '..\..\core\source\firebird\firebird.charsets.pas',
+  firebird.blr.h in '..\..\core\source\firebird\firebird.blr.h.pas';
 
 {$LIBPREFIX 'dbx'}
 {$LIBSUFFIX '0'}

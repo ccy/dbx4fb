@@ -32,7 +32,7 @@ var F: string;
     i: integer;
     h: THandle;
 begin
-  Sleep(1); {$Message 'In firebird embedded, this delay will make the FreeLibrary safer and won't cause unexpected error for massive LoadLibrary / FreeLibrary calls'}
+  Sleep(1); {$Message 'In firebird embedded, this delay will make the FreeLibrary safer and won''t cause unexpected error for massive LoadLibrary / FreeLibrary calls'}
 
   SetLength(F, 1000);
   i := GetModuleFileName(FHandle, PChar(F), 1000);
@@ -89,9 +89,6 @@ end;
 procedure TDBXDriver_Firebird.LoadDriver;
 var sDir: string;
     V: string;
-var H: THandle;
-    putenv: function(estr: PAnsiChar): integer; cdecl;
-    S: string;
 begin
   FPath := TFirebirdLibraryRootPath.CreateFromLibrary(FVendorLib);
 

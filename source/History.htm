@@ -79,3 +79,8 @@
 - Workaound: http://tracker.firebirdsql.org/browse/CORE-2186
   fbintl.dll didn't unload after fbembed.dll was released
 - 3 environment variables "FIREBIRD", "FIREBIRD_MSG" and "FIREBIRD_TMP" wasn't unset properly if these variables never exist in current process.
+
+4.1.2007.14 / 4.1.2009.14 Release on 03 Jul 2009
+
+- Add: support Firebird Stored Procedure and DBX TSQLStoredProc
+- Update: Int64 field type convert to TDBXTypes.Int64Type now.  It convert to TDBXTypes.BcdType previously.  Numeric and Decimal field types may return SQL_INT64 datat type in some situation will remain as TDBXDataTypes.BcdType.

@@ -40,26 +40,37 @@ type
         DBXTraceCallback): TDBXErrorCode;
   end;
 
-  IDBXReader = interface(IDBXBase)
-  ['{526FA1D7-4281-42AE-897F-30A2DAF1C0AD}']
-    function ColumnCount: TInt32;
+  IDBXRow = interface(IDBXBase)
+  ['{567A6C55-EFBE-4D77-860C-AFA834174677}']
+    function GetAnsiString(Ordinal: TInt32; Value: TDBXAnsiStringBuilder; out
+        IsNull: LongBool): TDBXErrorCode;
+    function GetBcd(Ordinal: TInt32; out Value: TBcd; out IsNull: LongBool):
+        TDBXErrorCode;
     function GetBoolean(Ordinal: TInt32; out Value, IsNull: LongBool):
         TDBXErrorCode;
+    function GetByteLength(Ordinal: TInt32; out Length: Int64; out IsNull:
+        LongBool): TDBXErrorCode;
     function GetBytes(Ordinal: TInt32; Offset: Int64; Value: TBytes; const
         LastIndex: TInt32; ValueOffset, Length: Int64; out ReturnLength: Int64; out
         IsNull: LongBool): TDBXErrorCode;
-    function GetByteLength(Ordinal: TInt32; out Length: Int64; out IsNull:
-        LongBool): TDBXErrorCode;
-    function GetColumnMetadata(Ordinal: TInt32; Name: TDBXWideStringBuilder; out
-        ColumnType, ColumnSubType, Length, precision, scale, flags: TInt32):
+    function GetDate(Ordinal: TInt32; out Value: TDBXDate; out IsNull: LongBool):
+        TDBXErrorCode;
+    function GetDouble(Ordinal: TInt32; out Value: Double; out IsNull: LongBool):
         TDBXErrorCode;
     function GetFixedBytes(Ordinal: TInt32; Value: TBytes; const LastIndex: TInt32;
         ValueOffset: TInt32; out IsNull: LongBool): TDBXErrorCode;
+    function GetInt16(Ordinal: TInt32; out Value: SmallInt; out IsNull: LongBool):
+        TDBXErrorCode;
     function GetInt32(Ordinal: TInt32; out Value: LongInt; out IsNull: LongBool):
         TDBXErrorCode;
+    function GetInt64(Ordinal: TInt32; out Value: Int64; out IsNull: LongBool):
+        TDBXErrorCode;
+    function GetTime(Ordinal: TInt32; out Value: TDBXTime; out IsNull: LongBool):
+        TDBXErrorCode;
+    function GetTimeStamp(Ordinal: TInt32; out Value: TSQLTimeStamp; out IsNull:
+        LongBool): TDBXErrorCode;
     function GetWideString(Ordinal: TInt32; Value: TDBXWideStringBuilder; out
         IsNull: LongBool): TDBXErrorCode;
-    function Next: TDBXErrorCode;
   end;
 
   IDBXWritableRow = interface(IDBXBase)
@@ -84,9 +95,18 @@ type
         Int64): TDBXErrorCode;
   end;
 
+  IDBXReader = interface(IDBXBase)
+  ['{7507B8FB-353D-43AF-9D47-DD79E09B6A47}']
+    function ColumnCount: TInt32;
+    function GetColumnMetadata(Ordinal: TInt32; Name: TDBXWideStringBuilder; out
+        ColumnType, ColumnSubType, Length, precision, scale, flags: TInt32):
+        TDBXErrorCode;
+    function Next: TDBXErrorCode;
+  end;
+
   IDBXCommand = interface(IDBXBase)
   ['{D509CC08-86E0-459E-8C08-E5E1346C7590}']
-    function CreateParameterRow(out aRow: IDBXWritableRow): TDBXErrorCode;
+    function CreateParameterRow(out aRow: IDBXBase): TDBXErrorCode;
     function Execute(out Reader: IDBXReader): TDBXErrorCode;
     function ExecuteImmediate(const SQL: TDBXWideString; out aReader: IDBXReader):
         TDBXErrorCode;
