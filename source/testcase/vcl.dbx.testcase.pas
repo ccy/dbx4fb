@@ -44,6 +44,7 @@ type{$M+}
 
   TTestSuite_DBX = class abstract
   protected
+    class function GetDriverSectionName: string;
     class procedure CheckTestDataFile;
     class function GetTestDataFileName: string;
     class function GetParams(const aHostName, aExtraParams: string): string;
@@ -182,16 +183,6 @@ type{$M+}
     procedure Test_ctQuery;
   end;
 
-  TTestCase_DBX_TSQLStoredProc = class(TTestCase_DBX)                             
-  private
-    FStoredProc: TSQLStoredProc;
-  protected
-    procedure SetUp; override;
-    procedure TearDown; override;
-  published
-    procedure Test_1;
-  end;
-
   TTestCase_DBX_DataSnap = class(TTestCase_DBX)
   private
     FDataSet: TSQLDataSet;
@@ -233,20 +224,64 @@ type{$M+}
     procedure Test_Param_String;
   end;
 
+  TTestCase_DBX_TSQLStoredProc = class(TTestCase_DBX)
+  private
+    FStoredProc: TSQLStoredProc;
+  protected
+    procedure SetUp; override;
+    procedure TearDown; override;
+  published
+    procedure Test_GetProcedureNames;
+    procedure Test_MultiParams;
+    procedure Test_ReturnDataSet;
+  end;
+
+  TTestCase_DBX_TSQLStoredProc_Params = class(TTestCase_DBX)
+  private
+    FStoredProc: TSQLStoredProc;
+    function CreateProc(const aDecl, aImpl: string): Integer;
+    function CreateProc2(const aDecl, aImpl: string): Integer;
+  protected
+    procedure SetUp; override;
+    procedure TearDown; override;
+  public
+    procedure Test_Blob;
+  published
+    procedure Test_BigInt;
+    procedure Test_Char;
+    procedure Test_Date;
+    procedure Test_Decimal_18;
+    procedure Test_Decimal_4;
+    procedure Test_Decimal_8;
+    procedure Test_DoublePrecision;
+    procedure Test_Float;
+    procedure Test_Integer;
+    procedure Test_Numeric_18;
+    procedure Test_Numeric_4;
+    procedure Test_Numeric_8;
+    procedure Test_SmallInt;
+    procedure Test_Time;
+    procedure Test_TimeStamp;
+    procedure Test_VarChar;
+  end;
+
 implementation
 
 uses SysUtils, SqlConst, Windows, StrUtils, FMTBcd, WideStrings,
-  SqlTimSt, DateUtils, Math, IniFiles, firebird.client, firebird.service,
-  UniqueID;
+  SqlTimSt, DateUtils, Math, IniFiles,
+  SystemEx, SysUtilsEx, firebird.client, firebird.service, UniqueID;
 
 constructor TTestData_SQLConnection.Create(const aDriverName, aLibraryName,
     aGetDriverFunc, aVendorLib, aParams: string);
 begin
   inherited Create;
   FDriverName := aDriverName;
-  FLibraryName := aLibraryName;
+
+  FLibraryName := ExpandFileNameString(aLibraryName);
+
   FGetDriverFunc := aGetDriverFunc;
-  FVendorLib := aVendorLib;
+
+  FVendorLib := ExpandFileNameString(aVendorLib);
   FParams := aParams;
   
   CreateDatabase;
@@ -281,12 +316,16 @@ begin
     if L.Values[HOSTNAME_KEY] = '' then
       sDatabase := IncludeTrailingPathDelimiter(GetEnvironmentVariable('TEMP'))
     else if ContainsText(sImpl, 'Windows') then begin
-      if SameText(L.Values[HOSTNAME_KEY], 'localhost') then
-        sDatabase := IncludeTrailingPathDelimiter(GetEnvironmentVariable('TEMP'))
+
+      if Pos('dbxint', FLibraryName) > 0 then // Interbase Driver need hostname string in database parameter
+        sDatabase := L.Values[HOSTNAME_KEY] + ':';
+
+      if AnsiStartsText('localhost', L.Values[HOSTNAME_KEY]) then
+        sDatabase := sDatabase + IncludeTrailingPathDelimiter(GetEnvironmentVariable('TEMP'))
       else
-        sDatabase := 'c:\'
+        sDatabase := sDatabase + 'c:\';
     end else if ContainsText(sImpl, 'Linux') then
-      sDatabase := '/tmp/'
+      sDatabase := sDatabase + '/tmp/'
     else
       Assert(False);
     sDatabase := sDatabase + TUniqueName.New('T_');
@@ -332,19 +371,26 @@ class procedure TTestSuite_DBX.CheckTestDataFile;
 var F: TIniFile;
     sDriver: string;
 begin
-  if FileExists(GetTestDataFileName) then Exit;
-
-  F := TIniFile.Create(GetTestDataFileName);
-  try
-    sDriver := {$if CompilerVersion<=18.5}'dbxfb40.dll'{$else}'dbxfbu40.dll'{$ifend};
-    F.WriteString('driver', 'getSQLDriverFIREBIRD', sDriver);
-    F.WriteString('embedded', 'embedded_1', 'fbembed.dll');
-    F.WriteString('server', 'server_1', 'localhost');
-    F.WriteString('vendor', 'default', 'fbclient.1.5.5.dll');
-    F.UpdateFile;
-  finally
-    F.Free;
+  if not FileExists(GetTestDataFileName) then begin
+    F := TIniFile.Create(GetTestDataFileName);
+    try
+      sDriver := {$if CompilerVersion<=18.5}'dbxfb40.dll'{$else}'dbxfbu40.dll'{$ifend};
+      F.WriteString(GetDriverSectionName, 'getSQLDriverFIREBIRD', sDriver);
+      F.WriteString('embedded', 'embedded_1', 'fbembed.dll');
+      F.WriteString('server', 'server_1', 'localhost');
+      F.WriteString('vendor', 'default', 'fbclient.1.5.5.dll');
+      F.UpdateFile;
+    finally
+      F.Free;
+    end;
   end;
+
+  SetEnvironmentVariable('drivers', PChar(ExtractFilePath(GetTestDataFileName) + 'drivers'));
+end;
+
+class function TTestSuite_DBX.GetDriverSectionName: string;
+begin
+  Result := {$ifdef Unicode}'driver.unicode'{$else}'driver'{$endif};
 end;
 
 class function TTestSuite_DBX.GetParams(const aHostName, aExtraParams:
@@ -369,7 +415,7 @@ end;
 
 class function TTestSuite_DBX.GetTestDataFileName: string;
 begin
-  Result := ChangeFileExt(ParamStr(0), '.ini');
+  Result := ParamStr(1);
 end;
 
 class function TTestSuite_DBX.GetServerVersion(aLibraryName, aParams:
@@ -380,7 +426,7 @@ begin
   L := TStringList.Create;
   L.Text := aParams;
   try
-    S := TFirebirdServiceFactory.New(aLibraryName, L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
+    S := TFirebirdServiceFactory.New(ExpandfileNameString(aLibraryName), L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
     Result := S.GetServerVersion;
   finally
     L.Free;
@@ -495,8 +541,6 @@ end;
 
 procedure TTestCase_DBX_General.Test_ServerCharSet;
 var S: string;
-    K: AnsiString;
-    pD: ^TSQLDataSet;
     D: TSQLDataSet;
 begin
   FConnection.Close;
@@ -513,17 +557,12 @@ begin
   FConnection.ExecuteDirect(S);
 
   // Test WIN1252 Transliteration
-  New(pD);
+  FConnection.Execute('SELECT S_WIN1252, S_ISO8859_13 FROM T_TEST_CHARSET', nil, @D);
   try
-    FConnection.Execute('SELECT S_WIN1252, S_ISO8859_13 FROM T_TEST_CHARSET', nil, pD);
-    D := pD^;
-
     CheckEquals(#$9E, D.Fields[0].AsString);
     CheckEquals(#$9E, D.Fields[1].AsString);
-
   finally
     D.Free;
-    Dispose(pD);
   end;
 
   // Test NONE Transliteration
@@ -531,17 +570,12 @@ begin
   FConnection.Params.Values[SQLSERVER_CHARSET_KEY] := 'NONE';
   FConnection.Open;
 
-  New(pD);
+  FConnection.Execute('SELECT S_WIN1252, S_ISO8859_13 FROM T_TEST_CHARSET', nil, @D);
   try
-    FConnection.Execute('SELECT S_WIN1252, S_ISO8859_13 FROM T_TEST_CHARSET', nil, pD);
-    D := pD^;
-
     CheckEquals(#$9E, D.Fields[0].AsString);
     CheckEquals(#$FE, D.Fields[1].AsString);
-
   finally
     D.Free;
-    Dispose(pD);
   end;
 
   FConnection.ExecuteDirect('DROP TABLE T_TEST_CHARSET');
@@ -790,8 +824,8 @@ procedure TTestCase_DBX_FieldType.Test_BIGINT;
 begin
   Param.AsFMTBCD := StrToBcd('1234567890');
   Execute;
-  CheckEquals(TFMTBCDField, Field.ClassType);
-  CheckEquals(SizeOf(TBcd), Field.DataSize);
+  CheckEquals(TLargeintField, Field.ClassType);
+  CheckEquals(SizeOf(LargeInt), Field.DataSize);
 
   CheckEquals(Param.AsInteger, Field.AsInteger);
   CheckEquals(Param.AsString, Field.AsString);
@@ -827,14 +861,13 @@ begin
 end;
 
 procedure TTestCase_DBX_FieldType.Test_BIGINT_Limit;
-var F: TFMTBCDField;
+var F: TLargeintField;
 begin
   Param.AsFMTBCD := StrToBcd('9223372036854775807');
   Execute;
-  CheckEquals(TFMTBCDField, Field.ClassType);
-  F := Field as TFMTBCDField;
+  CheckEquals(TLargeintField, Field.ClassType);
+  F := Field as TLargeintField;
   CheckEquals(0, F.Size);
-  CheckEquals(19, F.Precision);
   CheckEquals(Param.AsString, Field.AsString);
   CheckEquals(Param.AsWideString, Field.AsWideString);
 
@@ -1756,55 +1789,6 @@ begin
   end;
 end;
 
-{ TTestCase_DBX_TSQLStoredProc }
-
-procedure TTestCase_DBX_TSQLStoredProc.SetUp;
-var S: string;
-    i: integer;
-begin
-  inherited;
-  S := 'CREATE TABLE T_STOREDPROC( ' +
-       '   FIELD VARCHAR(100)' +
-       ')';
-  FConnection.ExecuteDirect(S);
-
-  S := 'INSERT INTO T_STOREDPROC VALUES(''%d'')';
-  for i := 1 to 9 do
-    FConnection.ExecuteDirect(Format(S, [i]));
-
-  FStoredProc := TSQLStoredProc.Create(nil);
-  FStoredProc.SQLConnection := FConnection;
-end;
-
-procedure TTestCase_DBX_TSQLStoredProc.TearDown;
-begin
-  FStoredProc.Free;
-  FConnection.ExecuteDirect('DROP TABLE T_STOREDPROC');
-  inherited;
-end;
-
-procedure TTestCase_DBX_TSQLStoredProc.Test_1;
-var S: string;
-begin
-  S := 'CREATE PROCEDURE PROC ' +
-       'RETURNS (Max_Field VARCHAR(100)) ' +
-       'AS ' +
-       'BEGIN ' +
-         'SELECT MAX(FIELD) ' +
-         'FROM T_STOREDPROC ' +
-         'INTO :Max_Field; ' +
-         'SUSPEND; ' +
-       'END ';
-  FConnection.ExecuteDirect(S);
-
-  FStoredProc.StoredProcName := 'PROC';
-  FStoredProc.ExecProc;
-  CheckEquals('9', FStoredProc.ParamByName('Max_Field').AsString);
-  FStoredProc.Close;
-
-  FConnection.ExecuteDirect('DROP PROCEDURE PROC');
-end;
-
 class function TTestCase_DBX_Server_Embed.NewSuite(const aTestData1,
     aTestData2: ITestData): ITestSuite;
 var i: integer;
@@ -1856,7 +1840,7 @@ begin
   sServers := TStringList.Create;
   sEmbeds := TStringList.Create;
   try
-    F.ReadSectionValues('driver', sDrivers);
+    F.ReadSectionValues(GetDriverSectionName, sDrivers);
     F.ReadSectionValues('server', sServers);
     F.ReadSectionValues('embedded', sEmbeds);
     for i := 0 to sDrivers.Count - 1 do begin
@@ -1925,7 +1909,8 @@ begin
   S.AddSuite(TTestCase_DBX_TSQLDataSet.NewSuite(aTestData));
   S.AddSuite(TTestCase_DBX_DataSnap.NewSuite(aTestData));
   S.AddSuite(TTestCase_DBX_TParam.NewSuite(aTestData));
-//  S.AddSuite(TTestCase_DBX_TSQLStoredProc.NewSuite(aTestData));
+  S.AddSuite(TTestCase_DBX_TSQLStoredProc.NewSuite(aTestData));
+  S.AddSuite(TTestCase_DBX_TSQLStoredProc_Params.NewSuite(aTestData));
   Result := S as ITestSuite;
 end;
 
@@ -1945,7 +1930,7 @@ begin
   sServers := TStringList.Create;
   sEmbeds := TStringList.Create;
   try
-    F.ReadSectionValues('driver', sDrivers);
+    F.ReadSectionValues(GetDriverSectionName, sDrivers);
     F.ReadSectionValues('server', sServers);
     F.ReadSectionValues('embedded', sEmbeds);
     for i := 0 to sDrivers.Count - 1 do begin
@@ -2096,6 +2081,325 @@ begin
   finally
     P.Free;
   end;
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc.SetUp;
+begin
+  inherited;
+  FStoredProc := TSQLStoredProc.Create(nil);
+  FStoredProc.SQLConnection := FConnection;
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc.TearDown;
+begin
+  FStoredProc.Close;
+  FStoredProc.Free;
+  inherited;
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc.Test_GetProcedureNames;
+var S: string;
+    L: TStringList;
+    i: integer;
+begin
+  for i := 1 to 9 do begin
+    S := Format('CREATE PROCEDURE PROC%d ', [i]) +
+         'AS ' +
+         'BEGIN ' +
+           'SUSPEND; ' +
+         'END ';
+    FConnection.ExecuteDirect(S);
+  end;
+
+  L := TStringList.Create;
+  try
+    FConnection.GetProcedureNames(L);
+    CheckEquals(9, L.Count);
+    L.Sort;
+    for i := 1 to 9 do
+      CheckEquals(Format('PROC%d', [i]), L[i-1]);
+  finally
+    L.Free;
+  end;
+
+  for i := 1 to 9 do
+    FConnection.ExecuteDirect(Format('DROP PROCEDURE PROC%d', [i]));
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc.Test_MultiParams;
+var S: string;
+begin
+  S := 'CREATE PROCEDURE PROC (p1 INTEGER, p2 INTEGER, p3 INTEGER) RETURNS (oParam INTEGER) ' +
+       'AS ' +
+       'BEGIN ' +
+         ' oParam = p1 + p2 + p3; ' +
+         ' SUSPEND; ' +
+       'END ';
+  FConnection.ExecuteDirect(S);
+  try
+    FStoredProc.StoredProcName := 'PROC';
+    CheckEquals(4, FStoredProc.Params.Count);
+
+    Check(ptInput = FStoredProc.Params[0].ParamType);
+    Check(ptInput = FStoredProc.Params[1].ParamType);
+    Check(ptInput = FStoredProc.Params[2].ParamType);
+    Check(ptOutput = FStoredProc.Params[3].ParamType);
+
+    Check(FStoredProc.Params[0].DataType = ftInteger);
+    Check(FStoredProc.Params[1].DataType = ftInteger);
+    Check(FStoredProc.Params[2].DataType = ftInteger);
+    Check(FStoredProc.Params[3].DataType = ftInteger);
+
+    FStoredProc.Params[0].AsInteger := 111;
+    FStoredProc.Params[1].AsInteger := 222;
+    FStoredProc.Params[2].AsInteger := 333;
+    FStoredProc.ExecProc;
+
+    CheckEquals(666, FStoredProc.Params[3].AsInteger);
+  finally
+    FConnection.ExecuteDirect('DROP PROCEDURE PROC');
+  end;
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc.Test_ReturnDataSet;
+var S: string;
+    D: TSQLDataSet;
+    i: integer;
+begin
+  S := 'CREATE PROCEDURE PROC ' +
+       '  RETURNS (oParam BIGINT) ' +
+       'AS ' +
+       'BEGIN ' +
+         'oParam = 1; ' +
+         'WHILE (oParam <= 10) DO BEGIN ' +
+         '  SUSPEND; ' +
+         '  oParam = oParam + 1; ' +
+         'END ' +
+       'END ';
+  FConnection.ExecuteDirect(S);
+  try
+    FConnection.Execute('SELECT * FROM PROC', nil, @D);
+    for i := 1 to 10 do begin
+      CheckEquals(i, D.Fields[0].AsInteger);
+      D.Next;
+    end;
+    D.Free;
+  finally
+    FConnection.ExecuteDirect('DROP PROCEDURE PROC');
+  end;
+end;
+
+function TTestCase_DBX_TSQLStoredProc_Params.CreateProc(const aDecl, aImpl: string):
+    Integer;
+var S: string;
+begin
+  S := Format('CREATE PROCEDURE PROC (iParam %s) RETURNS (oParam %0:s) ', [aDecl]) +
+       'AS ' +
+       'BEGIN ' +
+         ' oParam = iParam; ' +
+         ' SUSPEND; ' +
+       'END ';
+  FConnection.ExecuteDirect(S);
+  FStoredProc.StoredProcName := 'PROC';
+
+  CheckEquals(2, FStoredProc.Params.Count);
+
+  Check(ptInput = FStoredProc.Params[0].ParamType);
+  CheckEquals('IPARAM', FStoredProc.Params[0].Name);
+
+  Check(ptOutput = FStoredProc.Params[1].ParamType);
+  CheckEquals('OPARAM', FStoredProc.Params[1].Name);
+
+  Check(FStoredProc.Params[0].DataType = FStoredProc.Params[1].DataType);
+
+  FStoredProc.Params[0].Value := aImpl;
+  Result := FStoredProc.ExecProc;
+end;
+
+function TTestCase_DBX_TSQLStoredProc_Params.CreateProc2(const aDecl,
+    aImpl: string): Integer;
+var S: string;
+begin
+  S := Format('CREATE PROCEDURE PROC2 RETURNS ( oParam %s ) ', [aDecl]) +
+       'AS ' +
+       'BEGIN ' +
+       Format('%S INTO :oParam; ', [aImpl]) +
+         ' SUSPEND; ' +
+       'END ';
+  FConnection.ExecuteDirect(S);
+  FStoredProc.StoredProcName := 'PROC2';
+  Result := FStoredProc.ExecProc;
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.SetUp;
+begin
+  inherited;
+  FStoredProc := TSQLStoredProc.Create(nil);
+  FStoredProc.SQLConnection := FConnection;
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.TearDown;
+begin
+  FStoredProc.Close;
+  if FStoredProc.StoredProcName <> '' then
+    FConnection.ExecuteDirect(Format('DROP PROCEDURE %S', [FStoredProc.StoredProcName]));
+  FStoredProc.Free;
+  inherited;
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_BigInt;
+begin
+  CheckEquals(0, CreateProc('BIGINT', '123456789012345678'));
+
+  {$Message 'QC#64499 TParam does not take TLargeIntField value'}
+  Check(ftFMTBcd = FStoredProc.Params[1].DataType);
+
+  CheckEquals('123456789012345678', FStoredProc.Params[1].AsString);
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Blob;
+var S: string;
+begin
+  {$Message 'Unable to support Blob parameter now as TSQLConnection.GetProcedureParams didn't get the blob parameter data size'}
+  S := 'CREATE TABLE T_STOREDPROC ( ' +
+         'MYBLOB BLOB SUB_TYPE 0 SEGMENT SIZE 512 ' +
+       ')';
+  FConnection.ExecuteDirect(S);
+
+  try
+    FConnection.ExecuteDirect('INSERT INTO T_STOREDPROC VALUES (''ABCDEFGHIJKLMNOPQRSTUVWXYZ'')');
+
+    CheckEquals(0, CreateProc2('BLOB SUB_TYPE 0 SEGMENT SIZE 512', 'SELECT MYBLOB FROM T_STOREDPROC'));
+
+    {$Message 'QC#64499 TParam does not take TLargeIntField value'}
+    Check(ftBlob = FStoredProc.Params[1].DataType);
+
+    CheckEquals('ABCDEFGHIJKLMNOPQRSTUVWXYZ', FStoredProc.Params[1].AsString);
+  finally
+//    FConnection.ExecuteDirect('DROP TABLE T_STOREDPROC');
+  end;
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Char;
+var iLen: integer;
+begin
+  CheckEquals(0, CreateProc('CHAR(100)', 'ABC'));
+  Check(ftString = FStoredProc.Params[1].DataType);
+  if IsTrimChar then
+    iLen := 3
+  else
+    iLen := 100;
+  CheckEquals(iLen, Length(FStoredProc.Params[1].AsString));
+  CheckEquals('ABC', Trim(FStoredProc.Params[1].AsString));
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Date;
+begin
+  CheckEquals(0, CreateProc('DATE', FormatDateTime('dd mmm yyyy', Date) ));
+  Check(ftDate = FStoredProc.Params[1].DataType);
+  CheckEquals(Date, FStoredProc.Params[1].AsDate);
+end;                                                           
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Decimal_18;
+begin
+  CheckEquals(0, CreateProc('DECIMAL(18, 5)', '123456789012.67891'));
+  Check(ftFMTBcd = FStoredProc.Params[1].DataType);
+  CheckEquals('123456789012.67891', FStoredProc.Params[1].AsString);
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Decimal_4;
+begin
+  CheckEquals(0, CreateProc('DECIMAL(4, 1)', '123.4'));
+  Check(ftFMTBcd = FStoredProc.Params[1].DataType);
+  CheckEquals('123.4', FStoredProc.Params[1].AsString);
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Decimal_8;
+begin
+  CheckEquals(0, CreateProc('DECIMAL(8, 3)', '98765.432'));
+  Check(ftFMTBcd = FStoredProc.Params[1].DataType);
+  CheckEquals('98765.432', FStoredProc.Params[1].AsString);
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_DoublePrecision;
+begin
+  CheckEquals(0, CreateProc('DOUBLE PRECISION', '123.4567890123'));
+  Check(ftFloat = FStoredProc.Params[1].DataType);
+  CheckEquals(123.4567890123, FStoredProc.Params[1].AsFloat, SglEps);
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Float;
+begin
+  CheckEquals(0, CreateProc('FLOAT', '123.456'));
+  Check(ftFloat = FStoredProc.Params[1].DataType);
+  CheckEquals(123.456, FStoredProc.Params[1].AsFloat, 0.0001);
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Integer;
+begin
+  CheckEquals(0, CreateProc('INTEGER', '12345678'));
+  Check(ftInteger = FStoredProc.Params[1].DataType);
+  CheckEquals(12345678, FStoredProc.Params[1].AsInteger);
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Numeric_18;
+begin
+  CheckEquals(0, CreateProc('NUMERIC(18, 5)', '123456789012.67891'));
+  Check(ftFMTBcd = FStoredProc.Params[1].DataType);
+  CheckEquals('123456789012.67891', FStoredProc.Params[1].AsString);
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Numeric_4;
+begin
+  CheckEquals(0, CreateProc('NUMERIC(4, 1)', '123.4'));
+  Check(ftFMTBcd = FStoredProc.Params[1].DataType);
+  CheckEquals('123.4', FStoredProc.Params[1].AsString);
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Numeric_8;
+begin
+  CheckEquals(0, CreateProc('NUMERIC(8, 3)', '98765.432'));
+  Check(ftFMTBcd = FStoredProc.Params[1].DataType);
+  CheckEquals('98765.432', FStoredProc.Params[1].AsString);
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_SmallInt;
+begin
+  CheckEquals(0, CreateProc('SMALLINT', '12345'));
+  Check(ftSmallint = FStoredProc.Params[1].DataType);
+  CheckEquals(12345, FStoredProc.Params[1].AsSmallInt);
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Time;
+var D: TDateTime;
+    F, S: string;
+begin
+  D := Time;
+  F := 'hh:nn:ss';
+  S := FormatDateTime(F, D);
+  CheckEquals(0, CreateProc('TIME', S));
+  Check(ftTime = FStoredProc.Params[1].DataType);
+  CheckEquals(S, FormatDateTime(F, FStoredProc.Params[1].AsTime));
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_TimeStamp;
+var D: TDateTime;
+    F, S: string;
+begin
+  D := Now;
+  F := ShortDateFormat + ' ' + LongTimeFormat;
+  S := FormatDateTime(F, D);
+
+  CheckEquals(0, CreateProc('TIMESTAMP', S));
+  Check(ftTimeStamp = FStoredProc.Params[1].DataType);
+  CheckEquals(S, SQLTimeStampToStr(F, FStoredProc.Params[1].AsSQLTimeStamp));
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_VarChar;
+begin
+  CheckEquals(0, CreateProc('VARCHAR(100)', 'ABC'));
+  Check(ftString = FStoredProc.Params[1].DataType);
+  CheckEquals('ABC', FStoredProc.Params[1].AsString);
 end;
 
 initialization
