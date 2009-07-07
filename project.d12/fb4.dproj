@@ -53,6 +53,7 @@
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
 			<RcCompile Include="..\..\build\rc\library.rc">
+				<ContainerId>RC</ContainerId>
 				<Form>library.res</Form>
 			</RcCompile>
 			<DCCReference Include="..\..\core\source\patch\CodeRedirect.pas"/>
@@ -79,6 +80,7 @@
 			<DCCReference Include="..\..\core\source\firebird\firebird.client.pas"/>
 			<DCCReference Include="..\..\core\source\firebird\firebird.dsql.pas"/>
 			<DCCReference Include="..\..\core\source\firebird\firebird.charsets.pas"/>
+			<DCCReference Include="..\..\core\source\firebird\firebird.blr.h.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 				<DependentOn>..\..\build\optset\Base.optset</DependentOn>
@@ -109,7 +111,7 @@
 						<Parameters Name="UseLauncher">False</Parameters>
 						<Parameters Name="LoadAllSymbols">True</Parameters>
 						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
-						<Parameters Name="HostApplication">C:\Users\ccy\Documents\Project\output.d11\moon\dbxfbTests.exe</Parameters>
+						<Parameters Name="HostApplication">G:\Users\coder\Documents\Project\output.d12\moon\dbxfbtests.exe</Parameters>
 					</Parameters>
 					<VersionInfo>
 						<VersionInfo Name="IncludeVerInfo">False</VersionInfo>
@@ -142,8 +144,8 @@
 						<Source Name="MainSource">fb4.dpr</Source>
 					</Source>
 					<Excluded_Packages>
-						<Excluded_Packages Name="$(BDS)\bin\dcloffice2k100.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-						<Excluded_Packages Name="$(BDS)\bin\dclofficexp100.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dcloffice2k120.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclofficexp120.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
 					</Excluded_Packages>
 				</Delphi.Personality>
 			</BorlandProject>
