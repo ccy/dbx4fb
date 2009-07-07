@@ -21,6 +21,9 @@
 			<Projects Include="..\..\core\project.d12\oofirebird.dproj">
 				<Dependencies/>
 			</Projects>
+			<Projects Include="..\..\core\project.d12\DBXCommonDriverEx.dproj">
+				<Dependencies/>
+			</Projects>
 			<Projects Include="..\..\core\project.d12\DBXFirebirdDriver.dproj">
 				<Dependencies/>
 			</Projects>
@@ -89,6 +92,15 @@
 		<Target Name="oofirebird:Make">
 			<MSBuild Targets="Make" Projects="..\..\core\project.d12\oofirebird.dproj"/>
 		</Target>
+		<Target Name="DBXCommonDriverEx">
+			<MSBuild Projects="..\..\core\project.d12\DBXCommonDriverEx.dproj"/>
+		</Target>
+		<Target Name="DBXCommonDriverEx:Clean">
+			<MSBuild Targets="Clean" Projects="..\..\core\project.d12\DBXCommonDriverEx.dproj"/>
+		</Target>
+		<Target Name="DBXCommonDriverEx:Make">
+			<MSBuild Targets="Make" Projects="..\..\core\project.d12\DBXCommonDriverEx.dproj"/>
+		</Target>
 		<Target Name="DBXFirebirdDriver">
 			<MSBuild Projects="..\..\core\project.d12\DBXFirebirdDriver.dproj"/>
 		</Target>
@@ -108,13 +120,13 @@
 			<MSBuild Targets="Make" Projects="dbxfbTests.dproj"/>
 		</Target>
 		<Target Name="Build">
-			<CallTarget Targets="fb4;patch_rtl;patch_vcl;patch_dbx;oortl;oofirebird;DBXFirebirdDriver;dbxfbTests"/>
+			<CallTarget Targets="fb4;patch_rtl;patch_vcl;patch_dbx;oortl;oofirebird;DBXCommonDriverEx;DBXFirebirdDriver;dbxfbTests"/>
 		</Target>
 		<Target Name="Clean">
-			<CallTarget Targets="fb4:Clean;patch_rtl:Clean;patch_vcl:Clean;patch_dbx:Clean;oortl:Clean;oofirebird:Clean;DBXFirebirdDriver:Clean;dbxfbTests:Clean"/>
+			<CallTarget Targets="fb4:Clean;patch_rtl:Clean;patch_vcl:Clean;patch_dbx:Clean;oortl:Clean;oofirebird:Clean;DBXCommonDriverEx:Clean;DBXFirebirdDriver:Clean;dbxfbTests:Clean"/>
 		</Target>
 		<Target Name="Make">
-			<CallTarget Targets="fb4:Make;patch_rtl:Make;patch_vcl:Make;patch_dbx:Make;oortl:Make;oofirebird:Make;DBXFirebirdDriver:Make;dbxfbTests:Make"/>
+			<CallTarget Targets="fb4:Make;patch_rtl:Make;patch_vcl:Make;patch_dbx:Make;oortl:Make;oofirebird:Make;DBXCommonDriverEx:Make;DBXFirebirdDriver:Make;dbxfbTests:Make"/>
 		</Target>
 		<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 	</Project>
