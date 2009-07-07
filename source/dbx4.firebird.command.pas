@@ -70,7 +70,7 @@ function TMetaDataProvider_Firebird.GetColumnLength(const aColNo: TInt32):
 var V: TXSQLVAR;
 begin
   V := FSQLDA.Vars[aColNo];
-  if V.CheckType(SQL_INT64) and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) then
+  if V.CheckType(SQL_INT64) {$if CompilerVersion > 18.5} and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) {$ifend} then
     Result := SizeOf(TBcd)
   else if V.CheckType(SQL_FLOAT) then
     Result := SizeOf(Double)
@@ -109,7 +109,7 @@ begin
     Result := V.sqllen;
     if V.CheckCharSet(CS_UTF8) then
       Result := V.sqllen div 4;
-  end else if V.CheckType(SQL_INT64) and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) then
+  end else if V.CheckType(SQL_INT64) {$if CompilerVersion > 18.5} and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) {$ifend} then
     Result := 19
   else if V.CheckType(SQL_LONG) and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) then
     Result := 9
@@ -163,7 +163,7 @@ begin
     SQL_BLOB: Result := TDBXDataTypes.BlobType;
     SQL_INT64: begin
       if iSubType = 0 then
-        Result := TDBXDataTypes.Int64Type
+        Result := {$if CompilerVersion <= 18.5} TDBXDataTypes.BcdType {$else} TDBXDataTypes.Int64Type {$ifend}
       else if (iSubType = 1) or (iSubType = 2) then
         Result := TDBXDataTypes.BcdType
       else

@@ -80,7 +80,8 @@
   fbintl.dll didn't unload after fbembed.dll was released
 - 3 environment variables "FIREBIRD", "FIREBIRD_MSG" and "FIREBIRD_TMP" wasn't unset properly if these variables never exist in current process.
 
-4.1.2007.14 / 4.1.2009.14 Release on 03 Jul 2009
+4.1.2007.14 / 4.1.2009.14 Release on 07 Jul 2009
 
 - Add: support Firebird Stored Procedure and DBX TSQLStoredProc
-- Update: Int64 field type convert to TDBXTypes.Int64Type now.  It convert to TDBXTypes.BcdType previously.  Numeric and Decimal field types may return SQL_INT64 datat type in some situation will remain as TDBXDataTypes.BcdType.
+- Update: In Delphi 2007 DBX 4 driver, BIGINT columns map to TFmtBcdField.  While perform data coering operation, Numeric and Decimal columns map to SQL_INT64 data type in some situation map to TDBXDataTypes.BcdType and TFmtBcdField of VCL persistent field.  The above behavior has changed for DBX 4 unicode driver used by Delphi 2009, BIGINT column map to TDBXTypes.Int64Type.  It convert to TDBXTypes.BcdType previously.  As such, it map to TLargeIntField in VCL's persistent field.
+- Fixed: Bug fixed for Locale environment using DecimalSeparator as ","
