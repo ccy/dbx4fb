@@ -81,6 +81,7 @@
 			<DCCReference Include="..\..\core\source\firebird\firebird.dsql.pas"/>
 			<DCCReference Include="..\..\core\source\firebird\firebird.charsets.pas"/>
 			<DCCReference Include="..\..\core\source\firebird\firebird.blr.h.pas"/>
+			<DCCReference Include="..\..\core\source\rtl\SysUtilsEx.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 				<DependentOn>..\..\build\optset\Base.optset</DependentOn>
