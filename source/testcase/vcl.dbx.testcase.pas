@@ -317,14 +317,14 @@ begin
 
     sImpl := S.GetServerImplementation;
     if L.Values[HOSTNAME_KEY] = '' then
-      sDatabase := IncludeTrailingPathDelimiter(GetEnvironmentVariable('TEMP'))
+      sDatabase := IncludeTrailingPathDelimiter('%TEMP%')
     else if ContainsText(sImpl, 'Windows') then begin
 
       if Pos('dbxint', FLibraryName) > 0 then // Interbase Driver need hostname string in database parameter
         sDatabase := L.Values[HOSTNAME_KEY] + ':';
 
       if AnsiStartsText('localhost', L.Values[HOSTNAME_KEY]) then
-        sDatabase := sDatabase + IncludeTrailingPathDelimiter(GetEnvironmentVariable('TEMP'))
+        sDatabase := sDatabase + IncludeTrailingPathDelimiter('%TEMP%')
       else
         sDatabase := sDatabase + 'c:\';
     end else if ContainsText(sImpl, 'Linux') then
