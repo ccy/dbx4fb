@@ -56,7 +56,7 @@ type
 
 implementation
 
-uses SysUtils, SqlConst;
+uses SysUtils, Windows, SqlConst, SysUtilsEx;
 
 constructor TDBXConnection_Firebird.Create(const aDriver: IDBXDriver);
 begin
@@ -127,7 +127,7 @@ begin
   FServerCharSet := 'None';
   for i := 0 to Count - 1 do begin
     if Names[i] = TDBXPropertyNames.Database then
-      FDatabase := Values[i]
+      FDatabase := ExpandFileNameString(Values[i])
     else if Names[i] = TDBXPropertyNames.HostName then
       FHostName := Values[i]
     else if Names[i] = TDBXPropertyNames.UserName then
