@@ -95,7 +95,6 @@ type{$M+}
     procedure TearDown; override;
     property GetTestData: ITestData read FTestData;
   public
-    function StrToLocaleDec(aValue: string): string;
     function StrToBcdN(const aValue: string): TBcd;
     class function NewSuite(const aTestData: ITestData): ITestSuite;
   end;
@@ -495,12 +494,7 @@ end;
 
 function TTestCase_DBX.StrToBcdN(const aValue: string): TBcd;
 begin
-  Result := StrToBcd(StrToLocaleDec((aValue)));
-end;
-
-function TTestCase_DBX.StrToLocaleDec(aValue: string): string;
-begin
-  Result := StringReplace(aValue, '.', SysUtils.DecimalSeparator, []);
+  Result := StrToBcd(StrToLocaleDecimal((aValue)));
 end;
 
 procedure TTestCase_DBX.TearDown;
@@ -1063,13 +1057,13 @@ begin
 
   Param.AsFloat := 123.123456;
   Execute;
-  CheckEquals(StrToLocaleDec('123.1235'), Field.AsString);
-  CheckEquals(StrToLocaleDec('123.1235'), Field.AsWideString);
+  CheckEquals(StrToLocaleDecimal('123.1235'), Field.AsString);
+  CheckEquals(StrToLocaleDecimal('123.1235'), Field.AsWideString);
 
   Param.AsFloat := 123.123412;
   Execute;
-  CheckEquals(StrToLocaleDec('123.1234'), Field.AsString);
-  CheckEquals(StrToLocaleDec('123.1234'), Field.AsWideString);
+  CheckEquals(StrToLocaleDecimal('123.1234'), Field.AsString);
+  CheckEquals(StrToLocaleDecimal('123.1234'), Field.AsWideString);
 
   Param.AsInteger := 1234567890;
   Execute;
@@ -1079,44 +1073,44 @@ begin
   Execute;
   CheckEquals(12345, Field.AsInteger);
 
-  Param.AsString := StrToLocaleDec('56789.12349991234');
+  Param.AsString := StrToLocaleDecimal('56789.12349991234');
   Execute;
-  CheckEquals(StrToLocaleDec('56789.1234'), Field.AsString);
-  CheckEquals(StrToLocaleDec('56789.1234'), Field.AsWideString);
+  CheckEquals(StrToLocaleDecimal('56789.1234'), Field.AsString);
+  CheckEquals(StrToLocaleDecimal('56789.1234'), Field.AsWideString);
 
-  Param.AsString := StrToLocaleDec('-3.41060513164848E-13');
+  Param.AsString := StrToLocaleDecimal('-3.41060513164848E-13');
   Execute;
   CheckEquals(0, Field.AsFloat);
 
-  Param.AsString := StrToLocaleDec('0.1');
+  Param.AsString := StrToLocaleDecimal('0.1');
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
-  Param.AsString := StrToLocaleDec('0.01');
+  Param.AsString := StrToLocaleDecimal('0.01');
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
-  Param.AsString := StrToLocaleDec('0.001');
+  Param.AsString := StrToLocaleDecimal('0.001');
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
-  Param.AsString := StrToLocaleDec('0.0001');
+  Param.AsString := StrToLocaleDecimal('0.0001');
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
-  Param.AsString := StrToLocaleDec('-0.1');
+  Param.AsString := StrToLocaleDecimal('-0.1');
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
-  Param.AsString := StrToLocaleDec('-0.01');
+  Param.AsString := StrToLocaleDecimal('-0.01');
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
-  Param.AsString := StrToLocaleDec('-0.001');
+  Param.AsString := StrToLocaleDecimal('-0.001');
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
-  Param.AsString := StrToLocaleDec('-0.0001');
+  Param.AsString := StrToLocaleDecimal('-0.0001');
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
@@ -1235,13 +1229,13 @@ begin
 
   Param.AsFloat := 123.123456;
   Execute;
-  CheckEquals(StrToLocaleDec('123.1235'), Field.AsString);
-  CheckEquals(StrToLocaleDec('123.1235'), Field.AsWideString);
+  CheckEquals(StrToLocaleDecimal('123.1235'), Field.AsString);
+  CheckEquals(StrToLocaleDecimal('123.1235'), Field.AsWideString);
 
   Param.AsFloat := 123.123412;
   Execute;
-  CheckEquals(StrToLocaleDec('123.1234'), Field.AsString);
-  CheckEquals(StrToLocaleDec('123.1234'), Field.AsWideString);
+  CheckEquals(StrToLocaleDecimal('123.1234'), Field.AsString);
+  CheckEquals(StrToLocaleDecimal('123.1234'), Field.AsWideString);
 
   Param.AsInteger := 1234567890;
   Execute;
@@ -1251,52 +1245,52 @@ begin
   Execute;
   CheckEquals(12345, Field.AsInteger);
 
-  Param.AsString := StrToLocaleDec('56789.12349991234');
+  Param.AsString := StrToLocaleDecimal('56789.12349991234');
   Execute;
-  CheckEquals(StrToLocaleDec('56789.1234'), Field.AsString);
-  CheckEquals(StrToLocaleDec('56789.1234'), Field.AsWideString);
+  CheckEquals(StrToLocaleDecimal('56789.1234'), Field.AsString);
+  CheckEquals(StrToLocaleDecimal('56789.1234'), Field.AsWideString);
 
-  Param.AsString := StrToLocaleDec('-3.41060513164848E-13');
+  Param.AsString := StrToLocaleDecimal('-3.41060513164848E-13');
   Execute;
   CheckEquals(0, Field.AsFloat);
 
-  Param.AsString := StrToLocaleDec('0.1');
+  Param.AsString := StrToLocaleDecimal('0.1');
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
-  Param.AsString := StrToLocaleDec('0.01');
+  Param.AsString := StrToLocaleDecimal('0.01');
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
-  Param.AsString := StrToLocaleDec('0.001');
+  Param.AsString := StrToLocaleDecimal('0.001');
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
-  Param.AsString := StrToLocaleDec('0.0001');
+  Param.AsString := StrToLocaleDecimal('0.0001');
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
-  Param.AsString := StrToLocaleDec('0.00001');
+  Param.AsString := StrToLocaleDecimal('0.00001');
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
-  Param.AsString := StrToLocaleDec('-0.1');
+  Param.AsString := StrToLocaleDecimal('-0.1');
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
-  Param.AsString := StrToLocaleDec('-0.01');
+  Param.AsString := StrToLocaleDecimal('-0.01');
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
-  Param.AsString := StrToLocaleDec('-0.001');
+  Param.AsString := StrToLocaleDecimal('-0.001');
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
-  Param.AsString := StrToLocaleDec('-0.0001');
+  Param.AsString := StrToLocaleDecimal('-0.0001');
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
-  Param.AsString := StrToLocaleDec('-0.00001');
+  Param.AsString := StrToLocaleDecimal('-0.00001');
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
@@ -2343,35 +2337,35 @@ end;
 
 procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Decimal_18;
 begin
-  CheckEquals(0, CreateProc('DECIMAL(18, 5)', StrToLocaleDec('123456789012.67891')));
+  CheckEquals(0, CreateProc('DECIMAL(18, 5)', StrToLocaleDecimal('123456789012.67891')));
   Check(ftFMTBcd = FStoredProc.Params[1].DataType);
-  CheckEquals(StrToLocaleDec('123456789012.67891'), FStoredProc.Params[1].AsString);
+  CheckEquals(StrToLocaleDecimal('123456789012.67891'), FStoredProc.Params[1].AsString);
 end;
 
 procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Decimal_4;
 begin
-  CheckEquals(0, CreateProc('DECIMAL(4, 1)', StrToLocaleDec('123.4')));
+  CheckEquals(0, CreateProc('DECIMAL(4, 1)', StrToLocaleDecimal('123.4')));
   Check(ftFMTBcd = FStoredProc.Params[1].DataType);
-  CheckEquals(StrToLocaleDec('123.4'), FStoredProc.Params[1].AsString);
+  CheckEquals(StrToLocaleDecimal('123.4'), FStoredProc.Params[1].AsString);
 end;
 
 procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Decimal_8;
 begin
-  CheckEquals(0, CreateProc('DECIMAL(8, 3)', StrToLocaleDec('98765.432')));
+  CheckEquals(0, CreateProc('DECIMAL(8, 3)', StrToLocaleDecimal('98765.432')));
   Check(ftFMTBcd = FStoredProc.Params[1].DataType);
-  CheckEquals(StrToLocaleDec('98765.432'), FStoredProc.Params[1].AsString);
+  CheckEquals(StrToLocaleDecimal('98765.432'), FStoredProc.Params[1].AsString);
 end;
 
 procedure TTestCase_DBX_TSQLStoredProc_Params.Test_DoublePrecision;
 begin
-  CheckEquals(0, CreateProc('DOUBLE PRECISION', StrToLocaleDec('123.4567890123')));
+  CheckEquals(0, CreateProc('DOUBLE PRECISION', StrToLocaleDecimal('123.4567890123')));
   Check(ftFloat = FStoredProc.Params[1].DataType);
   CheckEquals(123.4567890123, FStoredProc.Params[1].AsFloat, SglEps);
 end;
 
 procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Float;
 begin
-  CheckEquals(0, CreateProc('FLOAT', StrToLocaleDec('123.456')));
+  CheckEquals(0, CreateProc('FLOAT', StrToLocaleDecimal('123.456')));
   Check(ftFloat = FStoredProc.Params[1].DataType);
   CheckEquals(123.456, FStoredProc.Params[1].AsFloat, 0.0001);
 end;
@@ -2385,23 +2379,23 @@ end;
 
 procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Numeric_18;
 begin
-  CheckEquals(0, CreateProc('NUMERIC(18, 5)', StrToLocaleDec('123456789012.67891')));
+  CheckEquals(0, CreateProc('NUMERIC(18, 5)', StrToLocaleDecimal('123456789012.67891')));
   Check(ftFMTBcd = FStoredProc.Params[1].DataType);
-  CheckEquals(StrToLocaleDec('123456789012.67891'), FStoredProc.Params[1].AsString);
+  CheckEquals(StrToLocaleDecimal('123456789012.67891'), FStoredProc.Params[1].AsString);
 end;
 
 procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Numeric_4;
 begin
-  CheckEquals(0, CreateProc('NUMERIC(4, 1)', StrToLocaleDec('123.4')));
+  CheckEquals(0, CreateProc('NUMERIC(4, 1)', StrToLocaleDecimal('123.4')));
   Check(ftFMTBcd = FStoredProc.Params[1].DataType);
-  CheckEquals(StrToLocaleDec('123.4'), FStoredProc.Params[1].AsString);
+  CheckEquals(StrToLocaleDecimal('123.4'), FStoredProc.Params[1].AsString);
 end;
 
 procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Numeric_8;
 begin
-  CheckEquals(0, CreateProc('NUMERIC(8, 3)', StrToLocaleDec('98765.432')));
+  CheckEquals(0, CreateProc('NUMERIC(8, 3)', StrToLocaleDecimal('98765.432')));
   Check(ftFMTBcd = FStoredProc.Params[1].DataType);
-  CheckEquals(StrToLocaleDec('98765.432'), FStoredProc.Params[1].AsString);
+  CheckEquals(StrToLocaleDecimal('98765.432'), FStoredProc.Params[1].AsString);
 end;
 
 procedure TTestCase_DBX_TSQLStoredProc_Params.Test_SmallInt;
