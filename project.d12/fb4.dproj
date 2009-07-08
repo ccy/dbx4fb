@@ -111,7 +111,8 @@
 						<Parameters Name="UseLauncher">False</Parameters>
 						<Parameters Name="LoadAllSymbols">True</Parameters>
 						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
-						<Parameters Name="HostApplication">G:\Users\coder\Documents\Project\output.d12\moon\dbxfbtests.exe</Parameters>
+						<Parameters Name="HostApplication">$(ActiveHostApplication)</Parameters>
+						<Parameters Name="RunParams">G:\Users\coder\Documents\Project\output.d11\moon\dbxfbTests.ini</Parameters>
 					</Parameters>
 					<VersionInfo>
 						<VersionInfo Name="IncludeVerInfo">False</VersionInfo>
