@@ -85,3 +85,7 @@
 - Add: support Firebird Stored Procedure and DBX TSQLStoredProc
 - Update: In Delphi 2007 DBX 4 driver, BIGINT columns map to TFmtBcdField.  While perform data coering operation, Numeric and Decimal columns map to SQL_INT64 data type in some situation map to TDBXDataTypes.BcdType and TFmtBcdField of VCL persistent field.  The above behavior has changed for DBX 4 unicode driver used by Delphi 2009, BIGINT column map to TDBXTypes.Int64Type.  It convert to TDBXTypes.BcdType previously.  As such, it map to TLargeIntField in VCL's persistent field.
 - Fixed: Bug fixed for Locale environment using DecimalSeparator as ","
+
+4.1.2007.15 / 4.1.2009.15 Release on 08 Jul 2009
+
+- Add: Database name will expand if contain environment variable (e.g.: %temp%)
