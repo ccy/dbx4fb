@@ -58,6 +58,8 @@
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
 			<DCCReference Include="..\source\testcase\vcl.dbx.testcase.pas"/>
+			<DCCReference Include="..\source\testcase\vcl.dbx.main.pas"/>
+			<DCCReference Include="..\source\testcase\vcl.dbx.cmdlines.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 				<DependentOn>..\..\build\optset\Base.optset</DependentOn>
@@ -88,7 +90,7 @@
 						<Parameters Name="UseLauncher">False</Parameters>
 						<Parameters Name="LoadAllSymbols">True</Parameters>
 						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
-						<Parameters Name="RunParams">G:\Users\coder\Documents\Project\output.d11\moon\dbxfbTests.ini</Parameters>
+						<Parameters Name="RunParams">-config %HomeDrive%%HomePath%\Documents\Project\source.d11\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\Documents\Project\output.d11\moon\drivers</Parameters>
 					</Parameters>
 					<VersionInfo>
 						<VersionInfo Name="IncludeVerInfo">False</VersionInfo>

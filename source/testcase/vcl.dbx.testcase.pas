@@ -389,7 +389,7 @@ begin
     end;
   end;
 
-  SetEnvironmentVariable('drivers', PChar(ExtractFilePath(GetTestDataFileName) + 'drivers'));
+  SetEnvironmentVariable('drivers', PChar(TCmdLineParams_App.Drivers));
 end;
 
 class function TTestSuite_DBX.GetDriverSectionName: string;
