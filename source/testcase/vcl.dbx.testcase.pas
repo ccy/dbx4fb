@@ -272,7 +272,8 @@ implementation
 
 uses SqlConst, Windows, StrUtils, WideStrings,
   SqlTimSt, DateUtils, Math, IniFiles,
-  SystemEx, SysUtilsEx, firebird.client, firebird.service, UniqueID;
+  SystemEx, SysUtilsEx, firebird.client, firebird.service, UniqueID,
+  vcl.dbx.cmdlines;
 
 constructor TTestData_SQLConnection.Create(const aDriverName, aLibraryName,
     aGetDriverFunc, aVendorLib, aParams: string);
@@ -418,7 +419,7 @@ end;
 
 class function TTestSuite_DBX.GetTestDataFileName: string;
 begin
-  Result := ParamStr(1);
+  Result := TCmdLineParams_App.ConfigFile;
 end;
 
 class function TTestSuite_DBX.GetServerVersion(aLibraryName, aParams:
@@ -488,7 +489,8 @@ end;
 procedure TTestCase_DBX.SQLMonitorOnLogTrace(Sender: TObject;
   TraceInfo: TDBXTraceInfo);
 begin
-  Status(TraceInfo.Message);
+  if GetGUIObject <> nil then
+    Status(TraceInfo.Message);
 end;
 {$ifend}
 
@@ -904,9 +906,12 @@ end;
 
 procedure TTestCase_DBX_FieldType.Test_BLOB;
 var M: TStringStream;
+    F: TFileStream;
     S: AnsiString;
 begin
-  Param.LoadFromFile('c:\windows\notepad.exe', ftBlob);
+  F := TFileStream.Create(ExpandFileNameString('%windir%\notepad.exe'), fmOpenRead);
+  Param.LoadFromStream(F, ftBlob);
+  F.Free;
   Execute;
   CheckEquals(TBlobField, Field.ClassType);
 
@@ -1870,6 +1875,8 @@ begin
     F.ReadSectionValues('embedded', sEmbeds);
     for i := 0 to sDrivers.Count - 1 do begin
       for j := 0 to sServers.Count - 1 do begin
+        if TCmdLineParams_App.HasTestName and (TCmdLineParams_App.GetTestName <> sServers.Names[j]) then Continue;
+
         sParams := GetParams(sServers.ValueFromIndex[j], aParams);
 
         sVer := GetServerVersion(F.ReadString('vendor', 'default', ''), sParams);
@@ -1880,6 +1887,8 @@ begin
         );
       end;
       for j := 0 to sEmbeds.Count - 1 do begin
+        if TCmdLineParams_App.HasTestName and (TCmdLineParams_App.GetTestName <> sEmbeds.Names[j]) then Continue;
+
         sParams := GetParams('', aParams);
 
         sVer := GetServerVersion(sEmbeds.ValueFromIndex[j], sParams) + ' Embedded';
@@ -1966,6 +1975,8 @@ begin
         sVer1 := GetServerVersion(F.ReadString('vendor', 'default', ''), sParams1);
 
         for k := 0 to sEmbeds.Count - 1 do begin
+          if TCmdLineParams_App.HasTestName and (TCmdLineParams_App.GetTestName <> sEmbeds.Names[j]) then Continue;
+          
           L := TInterfaceList.Create;
 
           L.Add(
