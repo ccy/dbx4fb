@@ -132,10 +132,11 @@ begin
 end;
 
 function TMetaDataProvider_Firebird.GetColumnType(const aColNo: TInt32): TInt32;
-var iType, iSubType: Smallint;
+var iType, iSubType, iScale: Smallint;
 begin
   iType := FSQLDA.Vars[aColNo].sqltype and not 1;
   iSubType := FSQLDA.Vars[aColNo].sqlsubtype;
+  iScale := FSQLDA.Vars[aColNo].sqlscale;
   case iType of
     SQL_SHORT: begin
       if iSubType = 0 then
@@ -162,12 +163,10 @@ begin
     end;
     SQL_BLOB: Result := TDBXDataTypes.BlobType;
     SQL_INT64: begin
-      if iSubType = 0 then
+      if (iSubType = 0) and (iScale = 0) then
         Result := {$if CompilerVersion <= 18.5} TDBXDataTypes.BcdType {$else} TDBXDataTypes.Int64Type {$ifend}
-      else if (iSubType = 1) or (iSubType = 2) then
-        Result := TDBXDataTypes.BcdType
       else
-        Unsupported;
+        Result := TDBXDataTypes.BcdType
     end;
     SQL_FLOAT: Result := TDBXDataTypes.DoubleType;
     SQL_DOUBLE: Result := TDBXDataTypes.DoubleType;

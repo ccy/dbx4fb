@@ -89,3 +89,10 @@
 4.1.2007.15 / 4.1.2009.15 Release on 08 Jul 2009
 
 - Add: Database name will expand if contain environment variable (e.g.: %temp%)
+
+4.1.2007.16 / 4.1.2009.16 Release on 24 Jul 2009
+
+- Fixed: The driver return LargeInt field type for some Decimal and Numeric columns.  (e.g.: Decimal(18.0))
+- Fixed: SELECT SQL using operator in columsn return LargeInt field type for Decimal and Numeric columns.  (e.g.: SELECT DecimalField + DecimalField FROM Table)
+
+
