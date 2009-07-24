@@ -153,6 +153,8 @@ type{$M+}
     procedure Test_DECIMAL;
     procedure Test_DECIMAL_LONG;
     procedure Test_DECIMAL_Limit;
+    procedure Test_DECIMAL_Misc;
+    procedure Test_DECIMAL_0;
     procedure Test_DOUBLE_PRECISION;
     procedure Test_FLOAT;
     procedure Test_INTEGER;
@@ -160,6 +162,8 @@ type{$M+}
     procedure Test_NUMERIC_SHORT;
     procedure Test_NUMERIC_LONG;
     procedure Test_NUMERIC_Limit;
+    procedure Test_NUMERIC_Misc;
+    procedure Test_NUMERIC_0;
     procedure Test_SMALLINT;
     procedure Test_TIME;
     procedure Test_TIMESTAMP;
@@ -780,9 +784,13 @@ begin
   else if GetName = 'Test_NUMERIC_SHORT'    then Result := 'NUMERIC(4, 2)'
   else if GetName = 'Test_NUMERIC_LONG'     then Result := 'NUMERIC(9, 2)'
   else if GetName = 'Test_NUMERIC_Limit'    then Result := 'NUMERIC(18, 4)'
+  else if GetName = 'Test_NUMERIC_Misc'     then Result := 'NUMERIC(18, 4)'
+  else if GetName = 'Test_NUMERIC_0'        then Result := 'NUMERIC(18, 0)'
   else if GetName = 'Test_DECIMAL'          then Result := 'DECIMAL(18, 4)'
   else if GetName = 'Test_DECIMAL_LONG'     then Result := 'DECIMAL(9, 2)'
   else if GetName = 'Test_DECIMAL_Limit'    then Result := 'DECIMAL(18, 4)'
+  else if GetName = 'Test_DECIMAL_Misc'     then Result := 'DECIMAL(18, 4)'
+  else if GetName = 'Test_DECIMAL_0'        then Result := 'DECIMAL(4, 0)'
   else if GetName = 'Test_FLOAT'            then Result := 'FLOAT'
   else if GetName = 'Test_DOUBLE_PRECISION' then Result := 'DOUBLE PRECISION'
   else if GetName = 'Test_DATE'             then Result := 'DATE'
@@ -1122,6 +1130,14 @@ begin
   Test_Required;
 end;
 
+procedure TTestCase_DBX_FieldType.Test_DECIMAL_0;
+begin
+  Param.AsString := '9121';
+  Execute;
+  CheckEquals(TFMTBCDField, Field.ClassType);
+  CheckEquals(Param.AsString, Field.AsString);
+end;
+
 procedure TTestCase_DBX_FieldType.Test_DECIMAL_Limit;
 var F: TFMTBCDField;
 begin
@@ -1150,6 +1166,30 @@ begin
   Execute;
   CheckEquals(Param.AsString, Field.AsString);
   CheckEquals(Param.AsWideString, Field.AsWideString);
+end;
+
+procedure TTestCase_DBX_FieldType.Test_DECIMAL_Misc;
+var S: string;
+    D: TDataSet;
+begin
+  Param.AsFMTBCD := StrToBcdN('12345678901.2345');
+  Execute;
+
+  S := 'SELECT (Field + Field) as TestField FROM T_FIELD';
+  FConnection.Execute(S, nil, @D);
+  try
+    CheckEquals(TFMTBCDField, D.Fields[0].ClassType);
+  finally
+    D.Free;
+  end;
+
+  S := 'SELECT 0.00 TestField FROM T_FIELD';
+  FConnection.Execute(S, nil, @D);
+  try
+    CheckEquals(TFMTBCDField, D.Fields[0].ClassType);
+  finally
+    D.Free;
+  end;
 end;
 
 procedure TTestCase_DBX_FieldType.Test_DOUBLE_PRECISION;
@@ -1302,6 +1342,14 @@ begin
   Test_Required;
 end;
 
+procedure TTestCase_DBX_FieldType.Test_NUMERIC_0;
+begin
+  Param.AsString := '912345678901234567';
+  Execute;
+  CheckEquals(TFMTBCDField, Field.ClassType);
+  CheckEquals(Param.AsString, Field.AsString);
+end;
+
 procedure TTestCase_DBX_FieldType.Test_NUMERIC_Limit;
 var F: TFMTBCDField;
 begin
@@ -1332,6 +1380,30 @@ begin
   Execute;
   CheckEquals(Param.AsString, Field.AsString);
   CheckEquals(Param.AsWideString, Field.AsWideString);
+end;
+
+procedure TTestCase_DBX_FieldType.Test_NUMERIC_Misc;
+var S: string;
+    D: TDataSet;
+begin
+  Param.AsFMTBCD := StrToBcdN('12345678901.2345');
+  Execute;
+
+  S := 'SELECT (Field + Field) as TestField FROM T_FIELD';
+  FConnection.Execute(S, nil, @D);
+  try
+    CheckEquals(TFMTBCDField, D.Fields[0].ClassType);
+  finally
+    D.Free;
+  end;
+
+  S := 'SELECT 0.00 TestField FROM T_FIELD';
+  FConnection.Execute(S, nil, @D);
+  try
+    CheckEquals(TFMTBCDField, D.Fields[0].ClassType);
+  finally
+    D.Free;
+  end;
 end;
 
 procedure TTestCase_DBX_FieldType.Test_NUMERIC_SHORT;
