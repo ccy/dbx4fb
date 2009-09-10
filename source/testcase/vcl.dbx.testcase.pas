@@ -158,6 +158,8 @@ type{$M+}
     procedure Test_DOUBLE_PRECISION;
     procedure Test_FLOAT;
     procedure Test_INTEGER;
+    procedure Test_MEMO;
+    procedure Test_MEMO_UTF8;
     procedure Test_NUMERIC;
     procedure Test_NUMERIC_SHORT;
     procedure Test_NUMERIC_LONG;
@@ -780,6 +782,8 @@ begin
   else if GetName = 'Test_INTEGER'          then Result := 'INTEGER'
   else if GetName = 'Test_BIGINT'           then Result := 'BIGINT'
   else if GetName = 'Test_BIGINT_Limit'     then Result := 'BIGINT'
+  else if GetName = 'Test_MEMO'             then Result := 'BLOB SUB_TYPE 1'
+  else if GetName = 'Test_MEMO_UTF8'        then Result := 'BLOB SUB_TYPE 1 CHARACTER SET UTF8'
   else if GetName = 'Test_NUMERIC'          then Result := 'NUMERIC(18, 4)'
   else if GetName = 'Test_NUMERIC_SHORT'    then Result := 'NUMERIC(4, 2)'
   else if GetName = 'Test_NUMERIC_LONG'     then Result := 'NUMERIC(9, 2)'
@@ -1245,6 +1249,62 @@ begin
   CheckEquals(Param.AsInteger, Field.AsInteger);
 
   Test_Required;
+end;
+
+procedure TTestCase_DBX_FieldType.Test_MEMO;
+var M: TStringStream;
+    S: AnsiString;
+begin
+  M := TStringStream.Create(DupeString('a', 65535));
+  try
+    Param.LoadFromStream(M, ftBlob);
+  finally
+    M.Free;
+  end;
+  Execute;
+  CheckEquals(TMemoField, Field.ClassType);
+
+  {$if CompilerVersion <= 18.5}
+  S := Param.AsString;
+  {$else}
+  SetLength(S, Param.GetDataSize);
+  Move(Param.AsBlob[0], S[1], Param.GetDataSize);
+  {$ifend}
+  CheckEquals(string(S), Field.AsString);
+
+  Test_Required;
+end;
+
+procedure TTestCase_DBX_FieldType.Test_MEMO_UTF8;
+{$ifdef Unicode}
+var M: TMemoryStream;
+    S, W: WideString;
+    B: TBytes;
+{$endif}
+begin
+  {$ifdef Unicode}
+  if (Pos('Firebird 1.', GetTestData.ServerVersion) <> 0) or (Pos('Firebird 2.0', GetTestData.ServerVersion) <> 0) then Exit;
+
+  M := TMemoryStream.Create;
+  try
+    W := #$540C + #$4E00 + #$4E2A + #$4E16 + #$754C;
+    M.Write(W[1], Length(W) * SizeOf(WideChar));
+    M.Position := 0;
+    Param.LoadFromStream(M, ftBlob);
+  finally
+    M.Free;
+  end;
+  Execute;
+  CheckEquals(TWideMemoField, Field.ClassType);
+
+  SetLength(B, Param.GetDataSize);
+  Move(Param.AsBlob[0], B[0], Param.GetDataSize);
+  S := TEncoding.Unicode.GetString(B, Low(B), High(B) + 1);
+
+  CheckEquals(S, (Field as TWideMemoField).Value);
+
+  Test_Required;
+  {$endif}
 end;
 
 procedure TTestCase_DBX_FieldType.Test_NUMERIC;
