@@ -30,11 +30,9 @@ end;
 
 function DBXCommand_CreateParameterRow(Handle: TDBXCommandHandle; out
     Parameters: TDBXRowHandle): TDBXErrorCode; stdcall;
-var o: IDBXBase;
 begin
-  Result := IDBXCommand(Handle).CreateParameterRow(o);
   Parameters := nil;
-  IDBXBase(Parameters) := o;
+  Result := IDBXCommand(Handle).CreateParameterRow(Parameters);
 end;
 
 function DBXCommand_Execute(Handle: TDBXCommandHandle; out Reader:
