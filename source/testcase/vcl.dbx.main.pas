@@ -10,14 +10,21 @@ uses SysUtils, Windows, Forms,
      TestFramework, GUITestRunner, TextTestRunner, vcl.dbx.cmdlines;
 
 procedure StartApp;
-var P: array[0..2] of HMODULE;
+var P: array of HMODULE;
     H: HMODULE;
     iExitCode: integer;
+    i: integer;
 begin
   iExitCode := 0;
+
+  i := 2;
+  {$ifndef Unicode}Inc(i);{$endif}
+  SetLength(P, i);
+
   P[0] := LoadPackage('SQL.patch.rtl.bpl');
   P[1] := LoadPackage('SQL.patch.vcl.bpl');
-  P[2] := LoadPackage('SQL.patch.dbx.bpl');
+  {$ifndef Unicode}P[2] := LoadPackage('SQL.patch.dbx.bpl');{$endif}
+
   try
     if TCmdLineParams_App.RunAsConsole then begin
       AllocConsole;
