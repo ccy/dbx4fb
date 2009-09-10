@@ -10,10 +10,10 @@
 	<target name="dbx.test">
 		<tempfile property="p.script" destdir="${env.TEMP}" suffix=".cmd"/>
 
-		<property name="program" location="${env.HOMEDRIVE}${env.HOMEPATH}\Documents\Project\output.${p.tag.program}\moon\dbxfbTests.exe" />
+		<property name="program" location="${env.HOMEDRIVE}${env.HOMEPATH}\Project\output.${p.tag.program}\moon\dbxfbTests.exe" />
 
 		<echo file="${p.script}">
-			${program} -config ${program.conf} -drivers ${env.HOMEDRIVE}${env.HOMEPATH}\documents\project\output.d11\moon\drivers -test ${test} -console
+			${program} -config ${program.conf} -drivers ${env.HOMEDRIVE}${env.HOMEPATH}\project\output.d11\moon\drivers -test ${test} -console
 		</echo>
 
 		<exec executable="cmd" spawn="false">
