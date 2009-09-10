@@ -2,7 +2,7 @@ unit dbx4.firebird.command;
 
 interface
 
-uses DBXCommon, DBXPlatform, firebird.client, firebird.dsql, dbx4.base,
+uses Classes, DBXCommon, DBXPlatform, DBXDynalink, firebird.client, firebird.dsql, dbx4.base,
   dbx4.firebird.connection, dbx4.firebird.reader, dbx4.firebird.base,
   firebird.ibase.h;
 
@@ -34,9 +34,11 @@ type
     FSQLDialect: integer;
     FTransactionPool: TFirebirdTransactionPool;
     FTrimChar: Boolean;
+    FParameterRows: TList;
+    function GetParameterRows: TList;
   protected
     function Close: TDBXErrorCode; override;
-    function CreateParameterRow(out aRow: IDBXBase): TDBXErrorCode;
+    function CreateParameterRow(out aRow: TDBXRowHandle): TDBXErrorCode;
     function Execute(out Reader: IDBXReader): TDBXErrorCode;
     function ExecuteImmediate(const SQL: TDBXWideString; out aReader: IDBXReader):
         TDBXErrorCode;
@@ -46,13 +48,14 @@ type
   public
     constructor Create(const aConnection: IDBXConnection; const aCommandType:
         TDBXWideString);
+    procedure BeforeDestruction; override;
   end;
 
 implementation
 
 uses SysUtils, StrUtils, FMTBcd, SqlTimSt, WideStrings,
      firebird.charsets, dbx4.firebird.row, dbx4.firebird.metadata,
-     firebird.sqlda_pub.h, firebird.blr.h;
+     firebird.sqlda_pub.h, firebird.blr.h, firebird.consts_pub.h;
 
 constructor TMetaDataProvider_Firebird.Create(const aSQLDA: TXSQLDA);
 begin
@@ -127,8 +130,21 @@ end;
 
 function TMetaDataProvider_Firebird.GetColumnSubType(const aColNo: TInt32):
     TInt32;
+var iType: SmallInt;
 begin
   Result := FSQLDA.Vars[aColNo].sqlsubtype;
+
+  iType := FSQLDA.Vars[aColNo].sqltype and not 1;
+  if iType = SQL_BLOB then begin
+    if Result = isc_blob_text then begin
+      if FSQLDA.Vars[aColNo].sqlscale = CS_UTF8 then
+        // http://tracker.firebirdsql.org/browse/CORE-977 (Put blob charset in XSQLVAR::sqlscale)
+        Result := {$ifdef Unicode}TDBXSubDataTypes{$else}TDBXDataTypes{$endif}.WideMemoSubType
+      else
+        Result := {$ifdef Unicode}TDBXSubDataTypes{$else}TDBXDataTypes{$endif}.MemoSubType;
+    end else
+      Result := 0;
+  end;
 end;
 
 function TMetaDataProvider_Firebird.GetColumnType(const aColNo: TInt32): TInt32;
@@ -204,21 +220,40 @@ begin
   end;
 end;
 
+procedure TDBXCommand_Firebird.BeforeDestruction;
+begin
+  inherited;
+  FreeAndNil(FParameterRows);
+end;
+
 function TDBXCommand_Firebird.Close: TDBXErrorCode;
+var i: integer;
+    o: TDBXRowHandle;
 begin
   if Assigned(FDSQL) then begin
     FDSQL.Close(StatusVector);
     if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
   end;
+  for i := 0 to GetParameterRows.Count - 1 do begin
+    o := GetParameterRows[i];
+    IDBXBase(o).Close;
+    IDBXBase(o) := nil;
+  end;
+
   Result := TDBXErrorCodes.None;
 end;
 
-function TDBXCommand_Firebird.CreateParameterRow(out aRow: IDBXBase):
+function TDBXCommand_Firebird.CreateParameterRow(out aRow: TDBXRowHandle):
     TDBXErrorCode;
 var M: IMetaDataProvider;
+    o: IDBXBase;
 begin
   M := TMetaDataProvider_Firebird.Create(FDSQL.o_SQLDA);
-  aRow := TDBXRow_Firebird.Create(FConnection, FDBHandle, M, FDSQL, (FConnection as IDBXConnection_Firebird).TrimChar);
+  o := TDBXRow_Firebird.Create(FConnection, FDBHandle, M, FDSQL, (FConnection as IDBXConnection_Firebird).TrimChar);
+
+  IDBXBase(aRow) := o;
+  GetParameterRows.Add(aRow);
+
   Result := TDBXErrorCodes.None;
 end;
 
@@ -459,6 +494,13 @@ end;
 function TDBXCommand_Firebird.GetFirebirdLibrary: IFirebirdLibrary;
 begin
   Result := (FConnection as IDBXBase_Firebird).FirebirdLibrary;
+end;
+
+function TDBXCommand_Firebird.GetParameterRows: TList;
+begin
+  if FParameterRows = nil then
+    FParameterRows := TList.Create;
+  Result := FParameterRows;
 end;
 
 function TDBXCommand_Firebird.GetRowsAffected(
