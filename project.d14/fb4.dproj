@@ -7,7 +7,7 @@
 			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
 			<DCC_DependencyCheckOutputName>..\..\..\..\output.d11\moon\dbxfb40.dll</DCC_DependencyCheckOutputName>
 			<ProjectVersion>12.0</ProjectVersion>
-			<Config Condition="'$(Config)'==''">Release</Config>
+			<Config Condition="'$(Config)'==''">Debug</Config>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
 			<Base>true</Base>
@@ -30,9 +30,10 @@
 		<Import Project="..\..\build\optset\Base.optset" Condition="'$(Base)'!='' And Exists('..\..\build\optset\Base.optset')"/>
 		<PropertyGroup Condition="'$(Base)'!=''">
 			<DllPrefixDefined>true</DllPrefixDefined>
-			<DllSuffix>0</DllSuffix>
-			<DCC_DependencyCheckOutputName>..\..\..\..\output.d12\moon\dbxufb40.dll</DCC_DependencyCheckOutputName>
-			<DllPrefix>dbxu</DllPrefix>
+			<DCC_UsePackage>vcl;rtl;vclx;vclimg;vclactnband;dbrtl;vcldb;vcldbx;bdertl;vcltouch;xmlrtl;dsnap;dsnapcon;vclib;ibxpress;adortl;IndyCore;IndySystem;IndyProtocols;inet;intrawebdb_100_140;Intraweb_100_140;VclSmp;vclie;websnap;webdsnap;inetdb;inetdbbde;inetdbxpress;soaprtl;vclribbon;dbexpress;DbxCommonDriver;DataSnapIndy10ServerTransport;DataSnapProviderClient;DbxClientDriver;DataSnapServer;DBXInterBaseDriver;DBXMySQLDriver;dbxcds;DBXFirebirdDriver;DBXSybaseASEDriver;DBXSybaseASADriver;DBXOracleDriver;DBXMSSQLDriver;DBXInformixDriver;DBXDb2Driver;dxCoreD14;cxEditorsD14;cxLibraryD14;cxExtEditorsD14;cxGridD14;cxTreeListD14;cxPageControlD14;cxVerticalGridD14;dclRBE1114;rbCIDE1114;rbIDE1114;rbRCL1114;rbBDE1114;TeeWorld814;Tee814;TeeUI814;TeePro814;TeeImage814;TeeLanguage814;TeeGL814;TeeDB814</DCC_UsePackage>
+			<DllSuffix>d14</DllSuffix>
+			<DCC_DependencyCheckOutputName>..\..\..\..\output.d14\moon\dbxfb4d14.dll</DCC_DependencyCheckOutputName>
+			<DllPrefix>dbx</DllPrefix>
 			<GenDll>true</GenDll>
 			<CfgDependentOn>..\..\build\optset\Base.optset</CfgDependentOn>
 		</PropertyGroup>
@@ -53,6 +54,7 @@
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
 			<RcCompile Include="..\..\build\rc\library.rc">
+				<ContainerId>RC</ContainerId>
 				<ContainerId>RC</ContainerId>
 				<Form>library.res</Form>
 			</RcCompile>
@@ -82,6 +84,7 @@
 			<DCCReference Include="..\..\core\source\firebird\firebird.charsets.pas"/>
 			<DCCReference Include="..\..\core\source\firebird\firebird.blr.h.pas"/>
 			<DCCReference Include="..\..\core\source\rtl\SysUtilsEx.pas"/>
+			<DCCReference Include="..\source\dbx4.firebird.dll.d14.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 				<DependentOn>..\..\build\optset\Base.optset</DependentOn>
@@ -146,8 +149,8 @@
 						<Source Name="MainSource">fb4.dpr</Source>
 					</Source>
 					<Excluded_Packages>
-						<Excluded_Packages Name="$(BDS)\bin\dcloffice2k120.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-						<Excluded_Packages Name="$(BDS)\bin\dclofficexp120.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dcloffice2k140.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclofficexp140.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
 					</Excluded_Packages>
 				</Delphi.Personality>
 			</BorlandProject>

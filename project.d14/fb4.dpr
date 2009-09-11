@@ -42,10 +42,11 @@ uses
   firebird.dsql in '..\..\core\source\firebird\firebird.dsql.pas',
   firebird.charsets in '..\..\core\source\firebird\firebird.charsets.pas',
   firebird.blr.h in '..\..\core\source\firebird\firebird.blr.h.pas',
-  SysUtilsEx in '..\..\core\source\rtl\SysUtilsEx.pas';
+  SysUtilsEx in '..\..\core\source\rtl\SysUtilsEx.pas',
+  dbx4.firebird.dll.d14 in '..\source\dbx4.firebird.dll.d14.pas';
 
-{$LIBPREFIX 'dbxu'}
-{$LIBSUFFIX '0'}
+{$LIBPREFIX 'dbx'}
+{$LIBSUFFIX 'd14'}
 
 begin
 end.
