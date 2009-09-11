@@ -384,7 +384,10 @@ begin
   if not FileExists(GetTestDataFileName) then begin
     F := TIniFile.Create(GetTestDataFileName);
     try
-      sDriver := {$if CompilerVersion<=18.5}'dbxfb40.dll'{$else}'dbxfbu40.dll'{$ifend};
+      sDriver := {$if CompilerVersion<=18.5}'dbxfb40.dll'
+                 {$elseif CompilerVersion=20}'dbxfb4d12.dll'
+                 {$else}'dbxfb4d14.dll'
+                 {$ifend};
       F.WriteString(GetDriverSectionName, 'getSQLDriverFIREBIRD', sDriver);
       F.WriteString('embedded', 'embedded_1', 'fbembed.dll');
       F.WriteString('server', 'server_1', 'localhost');
@@ -400,7 +403,10 @@ end;
 
 class function TTestSuite_DBX.GetDriverSectionName: string;
 begin
-  Result := {$ifdef Unicode}'driver.unicode'{$else}'driver'{$endif};
+  Result := {$if CompilerVersion<=18.5}'driver'
+            {$elseif CompilerVersion=20}'driver.2009'
+            {$else}'driver.2010'
+            {$ifend};
 end;
 
 class function TTestSuite_DBX.GetParams(const aHostName, aExtraParams:
@@ -921,7 +927,7 @@ var M: TStringStream;
     F: TFileStream;
     S: AnsiString;
 begin
-  F := TFileStream.Create(ExpandFileNameString('%windir%\notepad.exe'), fmOpenRead);
+  F := TFileStream.Create(ExpandFileNameString('%windir%\notepad.exe'), fmOpenRead + fmShareDenyNone);
   Param.LoadFromStream(F, ftBlob);
   F.Free;
   Execute;
@@ -1032,7 +1038,7 @@ begin
   StartExpectingException(EDatabaseError);
   {$ifend}
   {$if CompilerVersion = 20}
-  Exit;
+  Exit;   // By pass this test for Delphi 2009 as SqlExpr.SetQueryProcParams does not interpret ftDateTime
   {$ifend}
   Param.AsDateTime := Date;
   Execute;
