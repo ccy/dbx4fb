@@ -6,6 +6,7 @@ implementation
 
 uses SysUtils, FmtBcd, SqlTimSt,
      {$if CompilerVersion=18.5}WideStrUtils,{$ifend}
+     {$if CompilerVersion>=21}DBXCommonResStrs,{$ifend}
      DBXCommon, DBXPlatform, DBXDynalink,
      dbx4.firebird.driver, dbx4.firebird.connection, dbx4.firebird.command,
      dbx4.firebird.reader, dbx4.base;
