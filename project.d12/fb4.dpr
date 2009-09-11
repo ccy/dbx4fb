@@ -44,8 +44,8 @@ uses
   firebird.blr.h in '..\..\core\source\firebird\firebird.blr.h.pas',
   SysUtilsEx in '..\..\core\source\rtl\SysUtilsEx.pas';
 
-{$LIBPREFIX 'dbxu'}
-{$LIBSUFFIX '0'}
+{$LIBPREFIX 'dbx'}
+{$LIBSUFFIX 'd12'}
 
 begin
 end.

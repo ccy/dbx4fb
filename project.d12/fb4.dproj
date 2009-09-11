@@ -30,9 +30,9 @@
 		<Import Project="..\..\build\optset\Base.optset" Condition="'$(Base)'!='' And Exists('..\..\build\optset\Base.optset')"/>
 		<PropertyGroup Condition="'$(Base)'!=''">
 			<DllPrefixDefined>true</DllPrefixDefined>
-			<DllSuffix>0</DllSuffix>
-			<DCC_DependencyCheckOutputName>..\..\..\..\output.d12\moon\dbxufb40.dll</DCC_DependencyCheckOutputName>
-			<DllPrefix>dbxu</DllPrefix>
+			<DllSuffix>d12</DllSuffix>
+			<DCC_DependencyCheckOutputName>..\..\..\..\output.d12\moon\dbxfb4d12.dll</DCC_DependencyCheckOutputName>
+			<DllPrefix>dbx</DllPrefix>
 			<GenDll>true</GenDll>
 			<CfgDependentOn>..\..\build\optset\Base.optset</CfgDependentOn>
 		</PropertyGroup>
