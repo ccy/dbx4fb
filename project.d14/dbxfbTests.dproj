@@ -33,7 +33,7 @@
 			<DCC_UsePackage>vcl;rtl;dunit;DbxCommonDriver;oortl;oofirebird;DBXFirebirdDriver</DCC_UsePackage>
 			<DllPrefixDefined>true</DllPrefixDefined>
 			<RuntimeOnlyPackage>true</RuntimeOnlyPackage>
-			<DCC_DependencyCheckOutputName>..\..\..\..\output.d12\moon\dbxfbTests.exe</DCC_DependencyCheckOutputName>
+			<DCC_DependencyCheckOutputName>..\..\..\..\output.d14\moon\dbxfbTests.exe</DCC_DependencyCheckOutputName>
 			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
 			<DCC_Description>E Stream Software - RTL Patcher</DCC_Description>
 			<DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
@@ -90,7 +90,7 @@
 						<Parameters Name="UseLauncher">False</Parameters>
 						<Parameters Name="LoadAllSymbols">True</Parameters>
 						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
-						<Parameters Name="RunParams">-config %HomeDrive%%HomePath%\Project\source.d11\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\Project\output.d11\moon\drivers -test embedded_13</Parameters>
+						<Parameters Name="RunParams">-config %HomeDrive%%HomePath%\Project\source.d11\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\Project\output.d11\moon\drivers -test server_3</Parameters>
 					</Parameters>
 					<VersionInfo>
 						<VersionInfo Name="IncludeVerInfo">False</VersionInfo>
@@ -122,7 +122,10 @@
 					<Source>
 						<Source Name="MainSource">dbxfbTests.dpr</Source>
 					</Source>
-					<Excluded_Packages/>
+					<Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dcloffice2k140.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclofficexp140.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+					</Excluded_Packages>
 				</Delphi.Personality>
 			</BorlandProject>
 			<ProjectFileVersion>12</ProjectFileVersion>

@@ -6,22 +6,22 @@
 			<Projects Include="fb4.dproj">
 				<Dependencies/>
 			</Projects>
-			<Projects Include="..\..\core\project.d12\patch.rtl.dproj">
+			<Projects Include="..\..\core\project.d14\patch.rtl.dproj">
 				<Dependencies/>
 			</Projects>
-			<Projects Include="..\..\core\project.d12\patch.vcl.dproj">
+			<Projects Include="..\..\core\project.d14\patch.vcl.dproj">
 				<Dependencies/>
 			</Projects>
-			<Projects Include="..\..\core\project.d12\oortl.dproj">
+			<Projects Include="..\..\core\project.d14\oortl.dproj">
 				<Dependencies/>
 			</Projects>
-			<Projects Include="..\..\core\project.d12\oofirebird.dproj">
+			<Projects Include="..\..\core\project.d14\oofirebird.dproj">
 				<Dependencies/>
 			</Projects>
-			<Projects Include="..\..\core\project.d12\DBXCommonDriverEx.dproj">
+			<Projects Include="..\..\core\project.d14\DBXCommonDriverEx.dproj">
 				<Dependencies/>
 			</Projects>
-			<Projects Include="..\..\core\project.d12\DBXFirebirdDriver.dproj">
+			<Projects Include="..\..\core\project.d14\DBXFirebirdDriver.dproj">
 				<Dependencies/>
 			</Projects>
 			<Projects Include="dbxfbTests.dproj">
@@ -45,58 +45,58 @@
 			<MSBuild Targets="Make" Projects="fb4.dproj"/>
 		</Target>
 		<Target Name="patch_rtl">
-			<MSBuild Projects="..\..\core\project.d12\patch.rtl.dproj"/>
+			<MSBuild Projects="..\..\core\project.d14\patch.rtl.dproj"/>
 		</Target>
 		<Target Name="patch_rtl:Clean">
-			<MSBuild Targets="Clean" Projects="..\..\core\project.d12\patch.rtl.dproj"/>
+			<MSBuild Targets="Clean" Projects="..\..\core\project.d14\patch.rtl.dproj"/>
 		</Target>
 		<Target Name="patch_rtl:Make">
-			<MSBuild Targets="Make" Projects="..\..\core\project.d12\patch.rtl.dproj"/>
+			<MSBuild Targets="Make" Projects="..\..\core\project.d14\patch.rtl.dproj"/>
 		</Target>
 		<Target Name="patch_vcl">
-			<MSBuild Projects="..\..\core\project.d12\patch.vcl.dproj"/>
+			<MSBuild Projects="..\..\core\project.d14\patch.vcl.dproj"/>
 		</Target>
 		<Target Name="patch_vcl:Clean">
-			<MSBuild Targets="Clean" Projects="..\..\core\project.d12\patch.vcl.dproj"/>
+			<MSBuild Targets="Clean" Projects="..\..\core\project.d14\patch.vcl.dproj"/>
 		</Target>
 		<Target Name="patch_vcl:Make">
-			<MSBuild Targets="Make" Projects="..\..\core\project.d12\patch.vcl.dproj"/>
+			<MSBuild Targets="Make" Projects="..\..\core\project.d14\patch.vcl.dproj"/>
 		</Target>
 		<Target Name="oortl">
-			<MSBuild Projects="..\..\core\project.d12\oortl.dproj"/>
+			<MSBuild Projects="..\..\core\project.d14\oortl.dproj"/>
 		</Target>
 		<Target Name="oortl:Clean">
-			<MSBuild Targets="Clean" Projects="..\..\core\project.d12\oortl.dproj"/>
+			<MSBuild Targets="Clean" Projects="..\..\core\project.d14\oortl.dproj"/>
 		</Target>
 		<Target Name="oortl:Make">
-			<MSBuild Targets="Make" Projects="..\..\core\project.d12\oortl.dproj"/>
+			<MSBuild Targets="Make" Projects="..\..\core\project.d14\oortl.dproj"/>
 		</Target>
 		<Target Name="oofirebird">
-			<MSBuild Projects="..\..\core\project.d12\oofirebird.dproj"/>
+			<MSBuild Projects="..\..\core\project.d14\oofirebird.dproj"/>
 		</Target>
 		<Target Name="oofirebird:Clean">
-			<MSBuild Targets="Clean" Projects="..\..\core\project.d12\oofirebird.dproj"/>
+			<MSBuild Targets="Clean" Projects="..\..\core\project.d14\oofirebird.dproj"/>
 		</Target>
 		<Target Name="oofirebird:Make">
-			<MSBuild Targets="Make" Projects="..\..\core\project.d12\oofirebird.dproj"/>
+			<MSBuild Targets="Make" Projects="..\..\core\project.d14\oofirebird.dproj"/>
 		</Target>
 		<Target Name="DBXCommonDriverEx">
-			<MSBuild Projects="..\..\core\project.d12\DBXCommonDriverEx.dproj"/>
+			<MSBuild Projects="..\..\core\project.d14\DBXCommonDriverEx.dproj"/>
 		</Target>
 		<Target Name="DBXCommonDriverEx:Clean">
-			<MSBuild Targets="Clean" Projects="..\..\core\project.d12\DBXCommonDriverEx.dproj"/>
+			<MSBuild Targets="Clean" Projects="..\..\core\project.d14\DBXCommonDriverEx.dproj"/>
 		</Target>
 		<Target Name="DBXCommonDriverEx:Make">
-			<MSBuild Targets="Make" Projects="..\..\core\project.d12\DBXCommonDriverEx.dproj"/>
+			<MSBuild Targets="Make" Projects="..\..\core\project.d14\DBXCommonDriverEx.dproj"/>
 		</Target>
 		<Target Name="DBXFirebirdDriver">
-			<MSBuild Projects="..\..\core\project.d12\DBXFirebirdDriver.dproj"/>
+			<MSBuild Projects="..\..\core\project.d14\DBXFirebirdDriver.dproj"/>
 		</Target>
 		<Target Name="DBXFirebirdDriver:Clean">
-			<MSBuild Targets="Clean" Projects="..\..\core\project.d12\DBXFirebirdDriver.dproj"/>
+			<MSBuild Targets="Clean" Projects="..\..\core\project.d14\DBXFirebirdDriver.dproj"/>
 		</Target>
 		<Target Name="DBXFirebirdDriver:Make">
-			<MSBuild Targets="Make" Projects="..\..\core\project.d12\DBXFirebirdDriver.dproj"/>
+			<MSBuild Targets="Make" Projects="..\..\core\project.d14\DBXFirebirdDriver.dproj"/>
 		</Target>
 		<Target Name="dbxfbTests">
 			<MSBuild Projects="dbxfbTests.dproj"/>
