@@ -522,7 +522,6 @@ function TDBXCommand_Firebird.Prepare(const SQL: TDBXWideString; Count:
 var S, P, Q: string;
     L: IFirebird_DSQL;
     i, iInputParamCount: integer;
-    bInputParamCount: boolean;
 begin
   Assert(FDSQL = nil);
 
