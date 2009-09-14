@@ -8,7 +8,22 @@
   <body>
     <h1>dbExpress Driver for Firebird History
 </h1>
-    <p><strong>4.1.2007.18 / 4.1.2009.18 Release on&nbsp; 10 Sep 2009
+    <p><strong>4.1.2007.19 / 4.1.2009.19 / 4.1.2010.19&nbsp;Release on&nbsp;14 Sep 2009</strong>
+    </p>
+    <ol>
+      <li>
+    <div><span id="MainContentUserControl_ctl00_ShortDescriptionLabel" class="opencolor">First release of dbExpress Driver for Firebird Delphi 2010
+</span>
+    </div></li>
+      <li><span class="opencolor">The dbExpress Driver file name for Delphi 2009 has rename from "dbxufb40.dll" to "dbxfb4d12.dll"
+</span></li>
+      <li><span class="opencolor">
+    <div><span class="opencolor">Certify to access Firebird 2.1.3 18185 with dbExpress driver for Firebird
+</span>
+    </div>
+</span></li>
+    </ol>
+    <p><strong>4.1.2007.18 / 4.1.2009.18 Release on 10 Sep 2009
 </strong>
     </p>
     <ol>
@@ -18,9 +33,10 @@
     </div></li>
       <li>
     <div><span class="opencolor"></span>Fixed potential memory leak when <span id="MainContentUserControl_ctl00_ShortDescriptionLabel" class="opencolor">TDBXDynalinkCommand.CreateParameterRow is invoked.&nbsp; Previously, it require modification of DBX framework to call DBX_Close after consuming ParameterRow.&nbsp; This fix doesn't require modification of DBX framework but will keep a list of ParameterRow in TDBXCommand_Firebird instance and all ParameterRow references will set to nil after TDBXCommand_Firebird instance has closed.&nbsp; See <a href="http://qc.embarcadero.com/wc/qcmain.aspx?d=57849">QC#57849
-</a>&nbsp;for more details. 
+</a>&nbsp;for more details.
 </span>
-    
+
+
 </div>
       </li>
     </ol>
@@ -65,7 +81,7 @@
       <li>Fixed: ServerCharSet doesn't function and cause transliteration fail
 </li>
       <li>Workaound: <a href="http://tracker.firebirdsql.org/browse/CORE-2186">http://tracker.firebirdsql.org/browse/CORE-2186
-</a>&nbsp; fbintl.dll didn't unload after fbembed.dll was released 
+</a>&nbsp; fbintl.dll didn't unload after fbembed.dll was released
 </li>
       <li>3 environment variables "FIREBIRD", "FIREBIRD_MSG" and "FIREBIRD_TMP" wasn't unset properly if these variables never exist in current process.
 </li>
@@ -158,11 +174,11 @@
       <li>Firebird Driver for DBX4 Dynalink Driver
 </li>
     </ol>
-    <p><strong>3.0.0.4 Release on 
+    <p><strong>3.0.0.4 Release on
 </strong>
     </p>
     <ol>
-      <li>Fixed Access Violation when using the driver with DBX4 
+      <li>Fixed Access Violation when using the driver with DBX4
 </li>
     </ol>
     <p><strong>1.0.0.4 Release on Jul 04 2007
@@ -189,7 +205,7 @@
 </strong>
     </p>
     <ol>
-      <li>Fixed incorrect handling of isc_get_segment when reading Blob field. Did not call isc_close_blob if there is no more blob data to read (when reach isc_segstr_eof). This will cause massive memory leaking 
+      <li>Fixed incorrect handling of isc_get_segment when reading Blob field. Did not call isc_close_blob if there is no more blob data to read (when reach isc_segstr_eof). This will cause massive memory leaking
 </li>
       <li>Did not free XSQLVAR.sqlind after used.
 </li>
