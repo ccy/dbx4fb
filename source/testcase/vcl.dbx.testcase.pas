@@ -977,6 +977,14 @@ begin
   CheckEquals(Param.AsString + DupeString(' ', i), Field.AsString);
   CheckEquals(Param.AsWideString + DupeString(' ', i), Field.AsWideString);
 
+  Param.AsString := DupeString('A', Field.Size);
+  Execute;
+  CheckEquals(Length(Param.AsString), Length(Field.AsString));
+
+  Param.AsWideString := DupeString('A', Field.Size);
+  Execute;
+  CheckEquals(Length(Param.AsWideString), Length(Field.AsWideString));
+
   Test_Required;
 end;
 
@@ -1010,6 +1018,14 @@ begin
   Param.AsWideString := DupeString(#$540C, 100);
   Execute;
   CheckEquals(Param.AsWideString, Field.AsWideString);
+
+  Param.AsString := DupeString('A', Field.Size);
+  Execute;
+  CheckEquals(Length(Param.AsString), Length(Field.AsString));
+
+  Param.AsWideString := DupeString('A', Field.Size);
+  Execute;
+  CheckEquals(Length(Param.AsWideString), Length(Field.AsWideString));
 
   Test_Required;
 end;
@@ -1560,6 +1576,14 @@ begin
   CheckEquals(Param.AsString, Field.AsString);
   CheckEquals(Param.AsWideString, Field.AsWideString);
 
+  Param.AsString := DupeString('A', F.Size);
+  Execute;
+  CheckEquals(Length(Param.AsString), Length(Field.AsString));
+
+  Param.AsWideString := DupeString('A', F.Size);
+  Execute;
+  CheckEquals(Length(Param.AsWideString), Length(Field.AsWideString));
+
   Test_Required;
 end;
 
@@ -1567,7 +1591,7 @@ procedure TTestCase_DBX_FieldType.Test_VARCHAR_UTF8;
 var F: TStringField;
 begin
   if Pos('Firebird 1.', GetTestData.ServerVersion) <> 0 then Exit;
-  
+
   Param.AsWideString := 'One World One Dream ' +
                         #$540C + #$4E00 + #$4E2A + #$4E16 + #$754C + ' ' +
                         #$540C + #$4E00 + #$4E2A + #$68A6 + #$60F3;
@@ -1580,6 +1604,14 @@ begin
   CheckEquals(100, F.Size);
 
   CheckEquals(Param.AsWideString, Field.AsWideString);
+
+  Param.AsString := DupeString('A', F.Size);
+  Execute;
+  CheckEquals(Length(Param.AsString), Length(Field.AsString));
+
+  Param.AsWideString := DupeString('A', F.Size);
+  Execute;
+  CheckEquals(Length(Param.AsWideString), Length(Field.AsWideString));
 
   Test_Required;
 end;
