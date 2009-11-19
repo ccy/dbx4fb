@@ -55,7 +55,8 @@ implementation
 
 uses SysUtils, StrUtils, FMTBcd, SqlTimSt, WideStrings,
      firebird.charsets, dbx4.firebird.row, dbx4.firebird.metadata,
-     firebird.sqlda_pub.h, firebird.blr.h, firebird.consts_pub.h;
+     firebird.sqlda_pub.h, firebird.blr.h, firebird.consts_pub.h,
+     firebird.iberror.h;
 
 constructor TMetaDataProvider_Firebird.Create(const aSQLDA: TXSQLDA);
 begin
@@ -228,11 +229,16 @@ end;
 
 function TDBXCommand_Firebird.Close: TDBXErrorCode;
 var i: integer;
+    e: longint;
     o: TDBXRowHandle;
 begin
   if Assigned(FDSQL) then begin
     FDSQL.Close(StatusVector);
-    if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
+    if StatusVector.CheckFirebirdError(e) then begin
+      if e <> isc_network_error then
+        if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then
+          Exit;
+    end;
   end;
   for i := 0 to GetParameterRows.Count - 1 do begin
     o := GetParameterRows[i];
