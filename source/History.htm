@@ -8,7 +8,25 @@
   <body>
     <h1>dbExpress Driver for Firebird History
 </h1>
-    <p><strong>4.1.2007.19 / 4.1.2009.19 / 4.1.2010.19&nbsp;Release on&nbsp;14 Sep 2009</strong>
+    <p><strong>4.1.2007.21 / 4.1.2009.21 / 4.1.2010.21&nbsp;Release on&nbsp;19 Nov 2009</strong>
+    </p>
+    <ol>
+      <li>
+    <div><span id="MainContentUserControl_ctl00_ShortDescriptionLabel" class="opencolor">Memory leak occurs when Firebird connection is lost.
+</span>
+    </div></li>
+    </ol>
+    <p><strong>4.1.2007.20 / 4.1.2009.20 / 4.1.2010.20&nbsp;Release on&nbsp;30 Sep 2009
+</strong>
+    </p>
+    <ol>
+      <li>
+    <div><span id="MainContentUserControl_ctl00_ShortDescriptionLabel" class="opencolor">Fix a bug where fill in a full length of WideString data to char or varchar field may cause last character missing
+</span>
+    </div></li>
+    </ol>
+    <p><strong>4.1.2007.19 / 4.1.2009.19 / 4.1.2010.19&nbsp;Release on&nbsp;14 Sep 2009
+</strong>
     </p>
     <ol>
       <li>
@@ -35,6 +53,8 @@
     <div><span class="opencolor"></span>Fixed potential memory leak when <span id="MainContentUserControl_ctl00_ShortDescriptionLabel" class="opencolor">TDBXDynalinkCommand.CreateParameterRow is invoked.&nbsp; Previously, it require modification of DBX framework to call DBX_Close after consuming ParameterRow.&nbsp; This fix doesn't require modification of DBX framework but will keep a list of ParameterRow in TDBXCommand_Firebird instance and all ParameterRow references will set to nil after TDBXCommand_Firebird instance has closed.&nbsp; See <a href="http://qc.embarcadero.com/wc/qcmain.aspx?d=57849">QC#57849
 </a>&nbsp;for more details.
 </span>
+
+
 
 
 </div>
