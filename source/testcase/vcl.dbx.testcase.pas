@@ -203,6 +203,7 @@ type{$M+}
     procedure Test_Repeated_Open;
     procedure Test_Master_Detail;
     procedure Test_Self_Manage_Transaction;
+    procedure Test_MalformString;
   end;
 
   TTestCase_DBX_Server_Embed = class(TTestCase, ITestCase_DBX2)
@@ -1898,7 +1899,8 @@ begin
   end;
 
   S := 'CREATE TABLE T_DATASET( ' +
-       '   FIELD VARCHAR(100)' +
+       '   FIELD VARCHAR(100), ' +
+       '   F_VARCHAR_UTF8 VARCHAR(100) CHARACTER SET UTF8 ' +
        ')';
   FConnection.ExecuteDirect(S);
 
@@ -1922,6 +1924,17 @@ begin
   inherited;
 end;
 
+procedure TTestCase_DBX_DataSnap.Test_MalformString;
+begin
+  FCDS.SetProvider(FDSP);
+  FCDS.Open;
+  FCDS.AppendRecord(['A', 'A']);
+  CheckEquals(0, FCDS.ApplyUpdates(0));
+
+  FCDS.AppendRecord(['B', '']);
+  CheckEquals(0, FCDS.ApplyUpdates(0));
+end;
+
 procedure TTestCase_DBX_DataSnap.Test_Master_Detail;
 var S: string;
     D: TSQLDataSet;
@@ -1933,7 +1946,7 @@ begin
        ')';
   FConnection.ExecuteDirect(S);
 
-  S := 'INSERT INTO T_DATASET VALUES(''ABC'')';
+  S := 'INSERT INTO T_DATASET VALUES(''ABC'', ''UTF8'')';
   FConnection.ExecuteDirect(S);
 
   try
