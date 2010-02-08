@@ -114,6 +114,7 @@ type{$M+}
     procedure Test_RecordCount;
     procedure Test_GetIndexNames;
     procedure Test_ServerCharSet;
+    procedure Test_Decimal_18_8_Deduction;
   end;
 
   TTestCase_DBX_Transaction = class(TTestCase_DBX)
@@ -608,6 +609,33 @@ procedure TTestCase_DBX_General.Test_Connection_Property;
 begin
   CheckTrue(FConnection.TransactionsSupported);
   CheckTrue(FConnection.MultipleTransactionsSupported);
+end;
+
+procedure TTestCase_DBX_General.Test_Decimal_18_8_Deduction;
+var s: string;
+    D: TSQLDataSet;
+begin
+  S := 'CREATE TABLE T_TRANS ' +
+       '( ' +
+       '  C1 DECIMAL(18, 8), ' +
+       '  C2 DECIMAL(18, 8) ' +
+       ')';
+  FConnection.ExecuteDirect(S);
+  try
+    S := 'INSERT INTO T_TRANS VALUES(16, 1)';
+    FConnection.ExecuteDirect(S);
+
+    FConnection.Execute('SELECT C1, C2, C1 - C2 AS Balance FROM T_TRANS', nil, @D);
+    try
+      CheckEquals('16', D.FindField('C1').AsString);
+      CheckEquals('1',  D.FindField('C2').AsString);
+      CheckEquals('15', D.FindField('Balance').AsString);
+    finally
+      D.Free;
+    end;
+  finally
+    FConnection.ExecuteDirect('DROP TABLE T_TRANS');
+  end;
 end;
 
 procedure TTestCase_DBX_General.Test_Execute;
