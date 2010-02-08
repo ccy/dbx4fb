@@ -113,7 +113,7 @@ begin
     Result := V.sqllen;
     if V.CheckCharSet(CS_UTF8) then
       Result := V.sqllen div 4;
-  end else if V.CheckType(SQL_INT64) {$if CompilerVersion > 18.5} and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) {$ifend} then
+  end else if V.CheckType(SQL_INT64) then //{$if CompilerVersion > 18.5} and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) {$ifend} then
     Result := 19
   else if V.CheckType(SQL_LONG) and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) then
     Result := 9
