@@ -43,6 +43,7 @@ type
     function Connect(Count: TInt32; Names, Values: TWideStringArray): TDBXErrorCode;
     function GetDBHandle: pisc_db_handle;
     function GetFirebirdLibrary: IFirebirdLibrary; override;
+    function GetServerCharSet: WideString;
     function GetSQLDialect: integer;
     function GetTransactionPool: TFirebirdTransactionPool;
     function GetTrimChar: Boolean;
@@ -183,6 +184,11 @@ end;
 function TDBXConnection_Firebird.GetFirebirdLibrary: IFirebirdLibrary;
 begin
   Result := FFirebirdLibrary;
+end;
+
+function TDBXConnection_Firebird.GetServerCharSet: WideString;
+begin
+  Result := FServerCharSet;
 end;
 
 function TDBXConnection_Firebird.GetSQLDialect: integer;
