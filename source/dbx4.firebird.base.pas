@@ -20,10 +20,12 @@ type
   IDBXConnection_Firebird = interface(IDBXConnection)
   ['{0C0D900F-FA0A-4C70-BE03-2E7BF5CA8FB3}']
     function GetDBHandle: pisc_db_handle;
+    function GetServerCharSet: WideString;
     function GetSQLDialect: integer;
     function GetTransactionPool: TFirebirdTransactionPool;
     function GetTrimChar: Boolean;
     property DBHandle: pisc_db_handle read GetDBHandle;
+    property ServerCharSet: WideString read GetServerCharSet;
     property SQLDialect: integer read GetSQLDialect;
     property TransactionPool: TFirebirdTransactionPool read GetTransactionPool;
     property TrimChar: Boolean read GetTrimChar;
