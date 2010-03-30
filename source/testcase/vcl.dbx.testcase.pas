@@ -115,6 +115,7 @@ type{$M+}
     procedure Test_GetIndexNames;
     procedure Test_ServerCharSet;
     procedure Test_Decimal_18_8_Deduction;
+    procedure Test_Unicode_SQL;
   end;
 
   TTestCase_DBX_Transaction = class(TTestCase_DBX)
@@ -260,6 +261,7 @@ type{$M+}
   published
     procedure Test_BigInt;
     procedure Test_Char;
+    procedure Test_Char_UTF8;
     procedure Test_Date;
     procedure Test_Decimal_18;
     procedure Test_Decimal_4;
@@ -274,6 +276,7 @@ type{$M+}
     procedure Test_Time;
     procedure Test_TimeStamp;
     procedure Test_VarChar;
+    procedure Test_VarChar_UTF8;
   end;
 
 implementation
@@ -519,6 +522,37 @@ begin
   FConnection.Close;
   FreeAndNil(FConnection);
   FreeAndNil(FSQLMonitor);
+end;
+
+procedure TTestCase_DBX_General.Test_Unicode_SQL;
+var s: string;
+    D: TSQLDataSet;
+    sValue: string;
+begin
+  if (Pos('Firebird 1.', GetTestData.ServerVersion) <> 0) or (Pos('Firebird 2.0', GetTestData.ServerVersion) <> 0) then Exit;
+
+  S := 'CREATE TABLE T_INSERT_UTF8 ' +
+       '( ' +
+       '  F1 VARCHAR(100) CHARACTER SET UTF8 ' +
+       ')';
+  FConnection.ExecuteDirect(S);
+  try
+    sValue := 'One World One Dream ' +
+              #$540C + #$4E00 + #$4E2A + #$4E16 + #$754C + ' ' +
+              #$540C + #$4E00 + #$4E2A + #$68A6 + #$60F3;
+
+    S := Format('INSERT INTO T_INSERT_UTF8 VALUES(''%s'')', [sValue]);
+    FConnection.ExecuteDirect(S);
+
+    FConnection.Execute('SELECT * FROM T_INSERT_UTF8', nil, @D);
+    try
+      CheckEquals(sValue, D.Fields[0].AsString);
+    finally
+      D.Free;
+    end;
+  finally
+    FConnection.ExecuteDirect('DROP TABLE T_INSERT_UTF8');
+  end;
 end;
 
 procedure TTestCase_DBX_General.Test_CAST_SQL_DECIMAL_Bug;
@@ -2469,7 +2503,7 @@ begin
 
   Check(FStoredProc.Params[0].DataType = FStoredProc.Params[1].DataType);
 
-  FStoredProc.Params[0].Value := aImpl;
+  FStoredProc.Params[0].AsWideString := aImpl;
   Result := FStoredProc.ExecProc;
 end;
 
@@ -2548,6 +2582,20 @@ begin
     iLen := 100;
   CheckEquals(iLen, Length(FStoredProc.Params[1].AsString));
   CheckEquals('ABC', Trim(FStoredProc.Params[1].AsString));
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Char_UTF8;
+var s: string;
+begin
+  if (Pos('Firebird 1.', GetTestData.ServerVersion) <> 0) or (Pos('Firebird 2.0', GetTestData.ServerVersion) <> 0) then Exit;
+
+  s := 'One World One Dream ' +
+       #$540C + #$4E00 + #$4E2A + #$4E16 + #$754C + ' ' +
+       #$540C + #$4E00 + #$4E2A + #$68A6 + #$60F3;
+
+  CheckEquals(0, CreateProc('CHAR(100) CHARACTER SET UTF8', s));
+  Check(ftWideString = FStoredProc.Params[1].DataType);
+  CheckEquals(s, FStoredProc.Params[1].AsString);
 end;
 
 procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Date;
@@ -2657,6 +2705,20 @@ begin
   CheckEquals(0, CreateProc('VARCHAR(100)', 'ABC'));
   Check(ftString = FStoredProc.Params[1].DataType);
   CheckEquals('ABC', FStoredProc.Params[1].AsString);
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_VarChar_UTF8;
+var s: string;
+begin
+  if (Pos('Firebird 1.', GetTestData.ServerVersion) <> 0) or (Pos('Firebird 2.0', GetTestData.ServerVersion) <> 0) then Exit;
+
+  s := 'One World One Dream ' +
+       #$540C + #$4E00 + #$4E2A + #$4E16 + #$754C + ' ' +
+       #$540C + #$4E00 + #$4E2A + #$68A6 + #$60F3;
+
+  CheckEquals(0, CreateProc('VARCHAR(100) CHARACTER SET UTF8', s));
+  Check(ftWideString = FStoredProc.Params[1].DataType);
+  CheckEquals(s, FStoredProc.Params[1].AsString);
 end;
 
 initialization
