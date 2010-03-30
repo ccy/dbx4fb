@@ -2586,7 +2586,10 @@ end;
 
 procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Char_UTF8;
 var s: string;
+    iLen: integer;
 begin
+  {$ifndef Unicode} Exit; {$endif}
+
   if (Pos('Firebird 1.', GetTestData.ServerVersion) <> 0) or (Pos('Firebird 2.0', GetTestData.ServerVersion) <> 0) then Exit;
 
   s := 'One World One Dream ' +
@@ -2595,7 +2598,14 @@ begin
 
   CheckEquals(0, CreateProc('CHAR(100) CHARACTER SET UTF8', s));
   Check(ftWideString = FStoredProc.Params[1].DataType);
-  CheckEquals(s, FStoredProc.Params[1].AsString);
+
+  if IsTrimChar then
+    iLen := 31
+  else
+    iLen := 100;
+
+  CheckEquals(iLen, Length(FStoredProc.Params[1].AsString));
+  CheckEquals(s, Trim(FStoredProc.Params[1].AsString));
 end;
 
 procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Date;
@@ -2710,6 +2720,8 @@ end;
 procedure TTestCase_DBX_TSQLStoredProc_Params.Test_VarChar_UTF8;
 var s: string;
 begin
+  {$ifndef Unicode} Exit; {$endif}
+  
   if (Pos('Firebird 1.', GetTestData.ServerVersion) <> 0) or (Pos('Firebird 2.0', GetTestData.ServerVersion) <> 0) then Exit;
 
   s := 'One World One Dream ' +
