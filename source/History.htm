@@ -8,7 +8,30 @@
   <body>
     <h1>dbExpress Driver for Firebird History
 </h1>
-    <p><strong>4.1.2007.22 / 4.1.2009.22 / 4.1.2010.22&nbsp;Release on&nbsp;25&nbsp;Jan 2010</strong>
+    <p><strong>4.1.2007.24 / 4.1.2009.24 / 4.1.2010.24&nbsp;Release on&nbsp;30&nbsp;Mar 2010
+</strong>
+    </p>
+    <ol>
+      <li>
+    <div><span id="MainContentUserControl_ctl00_ShortDescriptionLabel" class="opencolor">Fixed unable to accept SQL statement contain UTF8 characters
+</span>
+    </div></li>
+      <li>
+    <div><span class="opencolor">Fixed unable to accept stored procedure contain UTF8 string parameter
+</span>
+    </div></li>
+    </ol>
+    <p><strong>4.1.2007.23 / 4.1.2009.23 / 4.1.2010.23&nbsp;Release on&nbsp;08&nbsp;Feb 2010
+</strong>
+    </p>
+    <ol>
+      <li>
+    <div><span id="MainContentUserControl_ctl00_ShortDescriptionLabel" class="opencolor">Column Precision&nbsp;of FmtBcd field may return a value if a column is a calculated expression (e.g. SELECT C1-C2 FROM TABLE)
+</span>
+    </div></li>
+    </ol>
+    <p><strong>4.1.2007.22 / 4.1.2009.22 / 4.1.2010.22&nbsp;Release on&nbsp;25&nbsp;Jan 2010
+</strong>
     </p>
     <ol>
       <li>
@@ -16,7 +39,8 @@
 </span>
     </div></li>
     </ol>
-    <p><strong>4.1.2007.21 / 4.1.2009.21 / 4.1.2010.21&nbsp;Release on&nbsp;19 Nov 2009</strong>
+    <p><strong>4.1.2007.21 / 4.1.2009.21 / 4.1.2010.21&nbsp;Release on&nbsp;19 Nov 2009
+</strong>
     </p>
     <ol>
       <li>
@@ -61,6 +85,9 @@
     <div><span class="opencolor"></span>Fixed potential memory leak when <span id="MainContentUserControl_ctl00_ShortDescriptionLabel" class="opencolor">TDBXDynalinkCommand.CreateParameterRow is invoked.&nbsp; Previously, it require modification of DBX framework to call DBX_Close after consuming ParameterRow.&nbsp; This fix doesn't require modification of DBX framework but will keep a list of ParameterRow in TDBXCommand_Firebird instance and all ParameterRow references will set to nil after TDBXCommand_Firebird instance has closed.&nbsp; See <a href="http://qc.embarcadero.com/wc/qcmain.aspx?d=57849">QC#57849
 </a>&nbsp;for more details.
 </span>
+
+
+
 
 
 

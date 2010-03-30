@@ -7,7 +7,7 @@
 			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
 			<DCC_DependencyCheckOutputName>..\..\..\..\output.d11\moon\dbxfb40.dll</DCC_DependencyCheckOutputName>
 			<ProjectVersion>12.0</ProjectVersion>
-			<Config Condition="'$(Config)'==''">Debug</Config>
+			<Config Condition="'$(Config)'==''">Release</Config>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
 			<Base>true</Base>
@@ -116,7 +116,7 @@
 						<Parameters Name="LoadAllSymbols">True</Parameters>
 						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
 						<Parameters Name="HostApplication">$(ActiveHostApplication)</Parameters>
-						<Parameters Name="RunParams">G:\Users\coder\Documents\Project\output.d11\moon\dbxfbTests.ini</Parameters>
+						<Parameters Name="RunParams">-config %HomeDrive%%HomePath%\Project\source.d11\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\Project\output.d11\moon\drivers -test embedded_15</Parameters>
 					</Parameters>
 					<VersionInfo>
 						<VersionInfo Name="IncludeVerInfo">False</VersionInfo>
