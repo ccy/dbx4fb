@@ -31,6 +31,7 @@ type
     FConnection: IDBXConnection;
     FDBHandle: pisc_db_handle;
     FDSQL: IFirebird_DSQL;
+    FServerCharSet: WideString;
     FSQLDialect: integer;
     FTransactionPool: TFirebirdTransactionPool;
     FTrimChar: Boolean;
@@ -218,6 +219,7 @@ begin
     FTransactionPool := TransactionPool;
     FDBHandle := DBHandle;
     FTrimChar := TrimChar;
+    FServerCharSet := ServerCharSet;
   end;
 end;
 
@@ -435,8 +437,11 @@ begin
                 'END PARAM_TYPE ' +
               ', A.RDB$PARAMETER_NAME PARAM_NAME ' +
               ', CASE ' +
+                    Format('WHEN B.RDB$FIELD_TYPE=%d AND (B.RDB$CHARACTER_SET_ID=%d OR B.RDB$CHARACTER_SET_ID=%d) THEN %d ', [blr_varying, CS_UTF8, CS_UNICODE_FSS, TDBXDataTypes.WideStringType]) +
+                    Format('WHEN B.RDB$FIELD_TYPE=%d AND (B.RDB$CHARACTER_SET_ID=%d OR B.RDB$CHARACTER_SET_ID=%d) THEN %d ', [blr_text, CS_UTF8, CS_UNICODE_FSS, TDBXDataTypes.WideStringType]) +
                     Format('WHEN B.RDB$FIELD_TYPE=%d THEN %d ', [blr_varying,   TDBXDataTypes.AnsiStringType]) +
                     Format('WHEN B.RDB$FIELD_TYPE=%d THEN %d ', [blr_text,      TDBXDataTypes.AnsiStringType]) +
+
                     Format('WHEN B.RDB$FIELD_TYPE=%d THEN %d ', [blr_float,     TDBXDataTypes.DoubleType]) +
                     Format('WHEN B.RDB$FIELD_TYPE=%d THEN %d ', [blr_double,    TDBXDataTypes.DoubleType]) +
                     Format('WHEN B.RDB$FIELD_TYPE=%d THEN %d ', [blr_sql_date,  TDBXDataTypes.DateType]) +
@@ -531,7 +536,7 @@ var S, P, Q: string;
 begin
   Assert(FDSQL = nil);
 
-  FDSQL := TFirebird_DSQL.Create(GetFirebirdLibrary, FTransactionPool, FCommandType = TDBXCommandTypes.DbxStoredProcedure);
+  FDSQL := TFirebird_DSQL.Create(GetFirebirdLibrary, FTransactionPool, FServerCharSet, FCommandType = TDBXCommandTypes.DbxStoredProcedure);
 
   FDSQL.Open(StatusVector, FDBHandle, FTransactionPool.CurrentTransaction);
   if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
