@@ -8,6 +8,15 @@
   <body>
     <h1>dbExpress Driver for Firebird History
 </h1>
+    <p><strong>4.1.2007.25 / 4.1.2009.25 / 4.1.2010.25&nbsp;Release on&nbsp;16 Jun 2010</strong>
+    </p>
+    <ol>
+      <li>
+    <div><span id="MainContentUserControl_ctl00_ShortDescriptionLabel" class="opencolor"><span class="opencolor">Add data type coercion for bytes array to CHAR and VARCHAR column
+</span>
+</span>
+    </div></li>
+    </ol>
     <p><strong>4.1.2007.24 / 4.1.2009.24 / 4.1.2010.24&nbsp;Release on&nbsp;30&nbsp;Mar 2010
 </strong>
     </p>
@@ -85,6 +94,7 @@
     <div><span class="opencolor"></span>Fixed potential memory leak when <span id="MainContentUserControl_ctl00_ShortDescriptionLabel" class="opencolor">TDBXDynalinkCommand.CreateParameterRow is invoked.&nbsp; Previously, it require modification of DBX framework to call DBX_Close after consuming ParameterRow.&nbsp; This fix doesn't require modification of DBX framework but will keep a list of ParameterRow in TDBXCommand_Firebird instance and all ParameterRow references will set to nil after TDBXCommand_Firebird instance has closed.&nbsp; See <a href="http://qc.embarcadero.com/wc/qcmain.aspx?d=57849">QC#57849
 </a>&nbsp;for more details.
 </span>
+
 
 
 
