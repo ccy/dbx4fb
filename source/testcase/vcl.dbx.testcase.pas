@@ -529,6 +529,7 @@ var s: string;
     D: TSQLDataSet;
     sValue: string;
 begin
+  {$ifndef Unicode}Exit;{$endif}
   if (Pos('Firebird 1.', GetTestData.ServerVersion) <> 0) or (Pos('Firebird 2.0', GetTestData.ServerVersion) <> 0) then Exit;
 
   S := 'CREATE TABLE T_INSERT_UTF8 ' +
@@ -598,9 +599,10 @@ begin
 end;
 
 procedure TTestCase_DBX_General.Test_ServerCharSet;
-var S: string;
+var S: widestring;
     D: TSQLDataSet;
 begin
+  {$ifndef Unicode}Exit;{$endif}
   FConnection.Close;
   FConnection.Params.Values[SQLSERVER_CHARSET_KEY] := 'WIN1252';
   FConnection.Open;
@@ -1047,6 +1049,15 @@ begin
   Param.AsWideString := DupeString('A', Field.Size);
   Execute;
   CheckEquals(Length(Param.AsWideString), Length(Field.AsWideString));
+
+  {$if CompilerVersion > 18.5}
+  Param.AsBytes := TBytes.Create($30, $31, $32, $33, $34, $35, $36, $37, $38, $39);
+  Execute;
+  i := 0;
+  if not IsTrimChar then
+    i := Field.Size - Length(Param.AsBytes);
+  CheckEquals('0123456789' + DupeString(' ', i), Field.AsString);
+  {$ifend}
 
   Test_Required;
 end;
@@ -1646,6 +1657,12 @@ begin
   Param.AsWideString := DupeString('A', F.Size);
   Execute;
   CheckEquals(Length(Param.AsWideString), Length(Field.AsWideString));
+
+  {$if CompilerVersion > 18.5}
+  Param.AsBytes := TBytes.Create($30, $31, $32, $33, $34, $35, $36, $37, $38, $39);
+  Execute;
+  CheckEquals('0123456789', Field.AsString);
+  {$ifend}
 
   Test_Required;
 end;
