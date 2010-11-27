@@ -9,7 +9,7 @@ uses SysUtils, Classes, DB, SqlExpr, Provider, DBClient, FMTBcd,
      ;
 
 type{$M+}
-  EDBXError = {$if CompilerVersion<=18}EDatabaseError{$else}TDBXError{$ifend};
+  EDBXError = {$if CompilerVersion<=21}TDBXError{$elseif CompilerVersion=22}EAccessViolation{$ifend};
 
   ITestData = interface(IInterface)
   ['{2DCC2E1F-BCE2-4D04-A61E-03DBFC031D0E}']
@@ -391,7 +391,8 @@ begin
     try
       sDriver := {$if CompilerVersion<=18.5}'dbxfb40.dll'
                  {$elseif CompilerVersion=20}'dbxfb4d12.dll'
-                 {$else}'dbxfb4d14.dll'
+                 {$elseif CompilerVersion=21}'dbxfb4d14.dll'
+                 {$else}'dbxfb4d15.dll'
                  {$ifend};
       F.WriteString(GetDriverSectionName, 'getSQLDriverFIREBIRD', sDriver);
       F.WriteString('embedded', 'embedded_1', 'fbembed.dll');
@@ -410,7 +411,8 @@ class function TTestSuite_DBX.GetDriverSectionName: string;
 begin
   Result := {$if CompilerVersion<=18.5}'driver'
             {$elseif CompilerVersion=20}'driver.2009'
-            {$else}'driver.2010'
+            {$elseif CompilerVersion=21}'driver.2010'
+            {$else}'driver.xe'
             {$ifend};
 end;
 
@@ -766,18 +768,32 @@ end;
 
 procedure TTestCase_DBX_General.Test_GetTableNames;
 var L: TStringList;
-    iSystem: integer;
 begin
+  FConnection.ExecuteDirect('CREATE VIEW TEST AS SELECT * FROM RDB$Relations');
+
   L := TStringList.Create;
   try
-    FConnection.GetTableNames(L, True);
-    iSystem := L.Count;
-    CheckTrue(iSystem > 10);
+    FConnection.TableScope := [tsSysTable, tsTable, tsView];
+    FConnection.GetTableNames(L);
+    CheckNotEquals(-1, L.IndexOf('TEST'));
+    CheckTrue(L.Count > 10);
 
+    FConnection.TableScope := [tsSysTable, tsTable];
+    FConnection.GetTableNames(L);
+    CheckEquals(-1, L.IndexOf('TEST'));
+    CheckTrue(L.Count > 10);
+
+    FConnection.TableScope := [tsTable];
+    FConnection.GetTableNames(L);
+    CheckEquals(-1, L.IndexOf('TEST'));
+    CheckTrue(L.Count >= 0);
+
+    FConnection.TableScope := [tsView];
     FConnection.GetTableNames(L, False);
-    CheckTrue(iSystem >= 0);
+    CheckNotEquals(-1, L.IndexOf('TEST'));
   finally
     L.Free;
+    FConnection.ExecuteDirect('DROP VIEW TEST');
   end;
 end;
 
@@ -786,7 +802,7 @@ begin
   FConnection.Close;
   FConnection.Params.Values[szUSERNAME] := 'no.such.user';
   if FConnection.Params.IndexOfName(HOSTNAME_KEY) <> -1 then
-    StartExpectingException(EDBXError);
+    StartExpectingException(TDBXError);
   FConnection.Open;
 end;
 
@@ -1578,7 +1594,7 @@ end;
 procedure TTestCase_DBX_FieldType.Test_Required;
 begin
   CheckEquals(FRequired, Field.Required);
-  if FRequired then StartExpectingException(EDBXError);
+  if FRequired then StartExpectingException(TDBXError);
   Param.Clear;
   Execute;
   CheckTrue(Field.IsNull);
@@ -1796,7 +1812,7 @@ begin
 
   T2.TransactionID := 1;
   T2.IsolationLevel := xilREADCOMMITTED;
-  StartExpectingException(EDBXError);
+  StartExpectingException(TDBXError);
   FConnection.StartTransaction(T2);
   {$ifend}
 end;
@@ -1825,7 +1841,7 @@ end;
 procedure TTestCase_DBX_Transaction.Test_Transaction_1;
 var T: TDBXTransaction;
 begin
-  Self.StartExpectingException(EDBXError);
+  Self.StartExpectingException(TDBXError);
   try
     T := FConnection.BeginTransaction;
     try
@@ -2237,7 +2253,7 @@ begin
         sVer1 := GetServerVersion(F.ReadString('vendor', 'default', ''), sParams1);
 
         for k := 0 to sEmbeds.Count - 1 do begin
-          if TCmdLineParams_App.HasTestName and (TCmdLineParams_App.GetTestName <> sEmbeds.Names[j]) then Continue;
+          if TCmdLineParams_App.HasTestName and (TCmdLineParams_App.GetTestName <> sEmbeds.Names[k]) then Continue;
           
           L := TInterfaceList.Create;
 
