@@ -58,8 +58,10 @@ var i: integer;
 begin
   inherited Create;
   for i := 0 to Count - 1 do begin
-    if Names[i] = TDBXPropertyNames.VendorLib then
+    if Names[i] = TDBXPropertyNames.VendorLib then begin
       FVendorLib := Values[i];
+      Break;
+    end;
   end;
   LoadDriver;
 end;
