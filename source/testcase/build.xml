@@ -27,9 +27,10 @@
 		<echo message="1. DBX 4 Firebird driver for Delphi 2007" />
 		<echo message="2. DBX 4 Firebird driver for Delphi 2009" />
 		<echo message="3. DBX 4 Firebird driver for Delphi 2010" />
+		<echo message="4. DBX 4 Firebird driver for Delphi XE" />
 		<echo message="9. Exit" />
 		<echo />
-		<input message="Please choose option to ant:" validargs="1,2,3,9" addproperty="p.option" defaultvalue="1" />
+		<input message="Please choose option to ant:" validargs="1,2,3,4,9" addproperty="p.option" defaultvalue="1" />
 
 		<antcall target="t.execute"/>
 	</target>
@@ -63,6 +64,10 @@
 
 		<condition property="p.tag.program" value="d14">
 			<equals arg1="${p.option}" arg2="3" />
+		</condition>
+
+		<condition property="p.tag.program" value="d15">
+			<equals arg1="${p.option}" arg2="4" />
 		</condition>
 
 		<condition property="p.option.exit">
