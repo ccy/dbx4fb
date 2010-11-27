@@ -30,26 +30,26 @@
 			<CfgParent>Base</CfgParent>
 			<Base>true</Base>
 		</PropertyGroup>
-		<Import Project="..\..\build\optset\Base.optset" Condition="'$(Base)'!='' And Exists('..\..\build\optset\Base.optset')"/>
+		<Import Condition="'$(Base)'!='' And Exists('..\..\build\optset\Base.optset')" Project="..\..\build\optset\Base.optset"/>
 		<PropertyGroup Condition="'$(Base)'!=''">
 			<DllPrefixDefined>true</DllPrefixDefined>
 			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
 			<DCC_UsePackage>vcl;rtl;vclx;vclimg;vclactnband;dbrtl;vcldb;vcldbx;bdertl;vcltouch;xmlrtl;dsnap;dsnapcon;vclib;ibxpress;adortl;IndyCore;IndySystem;IndyProtocols;inet;intrawebdb_100_140;Intraweb_100_140;VclSmp;vclie;websnap;webdsnap;inetdb;inetdbbde;inetdbxpress;soaprtl;vclribbon;dbexpress;DbxCommonDriver;DataSnapIndy10ServerTransport;DataSnapProviderClient;DbxClientDriver;DataSnapServer;DBXInterBaseDriver;DBXMySQLDriver;dbxcds;DBXFirebirdDriver;DBXSybaseASEDriver;DBXSybaseASADriver;DBXOracleDriver;DBXMSSQLDriver;DBXInformixDriver;DBXDb2Driver;dxCoreD14;cxEditorsD14;cxLibraryD14;cxExtEditorsD14;cxGridD14;cxTreeListD14;cxPageControlD14;cxVerticalGridD14;dclRBE1114;rbCIDE1114;rbIDE1114;rbRCL1114;rbBDE1114;TeeWorld814;Tee814;TeeUI814;TeePro814;TeeImage814;TeeLanguage814;TeeGL814;TeeDB814</DCC_UsePackage>
-			<DllSuffix>d14</DllSuffix>
+			<DllSuffix>d15</DllSuffix>
 			<DCC_DependencyCheckOutputName>..\..\..\..\output.d14\moon\dbxfb4d14.dll</DCC_DependencyCheckOutputName>
 			<DllPrefix>dbx</DllPrefix>
 			<GenDll>true</GenDll>
 			<CfgDependentOn>..\..\build\optset\Base.optset</CfgDependentOn>
 		</PropertyGroup>
-		<Import Project="..\..\build\optset\Debug.optset" Condition="'$(Cfg_1)'!='' And Exists('..\..\build\optset\Debug.optset')"/>
+		<Import Condition="'$(Cfg_1)'!='' And Exists('..\..\build\optset\Debug.optset')" Project="..\..\build\optset\Debug.optset"/>
 		<PropertyGroup Condition="'$(Cfg_1)'!=''">
 			<CfgDependentOn>..\..\build\optset\Debug.optset</CfgDependentOn>
 		</PropertyGroup>
-		<Import Project="..\..\build\optset\Release.optset" Condition="'$(Cfg_2)'!='' And Exists('..\..\build\optset\Release.optset')"/>
+		<Import Condition="'$(Cfg_2)'!='' And Exists('..\..\build\optset\Release.optset')" Project="..\..\build\optset\Release.optset"/>
 		<PropertyGroup Condition="'$(Cfg_2)'!=''">
 			<CfgDependentOn>..\..\build\optset\Release.optset</CfgDependentOn>
 		</PropertyGroup>
-		<Import Project="..\..\build\optset\Profile.optset" Condition="'$(Cfg_3)'!='' And Exists('..\..\build\optset\Profile.optset')"/>
+		<Import Condition="'$(Cfg_3)'!='' And Exists('..\..\build\optset\Profile.optset')" Project="..\..\build\optset\Profile.optset"/>
 		<PropertyGroup Condition="'$(Cfg_3)'!=''">
 			<CfgDependentOn>..\..\build\optset\Profile.optset</CfgDependentOn>
 		</PropertyGroup>
@@ -63,9 +63,7 @@
 				<Form>library.res</Form>
 			</RcCompile>
 			<DCCReference Include="..\..\core\source\patch\CodeRedirect.pas"/>
-			<DCCReference Include="..\..\core\source\patch\FmtBcd.QC50427.pas"/>
-			<DCCReference Include="..\..\core\source\patch\FmtBcd.QC55176.pas"/>
-			<DCCReference Include="..\..\core\source\patch\FmtBcd.QC55550.pas"/>
+			<DCCReference Include="..\..\core\source\patch\FmtBcd.QC50427.D2011.pas"/>
 			<DCCReference Include="..\..\core\source\firebird\firebird.ibase.h.pas"/>
 			<DCCReference Include="..\..\core\source\firebird\firebird.types_pub.h.pas"/>
 			<DCCReference Include="..\..\core\source\firebird\firebird.sqlda_pub.h.pas"/>
@@ -89,19 +87,19 @@
 			<DCCReference Include="..\..\core\source\firebird\firebird.blr.h.pas"/>
 			<DCCReference Include="..\..\core\source\rtl\SysUtilsEx.pas"/>
 			<DCCReference Include="..\source\dbx4.firebird.dll.d14.pas"/>
-			<BuildConfiguration Include="Base">
-				<Key>Base</Key>
-				<DependentOn>..\..\build\optset\Base.optset</DependentOn>
+			<BuildConfiguration Include="Release">
+				<Key>Cfg_2</Key>
+				<CfgParent>Base</CfgParent>
+				<DependentOn>..\..\build\optset\Release.optset</DependentOn>
 			</BuildConfiguration>
 			<BuildConfiguration Include="Profile">
 				<Key>Cfg_3</Key>
 				<CfgParent>Base</CfgParent>
 				<DependentOn>..\..\build\optset\Profile.optset</DependentOn>
 			</BuildConfiguration>
-			<BuildConfiguration Include="Release">
-				<Key>Cfg_2</Key>
-				<CfgParent>Base</CfgParent>
-				<DependentOn>..\..\build\optset\Release.optset</DependentOn>
+			<BuildConfiguration Include="Base">
+				<Key>Base</Key>
+				<DependentOn>..\..\build\optset\Base.optset</DependentOn>
 			</BuildConfiguration>
 			<BuildConfiguration Include="Debug">
 				<Key>Cfg_1</Key>
@@ -109,7 +107,8 @@
 				<DependentOn>..\..\build\optset\Debug.optset</DependentOn>
 			</BuildConfiguration>
 		</ItemGroup>
-		<Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')" Project="$(BDS)\Bin\CodeGear.Delphi.Targets"/>
+		<Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
 		<ProjectExtensions>
 			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
 			<Borland.ProjectType>VCLApplication</Borland.ProjectType>
@@ -118,9 +117,6 @@
 					<Parameters>
 						<Parameters Name="HostApplication">$(ActiveHostApplication)</Parameters>
 						<Parameters Name="RunParams">-config %HomeDrive%%HomePath%\Project\source.d11\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\Project\output.d11\moon\drivers -test embedded_15</Parameters>
-						<Parameters Name="UseLauncher">False</Parameters>
-						<Parameters Name="LoadAllSymbols">True</Parameters>
-						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
 					</Parameters>
 					<VersionInfo>
 						<VersionInfo Name="IncludeVerInfo">False</VersionInfo>
