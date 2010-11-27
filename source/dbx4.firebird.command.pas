@@ -282,7 +282,7 @@ function TDBXCommand_Firebird.ExecuteImmediate(const SQL: TDBXWideString; out
     aReader: IDBXReader): TDBXErrorCode;
 var M: IMetaDataProvider;
     S: string;
-    sFlag: string;
+    sFlag, sViewFlag: string;
     W: WideString;
     WL: TWideStringList;
     sRelation: WideString;
@@ -342,26 +342,31 @@ begin
     W := SQL;
     Delete(W, 1, Pos('%', W));
     W := Trim(W);
-    if (Pos(string(TDBXMetadataTableTypes.SystemTable), string(W)) > 0) and
-       (Pos(string(TDBXMetadataTableTypes.Table), string(W)) > 0) then
-      sFlag := ' '
-    else if Pos(string(TDBXMetadataTableTypes.SystemTable), string(W)) > 0 then
-      sFlag := 'AND (A.RDB$SYSTEM_FLAG = 1) '
-    else if Pos(string(TDBXMetadataTableTypes.Table), string(W)) > 0 then
-      sFlag := 'AND (A.RDB$SYSTEM_FLAG = 0) '
-    else
-      sFlag := ' ';
+
+    sFlag := '';
+    if (Pos(string(TDBXMetadataTableTypes.SystemTable), string(W)) > 0) then
+      sFlag := '(RDB$VIEW_SOURCE IS NULL AND RDB$SYSTEM_FLAG = 1)';
+
+    if (Pos(string(TDBXMetadataTableTypes.Table), string(W)) > 0) then begin
+      if sFlag <> '' then sFlag := sFlag + ' OR ';
+      sFlag := sFlag + '(RDB$VIEW_SOURCE IS NULL AND RDB$SYSTEM_FLAG = 0)';
+    end;
+
+    if (Pos(string(TDBXMetadataTableTypes.View), string(W)) > 0) then begin
+      if sFlag <> '' then sFlag := sFlag + ' OR ';
+      sFlag := sFlag + '(RDB$VIEW_SOURCE IS NOT NULL)';
+    end;
 
     S := 'SELECT 0 RECNO ' +
               ', '''' CATALOG_NAME ' +
-              ', A.RDB$OWNER_NAME SCHEMA_NAME ' +
-              ', A.RDB$RELATION_NAME TABLE_NAME ' +
-              ', A.RDB$SYSTEM_FLAG TABLE_TYPE ' +
-           'FROM RDB$RELATIONS A ' +
-          'WHERE (A.RDB$VIEW_SOURCE IS NULL) ' +
+              ', RDB$OWNER_NAME SCHEMA_NAME ' +
+              ', RDB$RELATION_NAME TABLE_NAME ' +
+              ', RDB$SYSTEM_FLAG TABLE_TYPE ' +
+           'FROM RDB$RELATIONS ' +
+          'WHERE ' +
             sFlag +
-            'AND A.RDB$OWNER_NAME = ''SYSDBA'' '+
-       'ORDER BY A.RDB$RELATION_NAME';
+            'AND RDB$OWNER_NAME = ''SYSDBA'' '+
+       'ORDER BY RDB$RELATION_NAME';
 
     FDSQL := TFirebird_DSQL.Create(GetFirebirdLibrary, FTransactionPool);
     FDSQL.Open(StatusVector, FDBHandle, nil);
