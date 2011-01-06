@@ -157,6 +157,7 @@ type{$M+}
     procedure Test_DECIMAL_Limit;
     procedure Test_DECIMAL_Misc;
     procedure Test_DECIMAL_0;
+    procedure Test_DECIMAL_18_10;
     procedure Test_DOUBLE_PRECISION;
     procedure Test_FLOAT;
     procedure Test_INTEGER;
@@ -168,6 +169,7 @@ type{$M+}
     procedure Test_NUMERIC_Limit;
     procedure Test_NUMERIC_Misc;
     procedure Test_NUMERIC_0;
+    procedure Test_NUMERIC_18_10;
     procedure Test_SMALLINT;
     procedure Test_TIME;
     procedure Test_TIMESTAMP;
@@ -877,11 +879,13 @@ begin
   else if GetName = 'Test_NUMERIC_Limit'    then Result := 'NUMERIC(18, 4)'
   else if GetName = 'Test_NUMERIC_Misc'     then Result := 'NUMERIC(18, 4)'
   else if GetName = 'Test_NUMERIC_0'        then Result := 'NUMERIC(18, 0)'
+  else if GetName = 'Test_NUMERIC_18_10'    then Result := 'NUMERIC(18, 10)'
   else if GetName = 'Test_DECIMAL'          then Result := 'DECIMAL(18, 4)'
   else if GetName = 'Test_DECIMAL_LONG'     then Result := 'DECIMAL(9, 2)'
   else if GetName = 'Test_DECIMAL_Limit'    then Result := 'DECIMAL(18, 4)'
   else if GetName = 'Test_DECIMAL_Misc'     then Result := 'DECIMAL(18, 4)'
   else if GetName = 'Test_DECIMAL_0'        then Result := 'DECIMAL(4, 0)'
+  else if GetName = 'Test_DECIMAL_18_10'    then Result := 'DECIMAL(18, 10)'
   else if GetName = 'Test_FLOAT'            then Result := 'FLOAT'
   else if GetName = 'Test_DOUBLE_PRECISION' then Result := 'DOUBLE PRECISION'
   else if GetName = 'Test_DATE'             then Result := 'DATE'
@@ -1159,6 +1163,13 @@ begin
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
   Test_Required;
+end;
+
+procedure TTestCase_DBX_FieldType.Test_DECIMAL_18_10;
+begin
+  Param.AsCurrency := 1;
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_DECIMAL;
@@ -1520,6 +1531,13 @@ begin
   Execute;
   CheckEquals(TFMTBCDField, Field.ClassType);
   CheckEquals(Param.AsString, Field.AsString);
+end;
+
+procedure TTestCase_DBX_FieldType.Test_NUMERIC_18_10;
+begin
+  Param.AsCurrency := 1;
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_NUMERIC_Limit;
