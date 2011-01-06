@@ -8,7 +8,43 @@
   <body>
     <h1>dbExpress Driver for Firebird History
 </h1>
-    <p><strong>4.1.2007.25 / 4.1.2009.25 / 4.1.2010.25&nbsp;Release on&nbsp;16 Jun 2010</strong>
+    <p><strong>4.1.2007.28 / 4.1.2009.28 / 4.1.2010.28 /&nbsp;4.1.2011.28&nbsp;Release on&nbsp;06 Jan 2011</strong>
+    </p><span id="MainContentUserControl_ctl00_ShortDescriptionLabel" class="opencolor"><span class="opencolor">
+    <ol>
+      <li>
+    <div><span id="MainContentUserControl_ctl00_ShortDescriptionLabel" class="opencolor"><span class="opencolor">Fixed error&nbsp;when posting&nbsp;floating value to decimal or numeric field of size&nbsp;(18, n)&nbsp;where n &gt; 10
+</span>
+</span>
+    </div>
+      </li>
+    </ol>
+    <p></p>
+</span>
+</span>
+    <strong>4.1.2007.27 / 4.1.2009.27 / 4.1.2010.27 /&nbsp;4.1.2011.27&nbsp;Release on&nbsp;27 Nov 2010</strong></p><span id="MainContentUserControl_ctl00_ShortDescriptionLabel" class="opencolor"><span class="opencolor">
+    <ol>
+      <li>
+    <div><span id="MainContentUserControl_ctl00_ShortDescriptionLabel" class="opencolor"><span class="opencolor">Add support to return Views name
+</span>
+</span>
+    </div>
+      </li>
+    </ol>
+</span>
+</span>
+    <p><strong>4.1.2007.26 / 4.1.2009.26 / 4.1.2010.26&nbsp;Release on&nbsp;23 Jun 2010
+</strong>
+    </p>
+    <ol>
+      <li>
+    <div><span id="MainContentUserControl_ctl00_ShortDescriptionLabel" class="opencolor"><span class="opencolor">Fixed retrieve SQL View names if TSQLConnection.TableScope include tsView when invoke TSQLConnection.GetTableNames
+</span>
+</span>
+    </div>
+      </li>
+    </ol>
+    <p><strong>4.1.2007.25 / 4.1.2009.25 / 4.1.2010.25&nbsp;Release on&nbsp;16 Jun 2010
+</strong>
     </p>
     <ol>
       <li>
@@ -94,6 +130,10 @@
     <div><span class="opencolor"></span>Fixed potential memory leak when <span id="MainContentUserControl_ctl00_ShortDescriptionLabel" class="opencolor">TDBXDynalinkCommand.CreateParameterRow is invoked.&nbsp; Previously, it require modification of DBX framework to call DBX_Close after consuming ParameterRow.&nbsp; This fix doesn't require modification of DBX framework but will keep a list of ParameterRow in TDBXCommand_Firebird instance and all ParameterRow references will set to nil after TDBXCommand_Firebird instance has closed.&nbsp; See <a href="http://qc.embarcadero.com/wc/qcmain.aspx?d=57849">QC#57849
 </a>&nbsp;for more details.
 </span>
+
+
+
+
 
 
 
