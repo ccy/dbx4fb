@@ -116,6 +116,7 @@ type{$M+}
     procedure Test_ServerCharSet;
     procedure Test_Decimal_18_8_Deduction;
     procedure Test_Unicode_SQL;
+    procedure Test_Param_Single_Shortint;
   end;
 
   TTestCase_DBX_Transaction = class(TTestCase_DBX)
@@ -558,6 +559,35 @@ begin
   finally
     FConnection.ExecuteDirect('DROP TABLE T_INSERT_UTF8');
   end;
+end;
+
+procedure TTestCase_DBX_General.Test_Param_Single_Shortint;
+var s: string;
+    D: TSQLDataSet;
+    sValue: string;
+    P: TParams;
+begin
+  {$if RTLVersion>=21}
+  S := 'CREATE TABLE T_ ' +
+       '( ' +
+       '  F1 INTEGER ' +
+       ')';
+  P := TParams.Create;
+  FConnection.ExecuteDirect(S);
+  try
+    P.CreateParam(ftInteger, '-1', ptInput).AsSingle := 1;
+    P.CreateParam(ftInteger, '-1', ptInput).AsByte := 1;
+    FConnection.Execute('SELECT * FROM T_ WHERE F1=:F1', P, @D);
+    try
+      CheckEquals(0, D.Fields[0].AsSingle);
+    finally
+      D.Free;
+    end;
+  finally
+    FConnection.ExecuteDirect('DROP TABLE T_');
+    P.Free;
+  end;
+  {$ifend}
 end;
 
 procedure TTestCase_DBX_General.Test_CAST_SQL_DECIMAL_Bug;
@@ -2664,7 +2694,7 @@ begin
   CheckEquals(0, CreateProc('DATE', FormatDateTime('dd mmm yyyy', Date) ));
   Check(ftDate = FStoredProc.Params[1].DataType);
   CheckEquals(Date, FStoredProc.Params[1].AsDate);
-end;                                                           
+end;
 
 procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Decimal_18;
 begin
