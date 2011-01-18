@@ -4,7 +4,7 @@ interface
 
 implementation
 
-uses SqlTimSt, DBXCommon, DBXDynalink;
+uses SqlTimSt, DBXCommon, DBXDynalink, dbx4.base;
 
 function DBXRow_GetInt8(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
     ShortInt; out IsNull: LongBool): TDBXErrorCode; stdcall;
@@ -33,13 +33,13 @@ end;
 function DBXWritableRow_SetInt8(Handle: TDBXWritableRowHandle; Ordinal: TInt32;
     Value: ShortInt): TDBXErrorCode; stdcall;
 begin
-  Result := TDBXErrorCodes.NotImplemented;
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetInt8(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetSingle(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; Value: single): TDBXErrorCode; stdcall;
 begin
-  Result := TDBXErrorCodes.NotImplemented;
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetSingle(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetTimeStampOffset(Handle: TDBXWritableRowHandle;

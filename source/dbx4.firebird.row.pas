@@ -69,6 +69,7 @@ type
         TInt32; ValueOffset, Length: Int64): TDBXErrorCode;
     function SetDate(Ordinal: TInt32; Value: TDBXDate): TDBXErrorCode;
     function SetDouble(Ordinal: TInt32; Value: Double): TDBXErrorCode;
+    function SetInt8(Ordinal: TInt32; Value: ShortInt): TDBXErrorCode;
     function SetInt16(Ordinal: TInt32; Value: SmallInt): TDBXErrorCode;
     function SetInt32(Ordinal: TInt32; Value: LongInt): TDBXErrorCode;
     function SetInt64(Ordinal: TInt32; Value: Int64): TDBXErrorCode;
@@ -76,6 +77,7 @@ type
     function SetParameterType(Ordinal: TInt32; const Name: TDBXWideString;
         ChildPosition: TInt32; ParamDirection: TDBXParameterDirection; DBXType,
         DBXSubType: TInt32; Size, Precision: Int64; Scale: TInt32): TDBXErrorCode;
+    function SetSingle(Ordinal: TInt32; Value: Single): TDBXErrorCode;
     function SetTime(Ordinal: TInt32; Value: TDBXTime): TDBXErrorCode;
     function SetTimeStamp(Ordinal: TInt32; var Value: TSQLTimeStamp): TDBXErrorCode;
     function SetWideString(Ordinal: TInt32; const Value: TDBXWideString; Length:
@@ -406,6 +408,13 @@ begin
   Result := TDBXErrorCodes.None;
 end;
 
+function TDBXRow_Firebird.SetInt8(Ordinal: TInt32;
+  Value: ShortInt): TDBXErrorCode;
+begin
+  FDSQL.i_SQLDA[Ordinal].SetShort(@Value, SizeOf(Value), False);
+  Result := TDBXErrorCodes.None;
+end;
+
 function TDBXRow_Firebird.SetNull(Ordinal: TInt32): TDBXErrorCode;
 begin
   FDSQL.i_SQLDA[Ordinal].IsNull := True;
@@ -417,6 +426,13 @@ function TDBXRow_Firebird.SetParameterType(Ordinal: TInt32;
   ParamDirection: TDBXParameterDirection; DBXType, DBXSubType: TInt32;
   Size, Precision: Int64; Scale: TInt32): TDBXErrorCode;
 begin
+  Result := TDBXErrorCodes.None;
+end;
+
+function TDBXRow_Firebird.SetSingle(Ordinal: TInt32;
+  Value: Single): TDBXErrorCode;
+begin
+  FDSQL.i_SQLDA[Ordinal].SetInteger(@Value, SizeOf(Value), False);
   Result := TDBXErrorCodes.None;
 end;
 
