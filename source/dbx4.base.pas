@@ -78,6 +78,7 @@ type
     function SetAnsiString(Ordinal: TInt32; const Value: TDBXAnsiString; Length:
         Int64): TDBXErrorCode;
     function SetBcd(Ordinal: TInt32; Value: TBcd): TDBXErrorCode;
+    function SetByte(Ordinal: TInt32; Value: Byte): TDBXErrorCode;
     function SetBytes(Ordinal: TInt32; BlobOffset: Int64; Value: TBytes; LastIndex:
         TInt32; ValueOffset, Length: Int64): TDBXErrorCode;
     function SetDate(Ordinal: TInt32; Value: TDBXDate): TDBXErrorCode;

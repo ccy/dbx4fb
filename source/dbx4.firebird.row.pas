@@ -65,6 +65,7 @@ type
     function SetAnsiString(Ordinal: TInt32; const Value: TDBXAnsiString; Length:
         Int64): TDBXErrorCode;
     function SetBcd(Ordinal: TInt32; Value: TBcd): TDBXErrorCode;
+    function SetByte(Ordinal: TInt32; Value: Byte): TDBXErrorCode;
     function SetBytes(Ordinal: TInt32; BlobOffset: Int64; Value: TBytes; LastIndex:
         TInt32; ValueOffset, Length: Int64): TDBXErrorCode;
     function SetDate(Ordinal: TInt32; Value: TDBXDate): TDBXErrorCode;
@@ -367,6 +368,12 @@ begin
   Result := TDBXErrorCodes.None;
 end;
 
+function TDBXRow_Firebird.SetByte(Ordinal: TInt32; Value: Byte): TDBXErrorCode;
+begin
+  FDSQL.i_SQLDA[Ordinal].SetUInt8(@Value, SizeOf(Value), False);
+  Result := TDBXErrorCodes.None;
+end;
+
 function TDBXRow_Firebird.SetBytes(Ordinal: TInt32; BlobOffset: Int64;
   Value: TBytes; LastIndex: TInt32; ValueOffset,
   Length: Int64): TDBXErrorCode;
@@ -411,7 +418,7 @@ end;
 function TDBXRow_Firebird.SetInt8(Ordinal: TInt32;
   Value: ShortInt): TDBXErrorCode;
 begin
-  FDSQL.i_SQLDA[Ordinal].SetShort(@Value, SizeOf(Value), False);
+  FDSQL.i_SQLDA[Ordinal].SetInt8(@Value, SizeOf(Value), False);
   Result := TDBXErrorCodes.None;
 end;
 
