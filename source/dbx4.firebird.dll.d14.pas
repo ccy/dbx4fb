@@ -51,7 +51,7 @@ end;
 function DBXWritableRow_SetUInt8(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; Value: Byte): TDBXErrorCode; stdcall;
 begin
-  Result := TDBXErrorCodes.NotImplemented;
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetByte(Ordinal, Value);
 end;
 
 exports
