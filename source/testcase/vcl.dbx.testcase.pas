@@ -570,14 +570,15 @@ begin
   {$if RTLVersion>=21}
   S := 'CREATE TABLE T_ ' +
        '( ' +
-       '  F1 INTEGER ' +
+       '  F1 INTEGER, ' +
+       '  F2 INTEGER ' +
        ')';
   P := TParams.Create;
   FConnection.ExecuteDirect(S);
   try
-    P.CreateParam(ftInteger, '-1', ptInput).AsSingle := 1;
-    P.CreateParam(ftInteger, '-1', ptInput).AsByte := 1;
-    FConnection.Execute('SELECT * FROM T_ WHERE F1=:F1', P, @D);
+    P.CreateParam(ftInteger, 'F1', ptInput).AsSingle := 1;
+    P.CreateParam(ftInteger, 'F2', ptInput).AsByte := 1;
+    FConnection.Execute('SELECT * FROM T_ WHERE F1=:F1 AND F2=:F2', P, @D);
     try
       CheckEquals(0, D.Fields[0].AsSingle);
     finally
@@ -1109,6 +1110,13 @@ begin
   CheckEquals('0123456789' + DupeString(' ', i), Field.AsString);
   {$ifend}
 
+  Param.AsString := '';
+  i := 0;
+  if not IsTrimChar then
+    i := Field.Size - Length(Param.AsString);
+  Execute;
+  CheckEquals(DupeString(' ', i), Field.AsString);
+
   Test_Required;
 end;
 
@@ -1150,6 +1158,13 @@ begin
   Param.AsWideString := DupeString('A', Field.Size);
   Execute;
   CheckEquals(Length(Param.AsWideString), Length(Field.AsWideString));
+
+  Param.AsString := '';
+  i := 0;
+  if not IsTrimChar then
+    i := Field.Size - Length(Param.AsWideString);
+  Execute;
+  CheckEquals(DupeString(' ', i), Field.AsString);
 
   Test_Required;
 end;
@@ -2302,7 +2317,7 @@ begin
 
         for k := 0 to sEmbeds.Count - 1 do begin
           if TCmdLineParams_App.HasTestName and (TCmdLineParams_App.GetTestName <> sEmbeds.Names[k]) then Continue;
-          
+
           L := TInterfaceList.Create;
 
           L.Add(
