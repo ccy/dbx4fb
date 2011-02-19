@@ -138,6 +138,8 @@ type{$M+}
     procedure Execute;
     function Field: TField;
     function Param: TParam;
+    procedure Test_CHAR_Unicode;
+    procedure Test_VARCHAR_Unicode;
   protected
     FRequired: boolean;
     function GetFieldType: string; virtual;
@@ -150,31 +152,33 @@ type{$M+}
     procedure Test_BIGINT_Limit;
     procedure Test_BLOB;
     procedure Test_CHAR;
+    procedure Test_CHAR_UNICODE_FSS;
     procedure Test_CHAR_UTF8;
     procedure Test_DATE;
     procedure Test_DATETIME;
     procedure Test_DECIMAL;
-    procedure Test_DECIMAL_LONG;
-    procedure Test_DECIMAL_Limit;
-    procedure Test_DECIMAL_Misc;
     procedure Test_DECIMAL_0;
     procedure Test_DECIMAL_18_10;
+    procedure Test_DECIMAL_Limit;
+    procedure Test_DECIMAL_LONG;
+    procedure Test_DECIMAL_Misc;
     procedure Test_DOUBLE_PRECISION;
     procedure Test_FLOAT;
     procedure Test_INTEGER;
     procedure Test_MEMO;
     procedure Test_MEMO_UTF8;
     procedure Test_NUMERIC;
-    procedure Test_NUMERIC_SHORT;
-    procedure Test_NUMERIC_LONG;
-    procedure Test_NUMERIC_Limit;
-    procedure Test_NUMERIC_Misc;
     procedure Test_NUMERIC_0;
     procedure Test_NUMERIC_18_10;
+    procedure Test_NUMERIC_Limit;
+    procedure Test_NUMERIC_LONG;
+    procedure Test_NUMERIC_Misc;
+    procedure Test_NUMERIC_SHORT;
     procedure Test_SMALLINT;
     procedure Test_TIME;
     procedure Test_TIMESTAMP;
     procedure Test_VARCHAR;
+    procedure Test_VARCHAR_UNICODE_FSS;
     procedure Test_VARCHAR_UTF8;
   end;
 
@@ -802,13 +806,13 @@ end;
 procedure TTestCase_DBX_General.Test_GetTableNames;
 var L: TStringList;
 begin
-  FConnection.ExecuteDirect('CREATE VIEW TEST AS SELECT * FROM RDB$Relations');
+  FConnection.ExecuteDirect('CREATE VIEW VIEW_OF_TEST AS SELECT * FROM RDB$Relations');
 
   L := TStringList.Create;
   try
     FConnection.TableScope := [tsSysTable, tsTable, tsView];
     FConnection.GetTableNames(L);
-    CheckNotEquals(-1, L.IndexOf('TEST'));
+    CheckNotEquals(-1, L.IndexOf('VIEW_OF_TEST'));
     CheckTrue(L.Count > 10);
 
     FConnection.TableScope := [tsSysTable, tsTable];
@@ -823,10 +827,10 @@ begin
 
     FConnection.TableScope := [tsView];
     FConnection.GetTableNames(L, False);
-    CheckNotEquals(-1, L.IndexOf('TEST'));
+    CheckNotEquals(-1, L.IndexOf('VIEW_OF_TEST'));
   finally
     L.Free;
-    FConnection.ExecuteDirect('DROP VIEW TEST');
+    FConnection.ExecuteDirect('DROP VIEW VIEW_OF_TEST');
   end;
 end;
 
@@ -894,36 +898,38 @@ function TTestCase_DBX_FieldType.GetFieldType: string;
 begin
   FRequired := False;
 
-       if GetName = 'Test_CHAR'             then Result := 'CHAR(100)'
-  else if GetName = 'Test_CHAR_UTF8'        then Result := 'CHAR(100) CHARACTER SET UTF8'
-  else if GetName = 'Test_VARCHAR'          then Result := 'VARCHAR(100)'
-  else if GetName = 'Test_VARCHAR_UTF8'     then Result := 'VARCHAR(100) CHARACTER SET UTF8'
-  else if GetName = 'Test_SMALLINT'         then Result := 'SMALLINT'
-  else if GetName = 'Test_INTEGER'          then Result := 'INTEGER'
-  else if GetName = 'Test_BIGINT'           then Result := 'BIGINT'
-  else if GetName = 'Test_BIGINT_Limit'     then Result := 'BIGINT'
-  else if GetName = 'Test_MEMO'             then Result := 'BLOB SUB_TYPE 1'
-  else if GetName = 'Test_MEMO_UTF8'        then Result := 'BLOB SUB_TYPE 1 CHARACTER SET UTF8'
-  else if GetName = 'Test_NUMERIC'          then Result := 'NUMERIC(18, 4)'
-  else if GetName = 'Test_NUMERIC_SHORT'    then Result := 'NUMERIC(4, 2)'
-  else if GetName = 'Test_NUMERIC_LONG'     then Result := 'NUMERIC(9, 2)'
-  else if GetName = 'Test_NUMERIC_Limit'    then Result := 'NUMERIC(18, 4)'
-  else if GetName = 'Test_NUMERIC_Misc'     then Result := 'NUMERIC(18, 4)'
-  else if GetName = 'Test_NUMERIC_0'        then Result := 'NUMERIC(18, 0)'
-  else if GetName = 'Test_NUMERIC_18_10'    then Result := 'NUMERIC(18, 10)'
-  else if GetName = 'Test_DECIMAL'          then Result := 'DECIMAL(18, 4)'
-  else if GetName = 'Test_DECIMAL_LONG'     then Result := 'DECIMAL(9, 2)'
-  else if GetName = 'Test_DECIMAL_Limit'    then Result := 'DECIMAL(18, 4)'
-  else if GetName = 'Test_DECIMAL_Misc'     then Result := 'DECIMAL(18, 4)'
-  else if GetName = 'Test_DECIMAL_0'        then Result := 'DECIMAL(4, 0)'
-  else if GetName = 'Test_DECIMAL_18_10'    then Result := 'DECIMAL(18, 10)'
-  else if GetName = 'Test_FLOAT'            then Result := 'FLOAT'
-  else if GetName = 'Test_DOUBLE_PRECISION' then Result := 'DOUBLE PRECISION'
-  else if GetName = 'Test_DATE'             then Result := 'DATE'
-  else if GetName = 'Test_DATETIME'         then Result := 'DATE'
-  else if GetName = 'Test_TIME'             then Result := 'TIME'
-  else if GetName = 'Test_TIMESTAMP'        then Result := 'TIMESTAMP'
-  else if GetName = 'Test_BLOB'             then Result := 'BLOB SUB_TYPE 0 SEGMENT SIZE 512'
+       if GetName = 'Test_CHAR'                then Result := 'CHAR(100)'
+  else if GetName = 'Test_CHAR_UTF8'           then Result := 'CHAR(100) CHARACTER SET UTF8'
+  else if GetName = 'Test_CHAR_UNICODE_FSS'    then Result := 'CHAR(100) CHARACTER SET UNICODE_FSS'
+  else if GetName = 'Test_VARCHAR'             then Result := 'VARCHAR(100)'
+  else if GetName = 'Test_VARCHAR_UTF8'        then Result := 'VARCHAR(100) CHARACTER SET UTF8'
+  else if GetName = 'Test_VARCHAR_UNICODE_FSS' then Result := 'VARCHAR(100) CHARACTER SET UNICODE_FSS'
+  else if GetName = 'Test_SMALLINT'            then Result := 'SMALLINT'
+  else if GetName = 'Test_INTEGER'             then Result := 'INTEGER'
+  else if GetName = 'Test_BIGINT'              then Result := 'BIGINT'
+  else if GetName = 'Test_BIGINT_Limit'        then Result := 'BIGINT'
+  else if GetName = 'Test_MEMO'                then Result := 'BLOB SUB_TYPE 1'
+  else if GetName = 'Test_MEMO_UTF8'           then Result := 'BLOB SUB_TYPE 1 CHARACTER SET UTF8'
+  else if GetName = 'Test_NUMERIC'             then Result := 'NUMERIC(18, 4)'
+  else if GetName = 'Test_NUMERIC_SHORT'       then Result := 'NUMERIC(4, 2)'
+  else if GetName = 'Test_NUMERIC_LONG'        then Result := 'NUMERIC(9, 2)'
+  else if GetName = 'Test_NUMERIC_Limit'       then Result := 'NUMERIC(18, 4)'
+  else if GetName = 'Test_NUMERIC_Misc'        then Result := 'NUMERIC(18, 4)'
+  else if GetName = 'Test_NUMERIC_0'           then Result := 'NUMERIC(18, 0)'
+  else if GetName = 'Test_NUMERIC_18_10'       then Result := 'NUMERIC(18, 10)'
+  else if GetName = 'Test_DECIMAL'             then Result := 'DECIMAL(18, 4)'
+  else if GetName = 'Test_DECIMAL_LONG'        then Result := 'DECIMAL(9, 2)'
+  else if GetName = 'Test_DECIMAL_Limit'       then Result := 'DECIMAL(18, 4)'
+  else if GetName = 'Test_DECIMAL_Misc'        then Result := 'DECIMAL(18, 4)'
+  else if GetName = 'Test_DECIMAL_0'           then Result := 'DECIMAL(4, 0)'
+  else if GetName = 'Test_DECIMAL_18_10'       then Result := 'DECIMAL(18, 10)'
+  else if GetName = 'Test_FLOAT'               then Result := 'FLOAT'
+  else if GetName = 'Test_DOUBLE_PRECISION'    then Result := 'DOUBLE PRECISION'
+  else if GetName = 'Test_DATE'                then Result := 'DATE'
+  else if GetName = 'Test_DATETIME'            then Result := 'DATE'
+  else if GetName = 'Test_TIME'                then Result := 'TIME'
+  else if GetName = 'Test_TIMESTAMP'           then Result := 'TIMESTAMP'
+  else if GetName = 'Test_BLOB'                then Result := 'BLOB SUB_TYPE 0 SEGMENT SIZE 512'
   else
     raise Exception.CreateFmt('Field type not found for test %s', [GetName]);
 end;
@@ -1120,12 +1126,10 @@ begin
   Test_Required;
 end;
 
-procedure TTestCase_DBX_FieldType.Test_CHAR_UTF8;
+procedure TTestCase_DBX_FieldType.Test_CHAR_Unicode;
 var i: integer;
     W: WideString;
 begin
-  if Pos('Firebird 1.', GetTestData.ServerVersion) <> 0 then Exit;
-
   Param.AsWideString := 'One World One Dream ' +
                         #$540C + #$4E00 + #$4E2A + #$4E16 + #$754C + ' ' +
                         #$540C + #$4E00 + #$4E2A + #$68A6 + #$60F3;
@@ -1169,6 +1173,20 @@ begin
   Test_Required;
 end;
 
+procedure TTestCase_DBX_FieldType.Test_CHAR_UNICODE_FSS;
+var s: string;
+begin
+  // This test case is not valid for Firebird 1.5.0
+  if Pos('1.5.0', GetTestData.ServerVersion) <> 0 then Exit;
+  Test_CHAR_Unicode;
+end;
+
+procedure TTestCase_DBX_FieldType.Test_CHAR_UTF8;
+begin
+  if Pos('Firebird 1.', GetTestData.ServerVersion) <> 0 then Exit;
+  Test_CHAR_Unicode;
+end;
+
 procedure TTestCase_DBX_FieldType.Test_DATE;
 begin
   Param.AsDate := Date;
@@ -1208,13 +1226,6 @@ begin
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
   Test_Required;
-end;
-
-procedure TTestCase_DBX_FieldType.Test_DECIMAL_18_10;
-begin
-  Param.AsCurrency := 1;
-  Execute;
-  CheckEquals(Param.AsCurrency, Field.AsCurrency);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_DECIMAL;
@@ -1308,6 +1319,13 @@ begin
   Execute;
   CheckEquals(TFMTBCDField, Field.ClassType);
   CheckEquals(Param.AsString, Field.AsString);
+end;
+
+procedure TTestCase_DBX_FieldType.Test_DECIMAL_18_10;
+begin
+  Param.AsCurrency := 1;
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_DECIMAL_Limit;
@@ -1746,11 +1764,9 @@ begin
   Test_Required;
 end;
 
-procedure TTestCase_DBX_FieldType.Test_VARCHAR_UTF8;
+procedure TTestCase_DBX_FieldType.Test_VARCHAR_Unicode;
 var F: TStringField;
 begin
-  if Pos('Firebird 1.', GetTestData.ServerVersion) <> 0 then Exit;
-
   Param.AsWideString := 'One World One Dream ' +
                         #$540C + #$4E00 + #$4E2A + #$4E16 + #$754C + ' ' +
                         #$540C + #$4E00 + #$4E2A + #$68A6 + #$60F3;
@@ -1773,6 +1789,20 @@ begin
   CheckEquals(Length(Param.AsWideString), Length(Field.AsWideString));
 
   Test_Required;
+end;
+
+procedure TTestCase_DBX_FieldType.Test_VARCHAR_UNICODE_FSS;
+begin
+  // This test case is not valid for Firebird 1.5.0
+  if Pos('1.5.0', GetTestData.ServerVersion) <> 0 then Exit;
+  Test_VARCHAR_UNICODE;
+end;
+
+procedure TTestCase_DBX_FieldType.Test_VARCHAR_UTF8;
+var F: TStringField;
+begin
+  if Pos('Firebird 1.', GetTestData.ServerVersion) <> 0 then Exit;
+  Test_VARCHAR_Unicode;
 end;
 
 procedure TTestCase_DBX_TSQLDataSet.SetUp;
