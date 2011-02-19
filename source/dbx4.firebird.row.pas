@@ -336,7 +336,7 @@ begin
   V.GetWideString(Value, B);
   IsNull := B;
   if FTrimChar then begin
-    c := Value + (V.sqllen div 4) - 1;
+    c := Value + V.GetTextLen - 1;
     while c^ = ' ' do begin
       c^ := #0;
       c := c - 1;

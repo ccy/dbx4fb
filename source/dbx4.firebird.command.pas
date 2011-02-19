@@ -106,15 +106,11 @@ function TMetaDataProvider_Firebird.GetColumnPrecision(const aColNo: TInt32):
 var V: TXSQLVAR;
 begin
   V := FSQLDA.Vars[aColNo];
-  if V.CheckType(SQL_TEXT) then begin
-    Result := V.sqllen;
-    if V.CheckCharSet(CS_UTF8) then
-      Result := V.sqllen div 4
-  end else if V.CheckType(SQL_VARYING) then begin
-    Result := V.sqllen;
-    if V.CheckCharSet(CS_UTF8) then
-      Result := V.sqllen div 4;
-  end else if V.CheckType(SQL_INT64) then //{$if CompilerVersion > 18.5} and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) {$ifend} then
+  if V.CheckType(SQL_TEXT) then
+    Result := V.GetTextLen
+  else if V.CheckType(SQL_VARYING) then
+    Result := V.GetTextLen
+  else if V.CheckType(SQL_INT64) then //{$if CompilerVersion > 18.5} and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) {$ifend} then
     Result := 19
   else if V.CheckType(SQL_LONG) and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) then
     Result := 9
@@ -166,7 +162,7 @@ begin
     end;
     SQL_TEXT,
     SQL_VARYING: begin
-      if FSQLDA.Vars[aColNo].CheckCharSet(CS_UTF8) then
+      if FSQLDA.Vars[aColNo].CheckCharSet(CS_UTF8) or FSQLDA.Vars[aColNo].CheckCharSet(CS_UNICODE_FSS) then
         Result := TDBXDataTypes.WideStringType
       else
         Result := TDBXDataTypes.AnsiStringType;
