@@ -396,11 +396,7 @@ begin
   if not FileExists(GetTestDataFileName) then begin
     F := TIniFile.Create(GetTestDataFileName);
     try
-      sDriver := {$if CompilerVersion<=18.5}'dbxfb40.dll'
-                 {$elseif CompilerVersion=20}'dbxfb4d12.dll'
-                 {$elseif CompilerVersion=21}'dbxfb4d14.dll'
-                 {$else}'dbxfb4d15.dll'
-                 {$ifend};
+      sDriver := 'dbxfb4d15.dll';
       F.WriteString(GetDriverSectionName, 'getSQLDriverFIREBIRD', sDriver);
       F.WriteString('embedded', 'embedded_1', 'fbembed.dll');
       F.WriteString('server', 'server_1', 'localhost');
@@ -568,7 +564,6 @@ end;
 procedure TTestCase_DBX_General.Test_Param_Single_Shortint;
 var s: string;
     D: TSQLDataSet;
-    sValue: string;
     P: TParams;
 begin
   {$if RTLVersion>=21}
@@ -1174,7 +1169,6 @@ begin
 end;
 
 procedure TTestCase_DBX_FieldType.Test_CHAR_UNICODE_FSS;
-var s: string;
 begin
   // This test case is not valid for Firebird 1.5.0
   if Pos('1.5.0', GetTestData.ServerVersion) <> 0 then Exit;
@@ -2242,7 +2236,7 @@ begin
   sEmbeds := TStringList.Create;
   try
     F.ReadSectionValues(GetDriverSectionName, sDrivers);
-    F.ReadSectionValues('server', sServers);
+    F.ReadSectionValues({$if CompilerVersion=18.5}'server.d11'{$else}'server'{$ifend}, sServers);
     F.ReadSectionValues('embedded', sEmbeds);
     for i := 0 to sDrivers.Count - 1 do begin
       for j := 0 to sServers.Count - 1 do begin
@@ -2338,7 +2332,7 @@ begin
   sEmbeds := TStringList.Create;
   try
     F.ReadSectionValues(GetDriverSectionName, sDrivers);
-    F.ReadSectionValues('server', sServers);
+    F.ReadSectionValues({$if CompilerVersion=18.5}'server.d11'{$else}'server'{$ifend}, sServers);
     F.ReadSectionValues('embedded', sEmbeds);
     for i := 0 to sDrivers.Count - 1 do begin
       for j := 0 to sServers.Count - 1 do begin
