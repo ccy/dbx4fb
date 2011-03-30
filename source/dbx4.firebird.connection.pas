@@ -27,6 +27,7 @@ type
     FDatabase: WideString;
     FFirebirdLibrary: IFirebirdLibrary;
     FHostName: WideString;
+    FIsDelphi2007Connection: boolean;
     FIsolationLevel: TInt32;
     FPassword: WideString;
     FSQLDialect: integer;
@@ -40,9 +41,11 @@ type
         IsolationLevel: TInt32): TDBXErrorCode;
     function Close: TDBXErrorCode; override;
     function Commit(TransactionHandle: TDBXTransactionHandle): TDBXErrorCode;
-    function Connect(Count: TInt32; Names, Values: TWideStringArray): TDBXErrorCode;
+    function Connect(Count: TInt32; Names, Values: TWideStringArray):
+        TDBXErrorCode;
     function GetDBHandle: pisc_db_handle;
     function GetFirebirdLibrary: IFirebirdLibrary; override;
+    function GetIsDelphi2007Connection: boolean;
     function GetServerCharSet: WideString;
     function GetSQLDialect: integer;
     function GetTransactionPool: TFirebirdTransactionPool;
@@ -156,6 +159,9 @@ begin
         FIsolationLevel := TDBXIsolations.SnapShot
       else
         FIsolationLevel := TDBXIsolations.ReadCommitted
+    end else if SameText(Names[i], 'Delphi2007Connection') then begin
+      if not TryStrToBool(Values[i], FIsDelphi2007Connection) then
+        FIsDelphi2007Connection := False;
     end;
   end;
 
@@ -184,6 +190,11 @@ end;
 function TDBXConnection_Firebird.GetFirebirdLibrary: IFirebirdLibrary;
 begin
   Result := FFirebirdLibrary;
+end;
+
+function TDBXConnection_Firebird.GetIsDelphi2007Connection: boolean;
+begin
+  Result := FIsDelphi2007Connection;
 end;
 
 function TDBXConnection_Firebird.GetServerCharSet: WideString;

@@ -4,12 +4,48 @@ interface
 
 implementation
 
-uses SysUtils, FmtBcd, SqlTimSt,
+uses SysUtils, FmtBcd, SqlTimSt, Windows,
      {$if CompilerVersion=18.5}WideStrUtils,{$ifend}
      {$if CompilerVersion>=21}DBXCommonResStrs,{$ifend}
      DBXCommon, DBXPlatform, DBXDynalink,
      dbx4.firebird.driver, dbx4.firebird.connection, dbx4.firebird.command,
      dbx4.firebird.reader, dbx4.base;
+
+// Test if it is WideString from Delphi 2007 DBX
+function IsUnicodeStringArray(Arr: TRawByteStringArray): boolean;
+begin
+  Result := False;
+  if Length(Arr) > 0 then
+    Result := (StringElementSize(Arr[0]) = 2) and (StringCodePage(Arr[0]) = 1200{System.CP_UTF16}) and (StringRefCount(Arr[0]) < 1000);
+end;
+
+function ToWideStringArray(Arr: TRawByteStringArray): TWideStringArray;
+var i, iArrayLen: integer;
+    Convert: TFunc<RawByteString, string>;
+begin
+  iArrayLen := Length(Arr);
+  SetLength(Result, iArrayLen);
+
+  if IsUnicodeStringArray(Arr) then
+    Convert := function (Source: RawByteString): string
+               var R: RawByteString;
+               begin
+                 R := Source;
+                 SetCodePage(R, CP_ACP, True);
+                 Result := string(R);
+               end
+  else
+    Convert := function (Source: RawByteString): string
+               var W: WideString;
+               begin
+                 SetLength(W, Length(Source) div 2);
+                 Move(Source[1], W[1], Length(Source));
+                 Result := W;
+               end;
+
+  for i := Low(Arr) to High(Arr) do
+    Result[i] := Convert(Arr[i]);
+end;
 
 function DBXBase_Close(Handle: TDBXCommonHandle): TDBXErrorCode; stdcall;
 begin
@@ -100,9 +136,22 @@ begin
 end;
 
 function DBXConnection_Connect(Handle: TDBXConnectionHandle; Count: TInt32;
-    Names, Values: TWideStringArray): TDBXErrorCode; stdcall;
+    Names, Values: TRawByteStringArray): TDBXErrorCode; stdcall;
+var N, V: TWideStringArray;
+    i: integer;
 begin
-  Result := IDBXConnection(Handle).Connect(Count, Names, Values);
+  N := ToWideStringArray(Names);
+  V := ToWideStringArray(Values);
+
+  i := Length(N);
+  SetLength(N, i+ 1);
+  N[i] := 'Delphi2007Connection';
+
+  i := Length(V);
+  SetLength(V, i + 1);
+  V[i] := BoolToStr(not IsUnicodeStringArray(Names), True);
+
+  Result := IDBXConnection(Handle).Connect(Count + 1, N, V);
 end;
 
 function DBXConnection_CreateCommand(Handle: TDBXConnectionHandle; const
@@ -156,13 +205,13 @@ begin
   Result := TDBXErrorCodes.None;
 end;
 
-function DBXLoader_GetDriver(Count: TInt32; Names, Values: TWideStringArray;
+function DBXLoader_GetDriver(Count: TInt32; Names, Values: TRawByteStringArray;
     ErrorMessage: TDBXWideStringBuilder; out pDriver: TDBXDriverHandle):
     TDBXErrorCode; stdcall;
 var o: IDBXDriver;
     i: integer;
 begin
-  o := TDBXDriver_Firebird.Create(Count, Names, Values);
+  o := TDBXDriver_Firebird.Create(Count, ToWideStringArray(Names), ToWideStringArray(Values));
   if o.Loaded then begin
     pDriver := nil;
     IDBXDriver(pDriver) := o;

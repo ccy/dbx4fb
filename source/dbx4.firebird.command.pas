@@ -13,16 +13,22 @@ type
     procedure Unsupported;
   protected
     function GetColumnCount: TInt32;
-    function GetColumnLength(const aColNo: TInt32): LongWord;
+    function GetColumnLength(const aColNo: TInt32): LongWord; virtual;
     function GetColumnName(const aColNo: TInt32): WideString;
     function GetColumnNameLength(const aColNo: TInt32): TInt32;
     function GetColumnPrecision(const aColNo: TInt32): TInt32;
     function GetColumnScale(const aColNo: TInt32): TInt32;
-    function GetColumnType(const aColNo: TInt32): TInt32;
+    function GetColumnType(const aColNo: TInt32): TInt32; virtual;
     function GetColumnSubType(const aColNo: TInt32): TInt32;
     function GetIsNullable(const aColNo: TInt32): boolean;
   public
     constructor Create(const aSQLDA: TXSQLDA);
+  end;
+
+  TMetaDataProvider_Firebird_D2007 = class(TMetaDataProvider_Firebird)
+  protected
+    function GetColumnLength(const aColNo: TInt32): LongWord; override;
+    function GetColumnType(const aColNo: TInt32): TInt32; override;
   end;
 
   TDBXCommand_Firebird = class(TDBXBase_Firebird, IDBXCommand)
@@ -37,6 +43,7 @@ type
     FTrimChar: Boolean;
     FParameterRows: TList;
     function GetParameterRows: TList;
+    function NewMetaDataProvider(const aSQLDA: TXSQLDA): IMetaDataProvider;
   protected
     function Close: TDBXErrorCode; override;
     function CreateParameterRow(out aRow: TDBXRowHandle): TDBXErrorCode;
@@ -75,7 +82,7 @@ function TMetaDataProvider_Firebird.GetColumnLength(const aColNo: TInt32):
 var V: TXSQLVAR;
 begin
   V := FSQLDA.Vars[aColNo];
-  if V.CheckType(SQL_INT64) {$if CompilerVersion > 18.5} and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) {$ifend} then
+  if V.CheckType(SQL_INT64) and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) then
     Result := SizeOf(TBcd)
   else if V.CheckType(SQL_FLOAT) then
     Result := SizeOf(Double)
@@ -178,9 +185,9 @@ begin
     SQL_BLOB: Result := TDBXDataTypes.BlobType;
     SQL_INT64: begin
       if (iSubType = 0) and (iScale = 0) then
-        Result := {$if CompilerVersion <= 18.5} TDBXDataTypes.BcdType {$else} TDBXDataTypes.Int64Type {$ifend}
+        Result := TDBXDataTypes.Int64Type
       else
-        Result := TDBXDataTypes.BcdType
+        Result := TDBXDataTypes.BcdType;
     end;
     SQL_FLOAT: Result := TDBXDataTypes.DoubleType;
     SQL_DOUBLE: Result := TDBXDataTypes.DoubleType;
@@ -201,6 +208,73 @@ end;
 procedure TMetaDataProvider_Firebird.Unsupported;
 begin
   Assert(False, 'Unsupported');
+end;
+
+function TMetaDataProvider_Firebird_D2007.GetColumnLength(const aColNo:
+    TInt32): LongWord;
+var V: TXSQLVAR;
+begin
+  V := FSQLDA.Vars[aColNo];
+  if V.CheckType(SQL_INT64) then
+    Result := SizeOf(TBcd)
+  else if V.CheckType(SQL_FLOAT) then
+    Result := SizeOf(Double)
+  else if V.CheckType(SQL_TIMESTAMP) then
+    Result := SizeOf(TSQLTimeStamp)
+  else if V.CheckType(SQL_LONG) and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) then
+    Result := SizeOf(TBcd)
+  else if V.CheckType(SQL_SHORT) and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) then
+    Result := SizeOf(TBcd)
+  else
+    Result := V.Size;
+end;
+
+function TMetaDataProvider_Firebird_D2007.GetColumnType(const aColNo: TInt32):
+    TInt32;
+var iType, iSubType, iScale: Smallint;
+begin
+  iType := FSQLDA.Vars[aColNo].sqltype and not 1;
+  iSubType := FSQLDA.Vars[aColNo].sqlsubtype;
+  iScale := FSQLDA.Vars[aColNo].sqlscale;
+  case iType of
+    SQL_SHORT: begin
+      if iSubType = 0 then
+        Result := TDBXDataTypes.Int16Type
+      else if (iSubType = 1) or (iSubType = 2) then
+        Result := TDBXDataTypes.BcdType
+      else
+        Unsupported;
+    end;
+    SQL_TEXT,
+    SQL_VARYING: begin
+      if FSQLDA.Vars[aColNo].CheckCharSet(CS_UTF8) or FSQLDA.Vars[aColNo].CheckCharSet(CS_UNICODE_FSS) then
+        Result := TDBXDataTypes.WideStringType
+      else
+        Result := TDBXDataTypes.AnsiStringType;
+    end;
+    SQL_LONG: begin
+      if iSubType = 0 then
+        Result := TDBXDataTypes.Int32Type
+      else if (iSubType = 1) or (iSubType = 2) then
+        Result := TDBXDataTypes.BcdType
+      else
+        Unsupported;
+    end;
+    SQL_BLOB: Result := TDBXDataTypes.BlobType;
+    SQL_INT64: begin
+      if (iSubType = 0) and (iScale = 0) then
+        Result := TDBXDataTypes.BcdType
+      else
+        Result := TDBXDataTypes.BcdType;
+    end;
+    SQL_FLOAT: Result := TDBXDataTypes.DoubleType;
+    SQL_DOUBLE: Result := TDBXDataTypes.DoubleType;
+    SQL_TYPE_DATE: Result := TDBXDataTypes.DateType;
+    SQL_TYPE_TIME: Result := TDBXDataTypes.TimeType;
+    SQL_TIMESTAMP: Result := TDBXDataTypes.TimeStampType;
+    else
+      Unsupported;
+  end;
 end;
 
 constructor TDBXCommand_Firebird.Create(const aConnection: IDBXConnection;
@@ -252,7 +326,7 @@ function TDBXCommand_Firebird.CreateParameterRow(out aRow: TDBXRowHandle):
 var M: IMetaDataProvider;
     o: IDBXBase;
 begin
-  M := TMetaDataProvider_Firebird.Create(FDSQL.o_SQLDA);
+  M := NewMetaDataProvider(FDSQL.o_SQLDA);
   o := TDBXRow_Firebird.Create(FConnection, FDBHandle, M, FDSQL, (FConnection as IDBXConnection_Firebird).TrimChar);
 
   IDBXBase(aRow) := o;
@@ -269,7 +343,7 @@ begin
   FDSQL.Execute(StatusVector);
   if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
 
-  M := TMetaDataProvider_Firebird.Create(FDSQL.o_SQLDA);
+  M := NewMetaDataProvider(FDSQL.o_SQLDA);
   Reader := TDBXReader_Firebird_DSQL.Create(FConnection, FDBHandle, M, FDSQL, FTrimChar);
   Result := TDBXErrorCodes.None;
 end;
@@ -278,7 +352,7 @@ function TDBXCommand_Firebird.ExecuteImmediate(const SQL: TDBXWideString; out
     aReader: IDBXReader): TDBXErrorCode;
 var M: IMetaDataProvider;
     S: string;
-    sFlag, sViewFlag: string;
+    sFlag: string;
     W: WideString;
     WL: TWideStringList;
     sRelation: WideString;
@@ -330,7 +404,7 @@ begin
     FDSQL.Execute(StatusVector);
     if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
 
-    M := TMetaDataProvider_Firebird.Create(FDSQL.o_SQLDA);
+    M := NewMetaDataProvider(FDSQL.o_SQLDA);
     aReader := TDBXReader_Firebird_DSQL.Create(FConnection, FDBHandle, M, FDSQL, True);
     Result := TDBXErrorCodes.None;
   end else if Pos(TDBXMetaDataCommands.GetTables, SQL) = 1 then begin
@@ -370,7 +444,7 @@ begin
     FDSQL.Execute(StatusVector);
     if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
 
-    M := TMetaDataProvider_Firebird.Create(FDSQL.o_SQLDA);
+    M := NewMetaDataProvider(FDSQL.o_SQLDA);
     aReader := TDBXReader_Firebird_DSQL.Create(FConnection, FDBHandle, M, FDSQL, True);
     Result := TDBXErrorCodes.None;
   end else if Pos(TDBXMetaDataCommands.GetIndexes, SQL) = 1 then begin
@@ -414,7 +488,7 @@ begin
     FDSQL.Execute(StatusVector);
     if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
 
-    M := TMetaDataProvider_Firebird.Create(FDSQL.o_SQLDA);
+    M := NewMetaDataProvider(FDSQL.o_SQLDA);
     aReader := TDBXReader_Firebird_DSQL.Create(FConnection, FDBHandle, M, FDSQL, True);
     Result := TDBXErrorCodes.None;
   end else if Pos(TDBXMetaDatacommands.GetProcedureParameters, SQL) = 1 then begin
@@ -482,7 +556,7 @@ begin
     FDSQL.Execute(StatusVector);
     if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
 
-    M := TMetaDataProvider_Firebird.Create(FDSQL.o_SQLDA);
+    M := NewMetaDataProvider(FDSQL.o_SQLDA);
     aReader := TDBXReader_Firebird_DSQL.Create(FConnection, FDBHandle, M, FDSQL, True);
     Result := TDBXErrorCodes.None;
   end else if Pos(TDBXMetaDatacommands.GetProcedures, SQL) = 1 then begin
@@ -496,7 +570,7 @@ begin
     FDSQL.Execute(StatusVector);
     if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
 
-    M := TMetaDataProvider_Firebird.Create(FDSQL.o_SQLDA);
+    M := NewMetaDataProvider(FDSQL.o_SQLDA);
     aReader := TDBXReader_Firebird_DSQL.Create(FConnection, FDBHandle, M, FDSQL, True);
     Result := TDBXErrorCodes.None;
   end else
@@ -527,6 +601,15 @@ begin
     Rows := 0;
     Result := TDBXErrorCodes.None;
   end;
+end;
+
+function TDBXCommand_Firebird.NewMetaDataProvider(
+  const aSQLDA: TXSQLDA): IMetaDataProvider;
+begin
+  if FConnection.GetIsDelphi2007Connection then
+    Result := TMetaDataProvider_Firebird_D2007.Create(aSQLDA)
+  else
+    Result := TMetaDataProvider_Firebird.Create(aSQLDA);
 end;
 
 function TDBXCommand_Firebird.Prepare(const SQL: TDBXWideString; Count:

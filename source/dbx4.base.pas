@@ -5,6 +5,8 @@ interface
 uses SysUtils, FmtBcd, SqlTimSt, DBXCommon, DBXPlatform, DBXDynalink;
 
 type
+  TRawByteStringArray = array of RawByteString;
+
   IDBXBase = interface(IInterface)
   ['{671ED8A1-C1CC-46CC-AFD6-62DE69695235}']
     function Close: TDBXErrorCode;
@@ -34,6 +36,7 @@ type
         IsolationLevel: TInt32): TDBXErrorCode;
     function Commit(TransactionHandle: TDBXTransactionHandle): TDBXErrorCode;
     function Connect(Count: TInt32; Names, Values: TWideStringArray): TDBXErrorCode;
+    function GetIsDelphi2007Connection: boolean;
     function IsolationLevel: TInt32;
     function Rollback(TransactionHandle: TDBXTransactionHandle): TDBXErrorCode;
     function SetCallbackEvent(CallbackHandle: DBXCallbackHandle; CallbackEvent:
