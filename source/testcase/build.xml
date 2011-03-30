@@ -10,7 +10,11 @@
 	<target name="dbx.test">
 		<tempfile property="p.script" destdir="${env.TEMP}" suffix=".cmd"/>
 
-		<property name="program" location="${env.HOMEDRIVE}${env.HOMEPATH}\Project\output.${p.tag.program}\moon\dbxfbTests.exe" />
+		<condition property="p.config" value="" else="release">
+			<equals arg1="${p.tag.program}" arg2="d11" />
+		</condition>
+
+		<property name="program" location="${env.HOMEDRIVE}${env.HOMEPATH}\Project\output.${p.tag.program}\moon\${p.config}\dbxfbTests.exe" />
 
 		<echo file="${p.script}">
 			${program} -config ${program.conf} -drivers ${env.HOMEDRIVE}${env.HOMEPATH}\project\output.d11\moon\drivers -test ${test} -console
