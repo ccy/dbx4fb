@@ -10,7 +10,6 @@
     <Projects Include="..\..\core\project\patch.rtl.dproj" />
     <Projects Include="..\..\core\project\patch.vcl.dproj" />
     <Projects Include="dbxfbTests.dproj" />
-    <Projects Include="fb4.dproj" />
   </ItemGroup>
   <ProjectExtensions>
     <Borland.Personality>Default.Personality</Borland.Personality>
@@ -18,15 +17,6 @@
     <BorlandProject>
 <BorlandProject xmlns=""><Default.Personality></Default.Personality></BorlandProject></BorlandProject>
   </ProjectExtensions>
-  <Target Name="fb4">
-    <MSBuild Projects="fb4.dproj" Targets="" />
-  </Target>
-  <Target Name="fb4:Clean">
-    <MSBuild Projects="fb4.dproj" Targets="Clean" />
-  </Target>
-  <Target Name="fb4:Make">
-    <MSBuild Projects="fb4.dproj" Targets="Make" />
-  </Target>
   <Target Name="patch_rtl">
     <MSBuild Projects="..\..\core\project\patch.rtl.dproj" Targets="" />
   </Target>
@@ -82,13 +72,13 @@
     <MSBuild Projects="dbxfbTests.dproj" Targets="Make" />
   </Target>
   <Target Name="Build">
-    <CallTarget Targets="fb4;patch_rtl;patch_vcl;patch_dbx;oortl;oofirebird;dbxfbTests" />
+    <CallTarget Targets="patch_rtl;patch_vcl;patch_dbx;oortl;oofirebird;dbxfbTests" />
   </Target>
   <Target Name="Clean">
-    <CallTarget Targets="fb4:Clean;patch_rtl:Clean;patch_vcl:Clean;patch_dbx:Clean;oortl:Clean;oofirebird:Clean;dbxfbTests:Clean" />
+    <CallTarget Targets="patch_rtl:Clean;patch_vcl:Clean;patch_dbx:Clean;oortl:Clean;oofirebird:Clean;dbxfbTests:Clean" />
   </Target>
   <Target Name="Make">
-    <CallTarget Targets="fb4:Make;patch_rtl:Make;patch_vcl:Make;patch_dbx:Make;oortl:Make;oofirebird:Make;dbxfbTests:Make" />
+    <CallTarget Targets="patch_rtl:Make;patch_vcl:Make;patch_dbx:Make;oortl:Make;oofirebird:Make;dbxfbTests:Make" />
   </Target>
   <Import Condition="Exists('$(MSBuildBinPath)\Borland.Group.Targets')" Project="$(MSBuildBinPath)\Borland.Group.Targets" />
 </Project>
