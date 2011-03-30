@@ -39,73 +39,73 @@
 			<MSBuild Projects="fb4.dproj"/>
 		</Target>
 		<Target Name="fb4:Clean">
-			<MSBuild Targets="Clean" Projects="fb4.dproj"/>
+			<MSBuild Projects="fb4.dproj" Targets="Clean"/>
 		</Target>
 		<Target Name="fb4:Make">
-			<MSBuild Targets="Make" Projects="fb4.dproj"/>
+			<MSBuild Projects="fb4.dproj" Targets="Make"/>
 		</Target>
 		<Target Name="patch_rtl">
 			<MSBuild Projects="..\..\core\project.d15\patch.rtl.dproj"/>
 		</Target>
 		<Target Name="patch_rtl:Clean">
-			<MSBuild Targets="Clean" Projects="..\..\core\project.d15\patch.rtl.dproj"/>
+			<MSBuild Projects="..\..\core\project.d15\patch.rtl.dproj" Targets="Clean"/>
 		</Target>
 		<Target Name="patch_rtl:Make">
-			<MSBuild Targets="Make" Projects="..\..\core\project.d15\patch.rtl.dproj"/>
+			<MSBuild Projects="..\..\core\project.d15\patch.rtl.dproj" Targets="Make"/>
 		</Target>
 		<Target Name="patch_vcl">
 			<MSBuild Projects="..\..\core\project.d15\patch.vcl.dproj"/>
 		</Target>
 		<Target Name="patch_vcl:Clean">
-			<MSBuild Targets="Clean" Projects="..\..\core\project.d15\patch.vcl.dproj"/>
+			<MSBuild Projects="..\..\core\project.d15\patch.vcl.dproj" Targets="Clean"/>
 		</Target>
 		<Target Name="patch_vcl:Make">
-			<MSBuild Targets="Make" Projects="..\..\core\project.d15\patch.vcl.dproj"/>
+			<MSBuild Projects="..\..\core\project.d15\patch.vcl.dproj" Targets="Make"/>
 		</Target>
 		<Target Name="oortl">
 			<MSBuild Projects="..\..\core\project.d15\oortl.dproj"/>
 		</Target>
 		<Target Name="oortl:Clean">
-			<MSBuild Targets="Clean" Projects="..\..\core\project.d15\oortl.dproj"/>
+			<MSBuild Projects="..\..\core\project.d15\oortl.dproj" Targets="Clean"/>
 		</Target>
 		<Target Name="oortl:Make">
-			<MSBuild Targets="Make" Projects="..\..\core\project.d15\oortl.dproj"/>
+			<MSBuild Projects="..\..\core\project.d15\oortl.dproj" Targets="Make"/>
 		</Target>
 		<Target Name="oofirebird">
 			<MSBuild Projects="..\..\core\project.d15\oofirebird.dproj"/>
 		</Target>
 		<Target Name="oofirebird:Clean">
-			<MSBuild Targets="Clean" Projects="..\..\core\project.d15\oofirebird.dproj"/>
+			<MSBuild Projects="..\..\core\project.d15\oofirebird.dproj" Targets="Clean"/>
 		</Target>
 		<Target Name="oofirebird:Make">
-			<MSBuild Targets="Make" Projects="..\..\core\project.d15\oofirebird.dproj"/>
+			<MSBuild Projects="..\..\core\project.d15\oofirebird.dproj" Targets="Make"/>
 		</Target>
 		<Target Name="DBXCommonDriverEx">
 			<MSBuild Projects="..\..\core\project.d15\DBXCommonDriverEx.dproj"/>
 		</Target>
 		<Target Name="DBXCommonDriverEx:Clean">
-			<MSBuild Targets="Clean" Projects="..\..\core\project.d15\DBXCommonDriverEx.dproj"/>
+			<MSBuild Projects="..\..\core\project.d15\DBXCommonDriverEx.dproj" Targets="Clean"/>
 		</Target>
 		<Target Name="DBXCommonDriverEx:Make">
-			<MSBuild Targets="Make" Projects="..\..\core\project.d15\DBXCommonDriverEx.dproj"/>
+			<MSBuild Projects="..\..\core\project.d15\DBXCommonDriverEx.dproj" Targets="Make"/>
 		</Target>
 		<Target Name="DBXFirebirdDriverEx">
 			<MSBuild Projects="..\..\core\project.d15\DBXFirebirdDriverEx.dproj"/>
 		</Target>
 		<Target Name="DBXFirebirdDriverEx:Clean">
-			<MSBuild Targets="Clean" Projects="..\..\core\project.d15\DBXFirebirdDriverEx.dproj"/>
+			<MSBuild Projects="..\..\core\project.d15\DBXFirebirdDriverEx.dproj" Targets="Clean"/>
 		</Target>
 		<Target Name="DBXFirebirdDriverEx:Make">
-			<MSBuild Targets="Make" Projects="..\..\core\project.d15\DBXFirebirdDriverEx.dproj"/>
+			<MSBuild Projects="..\..\core\project.d15\DBXFirebirdDriverEx.dproj" Targets="Make"/>
 		</Target>
 		<Target Name="dbxfbTests">
 			<MSBuild Projects="dbxfbTests.dproj"/>
 		</Target>
 		<Target Name="dbxfbTests:Clean">
-			<MSBuild Targets="Clean" Projects="dbxfbTests.dproj"/>
+			<MSBuild Projects="dbxfbTests.dproj" Targets="Clean"/>
 		</Target>
 		<Target Name="dbxfbTests:Make">
-			<MSBuild Targets="Make" Projects="dbxfbTests.dproj"/>
+			<MSBuild Projects="dbxfbTests.dproj" Targets="Make"/>
 		</Target>
 		<Target Name="Build">
 			<CallTarget Targets="fb4;patch_rtl;patch_vcl;oortl;oofirebird;DBXCommonDriverEx;DBXFirebirdDriverEx;dbxfbTests"/>
@@ -116,5 +116,5 @@
 		<Target Name="Make">
 			<CallTarget Targets="fb4:Make;patch_rtl:Make;patch_vcl:Make;oortl:Make;oofirebird:Make;DBXCommonDriverEx:Make;DBXFirebirdDriverEx:Make;dbxfbTests:Make"/>
 		</Target>
-		<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')" Project="$(BDS)\Bin\CodeGear.Group.Targets"/>
 	</Project>
