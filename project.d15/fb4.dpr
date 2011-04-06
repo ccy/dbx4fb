@@ -15,8 +15,7 @@ library fb4;
 {$R 'library.res' '..\..\build\rc\library.rc'}
 
 uses
-  SysUtils,
-  Windows,
+  FastMM4,
   CodeRedirect in '..\..\core\source\patch\CodeRedirect.pas',
   FmtBcd.QC50427.D2011 in '..\..\core\source\patch\FmtBcd.QC50427.D2011.pas',
   firebird.ibase.h in '..\..\core\source\firebird\firebird.ibase.h.pas',
