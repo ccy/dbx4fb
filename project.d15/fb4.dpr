@@ -18,6 +18,8 @@ uses
   FastMM4,
   CodeRedirect in '..\..\core\source\patch\CodeRedirect.pas',
   FmtBcd.QC50427.D2011 in '..\..\core\source\patch\FmtBcd.QC50427.D2011.pas',
+  FmtBcd.QC92869 in '..\..\core\source\patch\FmtBcd.QC92869.pas',
+  FmtBcd.QC89696 in '..\..\core\source\patch\FmtBcd.QC89696.pas',
   firebird.ibase.h in '..\..\core\source\firebird\firebird.ibase.h.pas',
   firebird.types_pub.h in '..\..\core\source\firebird\firebird.types_pub.h.pas',
   firebird.sqlda_pub.h in '..\..\core\source\firebird\firebird.sqlda_pub.h.pas',

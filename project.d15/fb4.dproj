@@ -62,6 +62,8 @@
 			</RcCompile>
 			<DCCReference Include="..\..\core\source\patch\CodeRedirect.pas"/>
 			<DCCReference Include="..\..\core\source\patch\FmtBcd.QC50427.D2011.pas"/>
+			<DCCReference Include="..\..\core\source\patch\FmtBcd.QC92869.pas"/>
+			<DCCReference Include="..\..\core\source\patch\FmtBcd.QC89696.pas"/>
 			<DCCReference Include="..\..\core\source\firebird\firebird.ibase.h.pas"/>
 			<DCCReference Include="..\..\core\source\firebird\firebird.types_pub.h.pas"/>
 			<DCCReference Include="..\..\core\source\firebird\firebird.sqlda_pub.h.pas"/>
