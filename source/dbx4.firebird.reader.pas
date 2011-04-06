@@ -36,6 +36,7 @@ type
 
   TDBXRow_Firebird_GetDatabase = class(TDBXBase_Firebird, IDBXRow)
   protected
+    function Close: TDBXErrorCode; override;
     function GetAnsiString(Ordinal: TInt32; Value: TDBXAnsiStringBuilder; out
         IsNull: LongBool): TDBXErrorCode;
     function GetBoolean(Ordinal: TInt32; out Value, IsNull: LongBool):
@@ -188,6 +189,11 @@ begin
     Result := S_OK;
   end else
     Result := inherited QueryInterface(IID, Obj);
+end;
+
+function TDBXRow_Firebird_GetDatabase.Close: TDBXErrorCode;
+begin
+  Result := TDBXErrorCodes.None;
 end;
 
 function TDBXRow_Firebird_GetDatabase.GetAnsiString(Ordinal: TInt32;
