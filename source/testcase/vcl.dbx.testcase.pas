@@ -117,6 +117,7 @@ type{$M+}
     procedure Test_Decimal_18_8_Deduction;
     procedure Test_Unicode_SQL;
     procedure Test_Param_Single_Shortint;
+    procedure Test_Insert_Returning;
   end;
 
   TTestCase_DBX_Transaction = class(TTestCase_DBX)
@@ -826,6 +827,33 @@ begin
   finally
     L.Free;
     FConnection.ExecuteDirect('DROP VIEW VIEW_OF_TEST');
+  end;
+end;
+
+procedure TTestCase_DBX_General.Test_Insert_Returning;
+var s: string;
+    D: TSQLDataSet;
+begin
+  if Pos('Firebird 1.', GetTestData.ServerVersion) <> 0 then Exit;
+
+  S := 'CREATE TABLE T_INSERT ' +
+       '( ' +
+       '  C1 INTEGER, ' +
+       '  C2 INTEGER ' +
+       ')';
+  FConnection.ExecuteDirect(S);
+  D := TSQLDataSet.Create(nil);
+  try
+    D.SQLConnection := FConnection;
+    D.CommandText := 'INSERT INTO T_INSERT VALUES(100, 200) RETURNING C1,C2';
+    D.Params.CreateParam(ftInteger, 'C1', ptOutput);
+    D.Params.CreateParam(ftInteger, 'C2', ptOutput);
+    D.ExecSQL(False);
+    CheckEquals(100, D.Params[0].AsInteger);
+    CheckEquals(200, D.Params[1].AsInteger);
+  finally
+    D.Free;
+    FConnection.ExecuteDirect('DROP TABLE T_INSERT');
   end;
 end;
 
