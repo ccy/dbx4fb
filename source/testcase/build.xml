@@ -10,11 +10,15 @@
 	<target name="dbx.test">
 		<tempfile property="p.script" destdir="${env.TEMP}" suffix=".cmd"/>
 
+		<condition property="p.platform" value="" else="win32">
+			<equals arg1="${p.tag.program}" arg2="d11" />
+		</condition>
+
 		<condition property="p.config" value="" else="release">
 			<equals arg1="${p.tag.program}" arg2="d11" />
 		</condition>
 
-		<property name="program" location="${env.HOMEDRIVE}${env.HOMEPATH}\Project\output.${p.tag.program}\moon\${p.config}\dbxfbTests.exe" />
+		<property name="program" location="${env.HOMEDRIVE}${env.HOMEPATH}\Project\output.${p.tag.program}\moon\${p.platform}\${p.config}\dbxfbTests.exe" />
 
 		<echo file="${p.script}">
 			${program} -config ${program.conf} -drivers ${env.HOMEDRIVE}${env.HOMEPATH}\project\output.d11\moon\drivers -test ${test} -console
@@ -32,15 +36,16 @@
 		<echo message="2. DBX 4 Firebird driver for Delphi 2009" />
 		<echo message="3. DBX 4 Firebird driver for Delphi 2010" />
 		<echo message="4. DBX 4 Firebird driver for Delphi XE" />
+		<echo message="5. DBX 4 Firebird driver for Delphi XE2" />
 		<echo message="9. Exit" />
 		<echo />
-		<input message="Please choose option to ant:" validargs="1,2,3,4,9" addproperty="p.option" defaultvalue="1" />
+		<input message="Please choose option to ant:" validargs="1,2,3,4,5,9" addproperty="p.option" defaultvalue="1" />
 
 		<antcall target="t.execute"/>
 	</target>
 
 	<target name="t.execute" depends="t.option" unless="p.option.exit">
-		<for param="i" begin="1" end="14" parallel="true" threadCount="3">
+		<for param="i" begin="1" end="14" parallel="true" threadCount="1">
 			<sequential>
 				<antcall target="dbx.test">
 					<param name="test" value="embedded_@{i}" />
@@ -48,7 +53,7 @@
 			</sequential>
 		</for>
 
-		<for param="i" begin="1" end="5" parallel="true" threadCount="3">
+		<for param="i" begin="1" end="5" parallel="true" threadCount="1">
 			<sequential>
 				<antcall target="dbx.test">
 					<param name="test" value="server_@{i}" />
@@ -72,6 +77,10 @@
 
 		<condition property="p.tag.program" value="d15">
 			<equals arg1="${p.option}" arg2="4" />
+		</condition>
+
+		<condition property="p.tag.program" value="d16">
+			<equals arg1="${p.option}" arg2="5" />
 		</condition>
 
 		<condition property="p.option.exit">

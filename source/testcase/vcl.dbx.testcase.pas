@@ -9,7 +9,7 @@ uses SysUtils, Classes, DB, SqlExpr, Provider, DBClient, FMTBcd,
      ;
 
 type{$M+}
-  EDBXError = {$if CompilerVersion<=21}TDBXError{$elseif CompilerVersion=22}EAccessViolation{$ifend};
+  EDBXError = {$if CompilerVersion<=21}TDBXError{$elseif CompilerVersion>=22}EAccessViolation{$ifend};
 
   ITestData = interface(IInterface)
   ['{2DCC2E1F-BCE2-4D04-A61E-03DBFC031D0E}']
@@ -397,7 +397,7 @@ begin
   if not FileExists(GetTestDataFileName) then begin
     F := TIniFile.Create(GetTestDataFileName);
     try
-      sDriver := 'dbxfb4d15.dll';
+      sDriver := 'dbx4fb.dll';
       F.WriteString(GetDriverSectionName, 'getSQLDriverFIREBIRD', sDriver);
       F.WriteString('embedded', 'embedded_1', 'fbembed.dll');
       F.WriteString('server', 'server_1', 'localhost');
@@ -413,11 +413,7 @@ end;
 
 class function TTestSuite_DBX.GetDriverSectionName: string;
 begin
-  Result := {$if CompilerVersion<=18.5}'driver'
-            {$elseif CompilerVersion=20}'driver.2009'
-            {$elseif CompilerVersion=21}'driver.2010'
-            {$else}'driver.xe'
-            {$ifend};
+  Result := 'driver'{$ifdef DEBUG} + '.debug'{$endif};
 end;
 
 class function TTestSuite_DBX.GetParams(const aHostName, aExtraParams:
@@ -635,6 +631,7 @@ end;
 
 procedure TTestCase_DBX_General.Test_ServerCharSet;
 var S: widestring;
+    C: Char;
     D: TSQLDataSet;
 begin
   {$ifndef Unicode}Exit;{$endif}
@@ -648,7 +645,8 @@ begin
        ') ';
   FConnection.ExecuteDirect(S);
 
-  S := Format('INSERT INTO T_TEST_CHARSET(S_WIN1252, S_ISO8859_13) VALUES (''%s'', ''%s'')', [#$9E, #$9E]);
+  C := #$9E;
+  S := Format('INSERT INTO T_TEST_CHARSET(S_WIN1252, S_ISO8859_13) VALUES (''%s'', ''%s'')', [C, C]);
   FConnection.ExecuteDirect(S);
 
   // Test WIN1252 Transliteration
@@ -1773,6 +1771,7 @@ begin
   Execute;
   CheckEquals(Length(Param.AsString), Length(Field.AsString));
 
+  F := Field as TStringField;
   Param.AsWideString := DupeString('A', F.Size);
   Execute;
   CheckEquals(Length(Param.AsWideString), Length(Field.AsWideString));
@@ -1806,6 +1805,7 @@ begin
   Execute;
   CheckEquals(Length(Param.AsString), Length(Field.AsString));
 
+  F := Field as TStringField;
   Param.AsWideString := DupeString('A', F.Size);
   Execute;
   CheckEquals(Length(Param.AsWideString), Length(Field.AsWideString));
@@ -2264,7 +2264,7 @@ begin
   sEmbeds := TStringList.Create;
   try
     F.ReadSectionValues(GetDriverSectionName, sDrivers);
-    F.ReadSectionValues({$if CompilerVersion=18.5}'server.d11'{$else}'server'{$ifend}, sServers);
+    F.ReadSectionValues('server', sServers);
     F.ReadSectionValues('embedded', sEmbeds);
     for i := 0 to sDrivers.Count - 1 do begin
       for j := 0 to sServers.Count - 1 do begin
@@ -2360,7 +2360,7 @@ begin
   sEmbeds := TStringList.Create;
   try
     F.ReadSectionValues(GetDriverSectionName, sDrivers);
-    F.ReadSectionValues({$if CompilerVersion=18.5}'server.d11'{$else}'server'{$ifend}, sServers);
+    F.ReadSectionValues('server', sServers);
     F.ReadSectionValues('embedded', sEmbeds);
     for i := 0 to sDrivers.Count - 1 do begin
       for j := 0 to sServers.Count - 1 do begin
