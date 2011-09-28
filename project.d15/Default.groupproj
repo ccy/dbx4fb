@@ -3,9 +3,6 @@
 			<ProjectGuid>{69c7e279-5fcd-4b25-bcc0-8c2286502fe1}</ProjectGuid>
 		</PropertyGroup>
 		<ItemGroup>
-			<Projects Include="fb4.dproj">
-				<Dependencies/>
-			</Projects>
 			<Projects Include="..\..\core\project.d15\patch.rtl.dproj">
 				<Dependencies/>
 			</Projects>
@@ -35,15 +32,6 @@
 				<Default.Personality/>
 			</BorlandProject>
 		</ProjectExtensions>
-		<Target Name="fb4">
-			<MSBuild Projects="fb4.dproj"/>
-		</Target>
-		<Target Name="fb4:Clean">
-			<MSBuild Projects="fb4.dproj" Targets="Clean"/>
-		</Target>
-		<Target Name="fb4:Make">
-			<MSBuild Projects="fb4.dproj" Targets="Make"/>
-		</Target>
 		<Target Name="patch_rtl">
 			<MSBuild Projects="..\..\core\project.d15\patch.rtl.dproj"/>
 		</Target>
@@ -108,13 +96,13 @@
 			<MSBuild Projects="dbxfbTests.dproj" Targets="Make"/>
 		</Target>
 		<Target Name="Build">
-			<CallTarget Targets="fb4;patch_rtl;patch_vcl;oortl;oofirebird;DBXCommonDriverEx;DBXFirebirdDriverEx;dbxfbTests"/>
+			<CallTarget Targets="patch_rtl;patch_vcl;oortl;oofirebird;DBXCommonDriverEx;DBXFirebirdDriverEx;dbxfbTests"/>
 		</Target>
 		<Target Name="Clean">
-			<CallTarget Targets="fb4:Clean;patch_rtl:Clean;patch_vcl:Clean;oortl:Clean;oofirebird:Clean;DBXCommonDriverEx:Clean;DBXFirebirdDriverEx:Clean;dbxfbTests:Clean"/>
+			<CallTarget Targets="patch_rtl:Clean;patch_vcl:Clean;oortl:Clean;oofirebird:Clean;DBXCommonDriverEx:Clean;DBXFirebirdDriverEx:Clean;dbxfbTests:Clean"/>
 		</Target>
 		<Target Name="Make">
-			<CallTarget Targets="fb4:Make;patch_rtl:Make;patch_vcl:Make;oortl:Make;oofirebird:Make;DBXCommonDriverEx:Make;DBXFirebirdDriverEx:Make;dbxfbTests:Make"/>
+			<CallTarget Targets="patch_rtl:Make;patch_vcl:Make;oortl:Make;oofirebird:Make;DBXCommonDriverEx:Make;DBXFirebirdDriverEx:Make;dbxfbTests:Make"/>
 		</Target>
 		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')" Project="$(BDS)\Bin\CodeGear.Group.Targets"/>
 	</Project>
