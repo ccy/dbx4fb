@@ -7,7 +7,7 @@
 			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
 			<DCC_DependencyCheckOutputName>..\..\..\..\output.d11\moon\dbxfbTests.exe</DCC_DependencyCheckOutputName>
 			<ProjectVersion>12.0</ProjectVersion>
-			<Config Condition="'$(Config)'==''">Debug</Config>
+			<Config Condition="'$(Config)'==''">Release</Config>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
 			<Base>true</Base>
@@ -33,8 +33,7 @@
 			<DCC_UsePackage>vcl;rtl;dunit;DbxCommonDriver;oortl;oofirebird;DBXFirebirdDriverEx</DCC_UsePackage>
 			<DllPrefixDefined>true</DllPrefixDefined>
 			<RuntimeOnlyPackage>true</RuntimeOnlyPackage>
-			<DCC_DependencyCheckOutputName>..\..\..\..\output.d14\moon\dbxfbTests.exe</DCC_DependencyCheckOutputName>
-			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+			<DCC_DependencyCheckOutputName>..\..\..\..\output.d14\moon\Win32\Release\dbxfbTests.exe</DCC_DependencyCheckOutputName>
 			<DCC_Description>E Stream Software - RTL Patcher</DCC_Description>
 			<DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
 			<DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>

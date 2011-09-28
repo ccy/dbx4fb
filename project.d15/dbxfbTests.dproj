@@ -6,7 +6,7 @@
 			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
 			<DCC_DependencyCheckOutputName>..\..\..\..\output.d11\moon\dbxfbTests.exe</DCC_DependencyCheckOutputName>
 			<ProjectVersion>12.3</ProjectVersion>
-			<Config Condition="'$(Config)'==''">Debug</Config>
+			<Config Condition="'$(Config)'==''">Release</Config>
 			<Base>True</Base>
 			<Platform>Win32</Platform>
 			<AppType>Console</AppType>
@@ -38,7 +38,6 @@
 			<DllPrefixDefined>true</DllPrefixDefined>
 			<RuntimeOnlyPackage>true</RuntimeOnlyPackage>
 			<DCC_DependencyCheckOutputName>..\..\..\..\output.d14\moon\dbxfbTests.exe</DCC_DependencyCheckOutputName>
-			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
 			<DCC_Description>E Stream Software - RTL Patcher</DCC_Description>
 			<DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
 			<DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
@@ -92,7 +91,7 @@
 			<BorlandProject>
 				<Delphi.Personality>
 					<Parameters>
-						<Parameters Name="RunParams">-config %HomeDrive%%HomePath%\Project\source.d11\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\Project\output.d11\moon\drivers -test embedded_14</Parameters>
+						<Parameters Name="RunParams">-config %HomeDrive%%HomePath%\Project\source\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\Project\output.d11\moon\drivers -test embedded_1</Parameters>
 					</Parameters>
 					<VersionInfo>
 						<VersionInfo Name="IncludeVerInfo">False</VersionInfo>
