@@ -301,7 +301,7 @@ end;
 
 function TDBXCommand_Firebird.Close: TDBXErrorCode;
 var i: integer;
-    e: longint;
+    e: TFBIntType;
     o: TDBXRowHandle;
 begin
   if Assigned(FDSQL) then begin
