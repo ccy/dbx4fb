@@ -10,7 +10,7 @@
 			<AppType>Library</AppType>
 			<FrameworkType>None</FrameworkType>
 			<Platform Condition="'$(Platform)'==''">Win32</Platform>
-			<TargetedPlatforms>1</TargetedPlatforms>
+			<TargetedPlatforms>3</TargetedPlatforms>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
 			<Base>true</Base>
@@ -47,6 +47,12 @@
 			<CfgParent>Base</CfgParent>
 			<Base>true</Base>
 		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win64)'!=''">
+			<Cfg_2_Win64>true</Cfg_2_Win64>
+			<CfgParent>Cfg_2</CfgParent>
+			<Cfg_2>true</Cfg_2>
+			<Base>true</Base>
+		</PropertyGroup>
 		<PropertyGroup Condition="'$(Config)'=='Profile' or '$(Cfg_3)'!=''">
 			<Cfg_3>true</Cfg_3>
 			<CfgParent>Base</CfgParent>
@@ -69,6 +75,8 @@
 			<CfgDependentOn>..\..\build\optset\Base.optset</CfgDependentOn>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base_Win64)'!=''">
+			<Debugger_RunParams>-config %HomeDrive%%HomePath%\Project\source\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\Project\output.d11\moon\drivers -test embedded_4</Debugger_RunParams>
+			<Debugger_HostApplication>$(ActiveHostApplication)</Debugger_HostApplication>
 			<DCC_Namespace>System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
 			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
 		</PropertyGroup>
@@ -92,6 +100,10 @@
 		<Import Condition="'$(Cfg_2)'!='' And Exists('..\..\build\optset\Release.optset')" Project="..\..\build\optset\Release.optset"/>
 		<PropertyGroup Condition="'$(Cfg_2)'!=''">
 			<CfgDependentOn>..\..\build\optset\Release.optset</CfgDependentOn>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
+			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+			<DCC_AssertionsAtRuntime>false</DCC_AssertionsAtRuntime>
 		</PropertyGroup>
 		<Import Condition="'$(Cfg_3)'!='' And Exists('..\..\build\optset\Profile.optset')" Project="..\..\build\optset\Profile.optset"/>
 		<PropertyGroup Condition="'$(Cfg_3)'!=''">
@@ -198,7 +210,7 @@
 					</Excluded_Packages>
 				</Delphi.Personality>
 				<Platforms>
-					<Platform value="Win64">False</Platform>
+					<Platform value="Win64">True</Platform>
 					<Platform value="OSX32">False</Platform>
 					<Platform value="Win32">True</Platform>
 				</Platforms>
