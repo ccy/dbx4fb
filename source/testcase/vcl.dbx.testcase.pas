@@ -46,6 +46,9 @@ type{$M+}
   TTestSuite_DBX = class abstract
   protected
     class function GetDriverSectionName: string;
+    class function GetEmbeddedSectionName: string;
+    class function GetServerSectionName: string;
+    class function GetVendorSectionName: string;
     class procedure CheckTestDataFile;
     class function GetTestDataFileName: string;
     class function GetParams(const aHostName, aExtraParams: string): string;
@@ -413,7 +416,20 @@ end;
 
 class function TTestSuite_DBX.GetDriverSectionName: string;
 begin
-  Result := 'driver'{$ifdef DEBUG} + '.debug'{$endif};
+  Result := 'driver'
+            {$ifdef DEBUG} + '.debug'
+            {$else}
+              {$ifdef Win32} + '.x86'{$endif}
+              {$ifdef Win64} + '.x64'{$endif}
+            {$endif};
+end;
+
+class function TTestSuite_DBX.GetEmbeddedSectionName: string;
+begin
+  Result := 'embedded.' +
+            {$ifdef Win32}'x86'{$endif}
+            {$ifdef Win64}'x64'{$endif}
+            ;
 end;
 
 class function TTestSuite_DBX.GetParams(const aHostName, aExtraParams:
@@ -439,6 +455,22 @@ end;
 class function TTestSuite_DBX.GetTestDataFileName: string;
 begin
   Result := TCmdLineParams_App.ConfigFile;
+end;
+
+class function TTestSuite_DBX.GetVendorSectionName: string;
+begin
+  Result := 'vendor.' +
+            {$ifdef Win32}'x86'{$endif}
+            {$ifdef Win64}'x64'{$endif}
+            ;
+end;
+
+class function TTestSuite_DBX.GetServerSectionName: string;
+begin
+  Result := 'server.' +
+            {$ifdef Win32}'x86'{$endif}
+            {$ifdef Win64}'x64'{$endif}
+            ;
 end;
 
 class function TTestSuite_DBX.GetServerVersion(aLibraryName, aParams:
@@ -1821,7 +1853,6 @@ begin
 end;
 
 procedure TTestCase_DBX_FieldType.Test_VARCHAR_UTF8;
-var F: TStringField;
 begin
   if Pos('Firebird 1.', GetTestData.ServerVersion) <> 0 then Exit;
   Test_VARCHAR_Unicode;
@@ -2264,19 +2295,19 @@ begin
   sEmbeds := TStringList.Create;
   try
     F.ReadSectionValues(GetDriverSectionName, sDrivers);
-    F.ReadSectionValues('server', sServers);
-    F.ReadSectionValues('embedded', sEmbeds);
+    F.ReadSectionValues(GetServerSectionName, sServers);
+    F.ReadSectionValues(GetEmbeddedSectionName, sEmbeds);
     for i := 0 to sDrivers.Count - 1 do begin
       for j := 0 to sServers.Count - 1 do begin
         if TCmdLineParams_App.HasTestName and (TCmdLineParams_App.GetTestName <> sServers.Names[j]) then Continue;
 
         sParams := GetParams(sServers.ValueFromIndex[j], aParams);
 
-        sVer := GetServerVersion(F.ReadString('vendor', 'default', ''), sParams);
+        sVer := GetServerVersion(F.ReadString(GetVendorSectionName, 'default', ''), sParams);
 
         Result.Add(
           TTestData_SQLConnection.Create(sVer, sDrivers.ValueFromIndex[i],
-          sDrivers.Names[i], F.ReadString('vendor', sVer, sVer), sParams)
+          sDrivers.Names[i], F.ReadString(GetVendorSectionName, sVer, sVer), sParams)
         );
       end;
       for j := 0 to sEmbeds.Count - 1 do begin
@@ -2360,12 +2391,12 @@ begin
   sEmbeds := TStringList.Create;
   try
     F.ReadSectionValues(GetDriverSectionName, sDrivers);
-    F.ReadSectionValues('server', sServers);
-    F.ReadSectionValues('embedded', sEmbeds);
+    F.ReadSectionValues(GetServerSectionName, sServers);
+    F.ReadSectionValues(GetEmbeddedSectionName, sEmbeds);
     for i := 0 to sDrivers.Count - 1 do begin
       for j := 0 to sServers.Count - 1 do begin
         sParams1 := GetParams(sServers.ValueFromIndex[j], aParams);
-        sVer1 := GetServerVersion(F.ReadString('vendor', 'default', ''), sParams1);
+        sVer1 := GetServerVersion(F.ReadString(GetVendorSectionName, 'default', ''), sParams1);
 
         for k := 0 to sEmbeds.Count - 1 do begin
           if TCmdLineParams_App.HasTestName and (TCmdLineParams_App.GetTestName <> sEmbeds.Names[k]) then Continue;
@@ -2374,7 +2405,7 @@ begin
 
           L.Add(
             TTestData_SQLConnection.Create(sVer1, sDrivers.ValueFromIndex[i],
-            sDrivers.Names[i], F.ReadString('vendor', sVer1, sVer1), sParams1)
+            sDrivers.Names[i], F.ReadString(GetVendorSectionName, sVer1, sVer1), sParams1)
           );
 
           sParams2 := GetParams('', aParams);
