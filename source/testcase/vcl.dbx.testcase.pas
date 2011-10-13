@@ -1156,6 +1156,18 @@ begin
   Execute;
   CheckEquals(Length(Param.AsString), Length(Field.AsString));
 
+  Param.AsString := DupeString('B', Field.Size + 1);
+  Execute;
+  CheckEquals(DupeString('B', Field.Size), Field.AsString);
+
+  Param.AsString := DupeString('C', Field.Size + 2);
+  Execute;
+  CheckEquals(DupeString('C', Field.Size), Field.AsString);
+
+  Param.AsString := DupeString('D', Field.Size * 2);
+  Execute;
+  CheckEquals(DupeString('D', Field.Size), Field.AsString);
+
   Param.AsWideString := DupeString('A', Field.Size);
   Execute;
   CheckEquals(Length(Param.AsWideString), Length(Field.AsWideString));
@@ -1215,6 +1227,18 @@ begin
   Param.AsWideString := DupeString('A', Field.Size);
   Execute;
   CheckEquals(Length(Param.AsWideString), Length(Field.AsWideString));
+
+  Param.AsString := DupeString('B', Field.Size + 1);
+  Execute;
+  CheckEquals(DupeString('B', Field.Size), Field.AsWideString);
+
+  Param.AsString := DupeString('C', Field.Size + 2);
+  Execute;
+  CheckEquals(DupeString('C', Field.Size), Field.AsWideString);
+
+  Param.AsString := DupeString('D', Field.Size * 2);
+  Execute;
+  CheckEquals(DupeString('D', Field.Size), Field.AsWideString);
 
   Param.AsString := '';
   i := 0;
@@ -1799,12 +1823,23 @@ begin
   CheckEquals(Param.AsString, Field.AsString);
   CheckEquals(Param.AsWideString, Field.AsWideString);
 
-  Param.AsString := DupeString('A', F.Size);
+  Param.AsString := DupeString('A', Field.Size);
   Execute;
   CheckEquals(Length(Param.AsString), Length(Field.AsString));
 
-  F := Field as TStringField;
-  Param.AsWideString := DupeString('A', F.Size);
+  Param.AsString := DupeString('B', Field.Size + 1);
+  Execute;
+  CheckEquals(DupeString('B', Field.Size), Field.AsString);
+
+  Param.AsString := DupeString('C', Field.Size + 2);
+  Execute;
+  CheckEquals(DupeString('C', Field.Size), Field.AsString);
+
+  Param.AsString := DupeString('D', Field.Size * 2);
+  Execute;
+  CheckEquals(DupeString('D', Field.Size), Field.AsString);
+
+  Param.AsWideString := DupeString('A', Field.Size);
   Execute;
   CheckEquals(Length(Param.AsWideString), Length(Field.AsWideString));
 
@@ -1833,14 +1868,25 @@ begin
 
   CheckEquals(Param.AsWideString, Field.AsWideString);
 
-  Param.AsString := DupeString('A', F.Size);
+  Param.AsString := DupeString('A', Field.Size);
   Execute;
   CheckEquals(Length(Param.AsString), Length(Field.AsString));
 
-  F := Field as TStringField;
-  Param.AsWideString := DupeString('A', F.Size);
+  Param.AsWideString := DupeString('A', Field.Size);
   Execute;
   CheckEquals(Length(Param.AsWideString), Length(Field.AsWideString));
+
+  Param.AsString := DupeString('B', Field.Size + 1);
+  Execute;
+  CheckEquals(DupeString('B', Field.Size), Field.AsWideString);
+
+  Param.AsString := DupeString('C', Field.Size + 2);
+  Execute;
+  CheckEquals(DupeString('C', Field.Size), Field.AsWideString);
+
+  Param.AsString := DupeString('D', Field.Size * 2);
+  Execute;
+  CheckEquals(DupeString('D', Field.Size), Field.AsWideString);
 
   Test_Required;
 end;
