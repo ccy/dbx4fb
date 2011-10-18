@@ -121,6 +121,7 @@ type{$M+}
     procedure Test_Unicode_SQL;
     procedure Test_Param_Single_Shortint;
     procedure Test_Insert_Returning;
+    procedure Test_SystemTable_Char_Field;
   end;
 
   TTestCase_DBX_Transaction = class(TTestCase_DBX)
@@ -706,6 +707,30 @@ begin
   FConnection.ExecuteDirect('DROP TABLE T_TEST_CHARSET');
 end;
 
+procedure TTestCase_DBX_General.Test_SystemTable_Char_Field;
+var S, G: string;
+    D: TSQLDataSet;
+    P: TParams;
+begin
+  G := 'S1234567890abcdef';
+  S := 'CREATE GENERATOR ' + G;
+  FConnection.ExecuteDirect(S);
+
+  P := TParams.Create;
+  try
+    P.CreateParam(ftString, 'Name', ptInput).AsString := G;
+    FConnection.Execute('SELECT COUNT(*) Counter FROM RDB$GENERATORS WHERE UPPER(RDB$GENERATOR_NAME)=UPPER(:Name)', P, @D);
+    try
+      CheckEquals(1, D.Fields[0].AsInteger);
+    finally
+      D.Free;
+    end;
+  finally
+    P.Free;
+    FConnection.ExecuteDirect('DROP GENERATOR ' + G);
+  end;
+end;
+
 procedure TTestCase_DBX_General.Test_Connection_Property;
 begin
   CheckTrue(FConnection.TransactionsSupported);
@@ -1253,7 +1278,7 @@ end;
 procedure TTestCase_DBX_FieldType.Test_CHAR_UNICODE_FSS;
 begin
   // This test case is not valid for Firebird 1.5.0
-  if Pos('1.5.0', GetTestData.ServerVersion) <> 0 then Exit;
+  if Pos('1.5', GetTestData.ServerVersion) <> 0 then Exit;
   Test_CHAR_Unicode;
 end;
 
@@ -1894,7 +1919,7 @@ end;
 procedure TTestCase_DBX_FieldType.Test_VARCHAR_UNICODE_FSS;
 begin
   // This test case is not valid for Firebird 1.5.0
-  if Pos('1.5.0', GetTestData.ServerVersion) <> 0 then Exit;
+  if Pos('1.5', GetTestData.ServerVersion) <> 0 then Exit;
   Test_VARCHAR_UNICODE;
 end;
 
