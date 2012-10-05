@@ -2,8 +2,13 @@ unit vcl.dbx.cmdlines;
 
 interface
 
+uses SysUtilsEx;
+
 type
   TCmdLineParams_App = class abstract
+  strict private
+    class var FCmdLineParams: ICmdLineParams;
+    class function CmdLineParams: ICmdLineParams;
   public
     class function ConfigFile: string;
     class function Drivers: string;
@@ -14,7 +19,14 @@ type
 
 implementation
 
-uses SystemEx;
+{$WARN SYMBOL_PLATFORM OFF}
+
+class function TCmdLineParams_App.CmdLineParams: ICmdLineParams;
+begin
+  if FCmdLineParams = nil then
+    FCmdLineParams := TCmdLineParams.Create(CmdLine);
+  Result := FCmdLineParams;
+end;
 
 class function TCmdLineParams_App.ConfigFile: string;
 begin
@@ -38,7 +50,7 @@ end;
 
 class function TCmdLineParams_App.RunAsConsole: boolean;
 begin
-  Result := CmdLineParams.HasSwitch('console');
+  Result := CmdLineParams.Find('console');
 end;
 
 end.
