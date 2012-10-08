@@ -9,7 +9,9 @@ uses SysUtils, Classes, DB, SqlExpr, Provider, DBClient, FMTBcd,
      ;
 
 type{$M+}
-  EDBXError = {$if CompilerVersion<=21}TDBXError{$elseif CompilerVersion>=22}EAccessViolation{$ifend};
+  EDBXError = {$if CompilerVersion <= 21}TDBXError{$ifend}
+              {$if (CompilerVersion >= 22) and (CompilerVersion <= 23)}EAccessViolation{$ifend}
+              {$if CompilerVersion >=24}TDBXError{$ifend};
 
   ITestData = interface(IInterface)
   ['{2DCC2E1F-BCE2-4D04-A61E-03DBFC031D0E}']
@@ -138,7 +140,7 @@ type{$M+}
 
   TTestCase_DBX_FieldType = class(TTestCase_DBX)
   private
-    FDataSet: TSQLDataSet;
+    FDataSet: TDataSet;
     FParams: TParams;
     procedure Execute;
     function Field: TField;
@@ -298,6 +300,23 @@ uses SqlConst, Windows, StrUtils, WideStrings,
   SystemEx, SysUtilsEx, firebird.client, firebird.service, UniqueID,
   vcl.dbx.cmdlines;
 
+{$if RTLVersion <= 23}
+type
+  TExecuteStringType = {$if RTLVersion = 18}WideString{$else}UnicodeString{$ifend};
+
+  TSQLConnectionHelper = class helper for TSQLConnection
+  public
+    function Execute(const SQL: TExecuteStringType; Params: TParams; out ResultSet:
+        TDataSet): Integer; overload;
+  end;
+
+function TSQLConnectionHelper.Execute(const SQL: TExecuteStringType; Params:
+    TParams; out ResultSet: TDataSet): Integer;
+begin
+  Result := Execute(SQL, Params, @ResultSet);
+end;
+{$ifend}
+
 constructor TTestData_SQLConnection.Create(const aDriverName, aLibraryName,
     aGetDriverFunc, aVendorLib, aParams: string);
 begin
@@ -388,10 +407,17 @@ end;
 procedure TTestData_SQLConnection.Setup(const aConnection: TSQLConnection);
 begin
   aConnection.DriverName := FDriverName;
+{$if RTLVersion <= 23}
   aConnection.LibraryName := FLibraryName;
   aConnection.GetDriverFunc := FGetDriverFunc;
   aConnection.VendorLib := FVendorLib;
+{$ifend}
   aConnection.Params.Text := FParams;
+{$if RtlVersion >= 24}
+  aConnection.Params.Values[TDBXPropertyNames.LibraryName] := FLibraryName;
+  aConnection.Params.Values[TDBXPropertyNames.GetDriverFunc] := FGetDriverFunc;
+  aConnection.Params.Values[TDBXPropertyNames.VendorLib] := FVendorLib;
+{$ifend}
 end;
 
 class procedure TTestSuite_DBX.CheckTestDataFile;
@@ -561,7 +587,7 @@ end;
 
 procedure TTestCase_DBX_General.Test_Unicode_SQL;
 var s: string;
-    D: TSQLDataSet;
+    D: TDataSet;
     sValue: string;
 begin
   {$ifndef Unicode}Exit;{$endif}
@@ -580,7 +606,7 @@ begin
     S := Format('INSERT INTO T_INSERT_UTF8 VALUES(''%s'')', [sValue]);
     FConnection.ExecuteDirect(S);
 
-    FConnection.Execute('SELECT * FROM T_INSERT_UTF8', nil, @D);
+    FConnection.Execute('SELECT * FROM T_INSERT_UTF8', nil, D);
     try
       CheckEquals(sValue, D.Fields[0].AsString);
     finally
@@ -592,9 +618,11 @@ begin
 end;
 
 procedure TTestCase_DBX_General.Test_Param_Single_Shortint;
+{$if RTLVersion>=21}
 var s: string;
-    D: TSQLDataSet;
+    D: TDataSet;
     P: TParams;
+{$ifend}
 begin
   {$if RTLVersion>=21}
   S := 'CREATE TABLE T_ ' +
@@ -607,7 +635,7 @@ begin
   try
     P.CreateParam(ftInteger, 'F1', ptInput).AsSingle := 1;
     P.CreateParam(ftInteger, 'F2', ptInput).AsByte := 1;
-    FConnection.Execute('SELECT * FROM T_ WHERE F1=:F1 AND F2=:F2', P, @D);
+    FConnection.Execute('SELECT * FROM T_ WHERE F1=:F1 AND F2=:F2', P, D);
     try
       CheckEquals(0, D.Fields[0].AsSingle);
     finally
@@ -621,12 +649,10 @@ begin
 end;
 
 procedure TTestCase_DBX_General.Test_CAST_SQL_DECIMAL_Bug;
-var pD: ^TSQLDataSet;
-    D: TSQLDataSet;
+var D: TDataSet;
     S: string;
 begin
   //refer to BU-00010
-  New(pD);
   try
     S := 'CREATE TABLE T_TEST1 ' +
             '( ' +
@@ -649,23 +675,22 @@ begin
     StartExpectingException(TDBXError);
     S := 'SELECT CAST(Amount * CurrencyRate AS DECIMAL(18, 8)) / SQTY AS UnitPrice ' +
              'FROM T_TEST1';
+
     try
-      FConnection.Execute(S, nil, pD);
+      FConnection.Execute(S, nil, D);
     finally
-      D := pD^;
       D.Free;
     end;
 
   finally
     FConnection.ExecuteDirect('DROP TABLE T_TEST1');
-    Dispose(pD);
   end;
 end;
 
 procedure TTestCase_DBX_General.Test_ServerCharSet;
 var S: widestring;
     C: Char;
-    D: TSQLDataSet;
+    D: TDataSet;
 begin
   {$ifndef Unicode}Exit;{$endif}
   FConnection.Close;
@@ -683,7 +708,7 @@ begin
   FConnection.ExecuteDirect(S);
 
   // Test WIN1252 Transliteration
-  FConnection.Execute('SELECT S_WIN1252, S_ISO8859_13 FROM T_TEST_CHARSET', nil, @D);
+  FConnection.Execute('SELECT S_WIN1252, S_ISO8859_13 FROM T_TEST_CHARSET', nil, D);
   try
     CheckEquals(#$9E, D.Fields[0].AsString);
     CheckEquals(#$9E, D.Fields[1].AsString);
@@ -696,7 +721,7 @@ begin
   FConnection.Params.Values[SQLSERVER_CHARSET_KEY] := 'NONE';
   FConnection.Open;
 
-  FConnection.Execute('SELECT S_WIN1252, S_ISO8859_13 FROM T_TEST_CHARSET', nil, @D);
+  FConnection.Execute('SELECT S_WIN1252, S_ISO8859_13 FROM T_TEST_CHARSET', nil, D);
   try
     CheckEquals(#$9E, D.Fields[0].AsString);
     CheckEquals(#$FE, D.Fields[1].AsString);
@@ -709,7 +734,7 @@ end;
 
 procedure TTestCase_DBX_General.Test_SystemTable_Char_Field;
 var S, G: string;
-    D: TSQLDataSet;
+    D: TDataSet;
     P: TParams;
 begin
   G := 'S1234567890abcdef';
@@ -719,7 +744,7 @@ begin
   P := TParams.Create;
   try
     P.CreateParam(ftString, 'Name', ptInput).AsString := G;
-    FConnection.Execute('SELECT COUNT(*) Counter FROM RDB$GENERATORS WHERE UPPER(RDB$GENERATOR_NAME)=UPPER(:Name)', P, @D);
+    FConnection.Execute('SELECT COUNT(*) Counter FROM RDB$GENERATORS WHERE UPPER(RDB$GENERATOR_NAME)=UPPER(:Name)', P, D);
     try
       CheckEquals(1, D.Fields[0].AsInteger);
     finally
@@ -739,7 +764,7 @@ end;
 
 procedure TTestCase_DBX_General.Test_Decimal_18_8_Deduction;
 var s: string;
-    D: TSQLDataSet;
+    D: TDataSet;
 begin
   S := 'CREATE TABLE T_TRANS ' +
        '( ' +
@@ -751,7 +776,7 @@ begin
     S := 'INSERT INTO T_TRANS VALUES(16, 1)';
     FConnection.ExecuteDirect(S);
 
-    FConnection.Execute('SELECT C1, C2, C1 - C2 AS Balance FROM T_TRANS', nil, @D);
+    FConnection.Execute('SELECT C1, C2, C1 - C2 AS Balance FROM T_TRANS', nil, D);
     try
       CheckEquals('16', D.FindField('C1').AsString);
       CheckEquals('1',  D.FindField('C2').AsString);
@@ -765,8 +790,7 @@ begin
 end;
 
 procedure TTestCase_DBX_General.Test_Execute;
-var pD: ^TSQLDataSet;
-    D: TSQLDataSet;
+var D: TDataSet;
     P: TParams;
     iCount: integer;
 begin
@@ -774,23 +798,25 @@ begin
   if FTestData.GetODS >= '11.1' then
     iCount := 17;
 
-  New(pD);
   P := TParams.Create;
   try
-    FConnection.Execute('SELECT * FROM RDB$RELATIONS', nil, pD);
-    D := pD^;
-    CheckEquals(iCount, D.FieldCount);
-    CheckFalse(D.Eof);
-    D.Free;
+    FConnection.Execute('SELECT * FROM RDB$RELATIONS', nil, D);
+    try
+      CheckEquals(iCount, D.FieldCount);
+      CheckFalse(D.Eof);
+    finally
+      D.Free;
+    end;
 
     P.CreateParam(ftInteger, '1', ptInput).AsInteger := 1;
-    FConnection.Execute('SELECT * FROM RDB$RELATIONS WHERE 1=?', P, pD);
-    D := pD^;
-    CheckEquals(iCount, D.FieldCount);
-    CheckFalse(D.Eof);
-    D.Free;
+    FConnection.Execute('SELECT * FROM RDB$RELATIONS WHERE 1=?', P, D);
+    try
+      CheckEquals(iCount, D.FieldCount);
+      CheckFalse(D.Eof);
+    finally
+      D.Free;
+    end;
   finally
-    Dispose(pD);
     P.Free;
   end;
 end;
@@ -806,11 +832,11 @@ begin
 end;
 
 procedure TTestCase_DBX_General.Test_GetFieldNames;
-var L1, L2: TWideStringList;
+var L1, L2: {$if RtlVersion <= 22}TWideStringList{$else}TStringList{$ifend};
 begin
   FConnection.Open;
-  L1 := TWideStringList.Create;
-  L2 := TWideStringList.Create;
+  L1 := {$if RtlVersion <= 22}TWideStringList{$else}TStringList{$ifend}.Create;
+  L2 := {$if RtlVersion <= 22}TWideStringList{$else}TStringList{$ifend}.Create;
   try
     FConnection.GetFieldNames('RDB$RELATIONS', L1);
     L2.Add('RDB$VIEW_BLR');
@@ -843,9 +869,9 @@ begin
 end;
 
 procedure TTestCase_DBX_General.Test_GetIndexNames;
-var L: TWideStringList;
+var L: {$if RtlVersion <= 22}TWideStringList{$else}TStringList{$ifend};
 begin
-  L := TWideStringList.Create;
+  L := {$if RtlVersion <= 22}TWideStringList{$else}TStringList{$ifend}.Create;
   try
     FConnection.GetIndexNames('RDB$RELATIONS', L);
     CheckEquals('', L.Text);
@@ -924,7 +950,7 @@ end;
 procedure TTestCase_DBX_General.Test_Invalid_VendorLib;
 begin
   FConnection.Close;
-  FConnection.VendorLib := 'no.such.vendorlib';
+  FConnection.Params.Values[TDBXPropertyNames.VendorLib] := 'no.such.vendorlib';
   CheckException(FConnection.Open, EDBXError);
 end;
 
@@ -936,17 +962,13 @@ begin
 end;
 
 procedure TTestCase_DBX_General.Test_RecordCount;
-var pD: ^TSQLDataSet;
-    D: TSQLDataSet;
+var D: TDataSet;
 begin
-  New(pD);
+  FConnection.Execute('SELECT * FROM RDB$RELATIONS', nil, D);
   try
-    FConnection.Execute('SELECT * FROM RDB$RELATIONS', nil, pD);
-    D := pD^;
     CheckNotEquals(0, D.RecordCount);
-    D.Free;
   finally
-    Dispose(pD);
+    D.Free;
   end;
 end;
 
@@ -964,7 +986,7 @@ begin
   CheckEquals(1, i);
 
   S := 'SELECT * FROM T_FIELD';
-  FConnection.Execute(S, nil, @FDataSet);
+  FConnection.Execute(S, nil, FDataSet);
 end;
 
 function TTestCase_DBX_FieldType.Field: TField;
@@ -1467,7 +1489,7 @@ begin
   Execute;
 
   S := 'SELECT (Field + Field) as TestField FROM T_FIELD';
-  FConnection.Execute(S, nil, @D);
+  FConnection.Execute(S, nil, D);
   try
     CheckEquals(TFMTBCDField, D.Fields[0].ClassType);
   finally
@@ -1475,7 +1497,7 @@ begin
   end;
 
   S := 'SELECT 0.00 TestField FROM T_FIELD';
-  FConnection.Execute(S, nil, @D);
+  FConnection.Execute(S, nil, D);
   try
     CheckEquals(TFMTBCDField, D.Fields[0].ClassType);
   finally
@@ -1744,7 +1766,7 @@ begin
   Execute;
 
   S := 'SELECT (Field + Field) as TestField FROM T_FIELD';
-  FConnection.Execute(S, nil, @D);
+  FConnection.Execute(S, nil, D);
   try
     CheckEquals(TFMTBCDField, D.Fields[0].ClassType);
   finally
@@ -1752,7 +1774,7 @@ begin
   end;
 
   S := 'SELECT 0.00 TestField FROM T_FIELD';
-  FConnection.Execute(S, nil, @D);
+  FConnection.Execute(S, nil, D);
   try
     CheckEquals(TFMTBCDField, D.Fields[0].ClassType);
   finally
@@ -2076,7 +2098,7 @@ end;
 
 procedure TTestCase_DBX_Transaction.Test_Transaction_2;
 var T: TDBXTransaction;
-    pD: ^TSQLDataSet;
+    D: TDataSet;
 begin
   FConnection.ExecuteDirect('CREATE TABLE T_TRANSACTION(FIELD INTEGER)');
   FConnection.ExecuteDirect('INSERT INTO T_TRANSACTION VALUES(123)');
@@ -2085,13 +2107,11 @@ begin
   FConnection.ExecuteDirect('INSERT INTO T_TRANSACTION VALUES(456)');
   FConnection.RollbackFreeAndNil(T);
 
-  New(pD);
   try
-    FConnection.Execute('SELECT COUNT(*) FROM T_TRANSACTION', nil, pD);
-    CheckEquals(1, pD^.Fields[0].AsInteger);
-    pD^.Free;
+    FConnection.Execute('SELECT COUNT(*) FROM T_TRANSACTION', nil, D);
+    CheckEquals(1, D.Fields[0].AsInteger);
   finally
-    Dispose(pD);
+    D.Free;
   end;
 
   FConnection.ExecuteDirect('DROP TABLE T_TRANSACTION');
@@ -2099,75 +2119,82 @@ end;
 
 procedure TTestCase_DBX_Transaction.Test_Transaction_ReadCommitted;
 var TTestSuite_DBX1, TTestSuite_DBX2: TDBXTransaction;
-    D: ^TSQLDataSet;
+    D: TDataSet;
     V1, V2: string;
 begin
   FConnection.ExecuteDirect('CREATE TABLE T_REPEAT(FIELD1 VARCHAR(10), FIELD2 INTEGER)');
   FConnection.ExecuteDirect('INSERT INTO T_REPEAT VALUES(''ITEM-01'', 1)');
 
-  New(D);
   try
     TTestSuite_DBX1 := FConnection.BeginTransaction;
     FConnection.Execute('SELECT * FROM T_REPEAT', nil, D);
-    V1 := D^.Fields[0].AsString;
-    D^.Free;
+    try
+      V1 := D.Fields[0].AsString;
+    finally
+      D.Free;
+    end;
 
     TTestSuite_DBX2 := FConnection.BeginTransaction;
     FConnection.ExecuteDirect('UPDATE T_REPEAT SET FIELD1=''ITEM-02''');
     FConnection.CommitFreeAndNil(TTestSuite_DBX2);
 
     FConnection.Execute('SELECT * FROM T_REPEAT', nil, D);
-    V2 := D^.Fields[0].AsString;
-    D^.Free;
+    try
+      V2 := D.Fields[0].AsString;
+    finally
+      D.Free;
+    end;
     FConnection.CommitFreeAndNil(TTestSuite_DBX1);
 
     CheckEquals('ITEM-01', V1);
     CheckEquals('ITEM-02', V2);
   finally
-    Dispose(D);
     FConnection.ExecuteDirect('DROP TABLE T_REPEAT');
   end;
 end;
 
 procedure TTestCase_DBX_Transaction.Test_Transaction_RepeatableRead;
 var TTestSuite_DBX1, TTestSuite_DBX2: TDBXTransaction;
-    D: ^TSQLDataSet;
+    D: TDataSet;
     V1, V2: string;
 begin
   FConnection.ExecuteDirect('CREATE TABLE T_REPEAT(FIELD1 VARCHAR(10), FIELD2 INTEGER)');
   FConnection.ExecuteDirect('INSERT INTO T_REPEAT VALUES(''ITEM-01'', 1)');
 
-  New(D);
   try
     TTestSuite_DBX1 := FConnection.BeginTransaction(TDBXIsolations.RepeatableRead);
     FConnection.Execute('SELECT * FROM T_REPEAT', nil, D);
-    V1 := D^.Fields[0].AsString;
-    D^.Free;
+    try
+      V1 := D.Fields[0].AsString;
+    finally
+      D.Free;
+    end;
 
     TTestSuite_DBX2 := FConnection.BeginTransaction(TDBXIsolations.RepeatableRead);
     FConnection.ExecuteDirect('UPDATE T_REPEAT SET FIELD1=''ITEM-02''');
     FConnection.CommitFreeAndNil(TTestSuite_DBX2);
 
     FConnection.Execute('SELECT * FROM T_REPEAT', nil, D);
-    V2 := D^.Fields[0].AsString;
-    D^.Free;
+    try
+      V2 := D.Fields[0].AsString;
+    finally
+      D.Free;
+    end;
     FConnection.CommitFreeAndNil(TTestSuite_DBX1);
 
     CheckEquals(V1, V2);
   finally
-    Dispose(D);
     FConnection.ExecuteDirect('DROP TABLE T_REPEAT');
   end;
 end;
 
 procedure TTestCase_DBX_Transaction.Test_Transaction_WaitLock;
 var TTestSuite_DBX1, TTestSuite_DBX2: TDBXTransaction;
-    D: ^TSQLDataSet;
+    D: TDataSet;
     V1: integer;
 begin
   FConnection.ExecuteDirect('CREATE TABLE T_LOCK(FIELD1 VARCHAR(10), FIELD2 INTEGER)');
 
-  New(D);
   try
     TTestSuite_DBX1 := FConnection.BeginTransaction;
     try
@@ -2176,8 +2203,11 @@ begin
       TTestSuite_DBX2 := FConnection.BeginTransaction;
       try
         FConnection.Execute('SELECT COUNT(*) FROM T_LOCK', nil, D);
-        V1 := D^.Fields[0].AsInteger;
-        D^.Free;
+        try
+          V1 := D.Fields[0].AsInteger;
+        finally
+          D.Free;
+        end;
         FConnection.CommitFreeAndNil(TTestSuite_DBX2);
         CheckEquals(0, V1);
       except
@@ -2190,7 +2220,6 @@ begin
       raise;
     end;
   finally
-    Dispose(D);
     FConnection.ExecuteDirect('DROP TABLE T_LOCK');
   end;
 end;
@@ -2704,7 +2733,7 @@ end;
 
 procedure TTestCase_DBX_TSQLStoredProc.Test_ReturnDataSet;
 var S: string;
-    D: TSQLDataSet;
+    D: TDataSet;
     i: integer;
 begin
   S := 'CREATE PROCEDURE PROC ' +
@@ -2719,12 +2748,15 @@ begin
        'END ';
   FConnection.ExecuteDirect(S);
   try
-    FConnection.Execute('SELECT * FROM PROC', nil, @D);
-    for i := 1 to 10 do begin
-      CheckEquals(i, D.Fields[0].AsInteger);
-      D.Next;
+    FConnection.Execute('SELECT * FROM PROC', nil, D);
+    try
+      for i := 1 to 10 do begin
+        CheckEquals(i, D.Fields[0].AsInteger);
+        D.Next;
+      end;
+    finally
+      D.Free;
     end;
-    D.Free;
   finally
     FConnection.ExecuteDirect('DROP PROCEDURE PROC');
   end;
@@ -2812,7 +2844,6 @@ begin
 
     CheckEquals(0, CreateProc2('BLOB SUB_TYPE 0 SEGMENT SIZE 512', 'SELECT MYBLOB FROM T_STOREDPROC'));
 
-    {$Message 'QC#64499 TParam does not take TLargeIntField value'}
     Check(ftBlob = FStoredProc.Params[1].DataType);
 
     CheckEquals('ABCDEFGHIJKLMNOPQRSTUVWXYZ', FStoredProc.Params[1].AsString);
@@ -2952,7 +2983,7 @@ var D: TDateTime;
     F, S: string;
 begin
   D := Now;
-  F := ShortDateFormat + ' ' + LongTimeFormat;
+  F := {$if RTLVersion >= 23}FormatSettings.{$ifend}ShortDateFormat + ' ' + {$if RTLVersion >= 23}FormatSettings.{$ifend}LongTimeFormat;
   S := FormatDateTime(F, D);
 
   CheckEquals(0, CreateProc('TIMESTAMP', S));
