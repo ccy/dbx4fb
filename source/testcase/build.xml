@@ -14,9 +14,11 @@
 		<echo message="4. DBX 4 Firebird driver for Delphi XE" />
 		<echo message="5. DBX 4 Firebird driver for Delphi XE2 Win32" />
 		<echo message="6. DBX 4 Firebird driver for Delphi XE2 Win64" />
+		<echo message="7. DBX 4 Firebird driver for Delphi XE3 Win32" />
+		<echo message="8. DBX 4 Firebird driver for Delphi XE3 Win64" />
 		<echo message="9. Exit" />
 		<echo />
-		<input message="Please choose option to ant:" validargs="1,2,3,4,5,6,9" addproperty="p.option" defaultvalue="1" />
+		<input message="Please choose option to ant:" validargs="1,2,3,4,5,6,7,8,9" addproperty="p.option" defaultvalue="1" />
 
 		<antcall target="t.execute"/>
 	</target>
@@ -41,8 +43,8 @@
 		<delete file="${p.script}" />
 	</target>
 
-	<target name="t.execute" depends="t.option,t.platform" unless="p.option.exit">
-		<for param="i" begin="1" end="18" parallel="true" threadCount="1">
+	<target name="t.execute" depends="t.option,t.platform,t.platform.testcount" unless="p.option.exit">
+		<for param="i" begin="1" end="${p.embedded.count}" parallel="true" threadCount="1">
 			<sequential>
 				<antcall target="dbx.test">
 					<param name="test" value="embedded_@{i}" />
@@ -50,7 +52,7 @@
 			</sequential>
 		</for>
 
-		<for param="i" begin="1" end="5" parallel="true" threadCount="1">
+		<for param="i" begin="1" end="${p.server.count}" parallel="true" threadCount="3">
 			<sequential>
 				<antcall target="dbx.test">
 					<param name="test" value="server_@{i}" />
@@ -83,6 +85,13 @@
 			</or>
 		</condition>
 
+		<condition property="p.tag.program" value="d17">
+			<or>
+				<equals arg1="${p.option}" arg2="7" />
+				<equals arg1="${p.option}" arg2="8" />
+			</or>
+		</condition>
+
 		<condition property="p.option.exit">
 			<equals arg1="${p.option}" arg2="9" />
 		</condition>
@@ -99,12 +108,30 @@
 				<equals arg1="${p.option}" arg2="3" />
 				<equals arg1="${p.option}" arg2="4" />
 				<equals arg1="${p.option}" arg2="5" />
+				<equals arg1="${p.option}" arg2="7" />
 			</or>
 		</condition>
 		
 		<condition property="p.platform" value="Win64">
-			<equals arg1="${p.option}" arg2="6" />
+			<or>
+				<equals arg1="${p.option}" arg2="6" />
+				<equals arg1="${p.option}" arg2="8" />
+			</or>
 		</condition>
 	</target>
 	
+	<target name="t.platform.testcount">
+		<condition property="p.platform" value="">
+			<equals arg1="${p.option}" arg2="1" />
+		</condition>
+		
+		<condition property="p.embedded.count" value="21" else="6">
+			<equals arg1="${p.platform}" arg2="Win32" />
+		</condition>
+		
+		<condition property="p.server.count" value="5" else="4">
+			<equals arg1="${p.platform}" arg2="Win32" />
+		</condition>
+	</target>
+
 </project>
