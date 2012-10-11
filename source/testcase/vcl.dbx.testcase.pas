@@ -247,7 +247,8 @@ type{$M+}
     procedure Test_Param_LargeInt1;
     procedure Test_Param_LargeInt2;
     procedure Test_Param_LargeInt3;
-    procedure Test_Param_String;
+    procedure Test_Param_AnsiString;
+    procedure Test_Param_Negative;
   end;
 
   TTestCase_DBX_TSQLStoredProc = class(TTestCase_DBX)
@@ -2639,12 +2640,31 @@ begin
   CheckEquals(0, FCDS.ApplyUpdates(0));
 end;
 
-procedure TTestCase_DBX_TParam.Test_Param_String;
+procedure TTestCase_DBX_TParam.Test_Param_Negative;
+var P: TParam;
+begin
+  FCDS.Close;
+  P := FCDS.Params.CreateParam(ftString, '1', ptInput);
+  try
+    P.DataType := ftUnknown;
+    P.Value := AnsiString('2');
+    FCDS.Open;
+    CheckEquals(0, FCDS.RecordCount);
+  finally
+    P.Free;
+  end;
+end;
+
+procedure TTestCase_DBX_TParam.Test_Param_AnsiString;
 var P: TParam;
 begin
   FCDS.Close;
   P := FCDS.Params.CreateParam(ftString, 'Field_Str', ptInput);
   try
+    P.Value := '1';  // Test param with AnsiString data type
+    FCDS.Open;
+    CheckEquals('1', FCDS.FindField('Field_Int').AsString);
+
     P.AsString := '1';
     FCDS.Open;
     CheckEquals('1', FCDS.FindField('Field_Int').AsString);
