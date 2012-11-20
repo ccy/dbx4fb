@@ -248,6 +248,7 @@ type{$M+}
     procedure Test_Param_LargeInt2;
     procedure Test_Param_LargeInt3;
     procedure Test_Param_AnsiString;
+    procedure Test_Param_NonUnicodeString;
     procedure Test_Param_Negative;
   end;
 
@@ -2559,7 +2560,7 @@ begin
   inherited;
   S := 'CREATE TABLE T_PARAM( ' +
           'FIELD_INT INTEGER, ' +
-          'FIELD_STR VARCHAR(10), ' +
+          'FIELD_STR VARCHAR(30), ' +
           'FIELD_BIGINT BIGINT ' +
        ')';
   FConnection.ExecuteDirect(S);
@@ -2653,6 +2654,32 @@ begin
   finally
     P.Free;
   end;
+end;
+
+procedure TTestCase_DBX_TParam.Test_Param_NonUnicodeString;
+var P: TParam;
+    Q: TParams;
+    S: AnsiString;
+    B: TBytes;
+begin
+  B := TBytes.Create($BD, $F0, $D1, $F3, $D3, $D0, $CF, $DE, $B9, $AB, $CB, $BE);
+  SetLength(S, Length(B));
+  Move(B[0], S[1], Length(B));
+
+  FConnection.Execute('DELETE FROM T_PARAM', nil);
+
+  Q := TParams.Create;
+  try
+    Q.CreateParam(ftString, 'P', ptInput).AsString := S;
+    FConnection.Execute('INSERT INTO T_PARAM VALUES(2, :P, 1)', Q);
+  finally
+    Q.Free;
+  end;
+
+  FCDS.Close;
+  FCDS.Open;
+  CheckEquals(1, FCDS.RecordCount);
+  CheckEquals(S, FCDS.FindField('Field_Str').AsString);
 end;
 
 procedure TTestCase_DBX_TParam.Test_Param_AnsiString;
