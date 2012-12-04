@@ -125,12 +125,18 @@
 			<equals arg1="${p.option}" arg2="1" />
 		</condition>
 		
-		<condition property="p.embedded.count" value="21" else="6">
-			<equals arg1="${p.platform}" arg2="Win32" />
+		<condition property="p.embedded.count" value="22" else="7">
+			<or>
+				<equals arg1="${p.platform}" arg2="" />
+				<equals arg1="${p.platform}" arg2="Win32" />
+			</or>
 		</condition>
 		
 		<condition property="p.server.count" value="5" else="4">
-			<equals arg1="${p.platform}" arg2="Win32" />
+			<or>
+				<equals arg1="${p.platform}" arg2="" />
+				<equals arg1="${p.platform}" arg2="Win32" />
+			</or>
 		</condition>
 	</target>
 
