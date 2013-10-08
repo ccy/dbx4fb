@@ -11,7 +11,8 @@ uses SysUtils, Classes, DB, SqlExpr, Provider, DBClient, FMTBcd,
 type{$M+}
   EDBXError = {$if CompilerVersion <= 21}TDBXError{$ifend}
               {$if (CompilerVersion >= 22) and (CompilerVersion <= 23)}EAccessViolation{$ifend}
-              {$if CompilerVersion >=24}TDBXError{$ifend};
+              {$if CompilerVersion =24}TDBXError{$ifend}
+              {$if CompilerVersion >=25}EAccessViolation{$ifend};
 
   ITestData = interface(IInterface)
   ['{2DCC2E1F-BCE2-4D04-A61E-03DBFC031D0E}']
@@ -337,13 +338,11 @@ end;
 
 procedure TTestData_SQLConnection.BeforeDestruction;
 var L: TStringList;
-    S: IFirebirdService;
 begin
   L := TStringList.Create;
   try
     L.Text := FParams;
-    S := TFirebirdServiceFactory.New(FVendorLib, L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
-    S.DropDatabase(L.Values[DATABASENAME_KEY]);
+    TFirebirdDatabase.DropDatabase(FVendorLib, L.Values[HOSTNAME_KEY], L.Values[DATABASENAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
   finally
     L.Free;
   end;
@@ -351,15 +350,15 @@ end;
 
 procedure TTestData_SQLConnection.CreateDatabase;
 var L: TStringList;
-    S: IFirebirdService;
+    S: TFirebirdServiceManager;
+    D: TFirebirdDatabase;
     sDatabase: string;
     sImpl: string;
 begin
   L := TStringList.Create;
+  L.Text := FParams;
+  S := TFirebirdServiceManager.New(FVendorLib, L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
   try
-    L.Text := FParams;
-    S := TFirebirdServiceFactory.New(FVendorLib, L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
-
     sImpl := S.GetServerImplementation;
     if L.Values[HOSTNAME_KEY] = '' then
       sDatabase := IncludeTrailingPathDelimiter('%TEMP%')
@@ -378,8 +377,14 @@ begin
       Assert(False);
     sDatabase := sDatabase + TUniqueName.New('T_');
 
-    S.CreateDatabase(sDatabase);
-    FODS := S.GetODSVersion(sDatabase);
+    TFirebirdDatabase.CreateDatabase(FVendorLib, L.Values[HOSTNAME_KEY], sDatabase, L.Values[szUSERNAME], L.Values[szPASSWORD]);
+
+    D := TFirebirdDatabase.New(FVendorLib, L.Values[HOSTNAME_KEY], sDatabase, L.Values[szUSERNAME], L.Values[szPASSWORD]);
+    try
+      FODS := D.GetODSVersion;
+    finally
+      D.Free;
+    end;
 
     L.Values[DATABASENAME_KEY] := sDatabase;
     FParams := L.Text;
@@ -387,6 +392,7 @@ begin
     FServerVersion := S.GetServerVersion;
     FName := Format('%s (%s) Host: %s Database: %s', [sImpl, FServerVersion, L.Values[HOSTNAME_KEY], sDatabase]);
   finally
+    S.Free;
     L.Free;
   end;
 end;
@@ -505,14 +511,15 @@ end;
 class function TTestSuite_DBX.GetServerVersion(aLibraryName, aParams:
     string): string;
 var L: TStringList;
-    S: IFirebirdService;
+    S: TFirebirdServiceManager;
 begin
   L := TStringList.Create;
   L.Text := aParams;
+  S := TFirebirdServiceManager.New(ExpandfileNameString(aLibraryName), L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
   try
-    S := TFirebirdServiceFactory.New(ExpandfileNameString(aLibraryName), L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
     Result := S.GetServerVersion;
   finally
+    S.Free;
     L.Free;
   end;
 end;

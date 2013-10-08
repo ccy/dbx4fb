@@ -8,17 +8,19 @@
 	<property name="program.conf" location="dbxfbTests.ini" />
 	
 	<target name="build">
-		<echo message="1. DBX 4 Firebird driver for Delphi 2007" />
-		<echo message="2. DBX 4 Firebird driver for Delphi 2009" />
-		<echo message="3. DBX 4 Firebird driver for Delphi 2010" />
-		<echo message="4. DBX 4 Firebird driver for Delphi XE" />
-		<echo message="5. DBX 4 Firebird driver for Delphi XE2 Win32" />
-		<echo message="6. DBX 4 Firebird driver for Delphi XE2 Win64" />
-		<echo message="7. DBX 4 Firebird driver for Delphi XE3 Win32" />
-		<echo message="8. DBX 4 Firebird driver for Delphi XE3 Win64" />
-		<echo message="9. Exit" />
+		<echo message=" 1. DBX 4 Firebird driver for Delphi 2007" />
+		<echo message=" 2. DBX 4 Firebird driver for Delphi 2009" />
+		<echo message=" 3. DBX 4 Firebird driver for Delphi 2010" />
+		<echo message=" 4. DBX 4 Firebird driver for Delphi XE" />
+		<echo message=" 5. DBX 4 Firebird driver for Delphi XE2 Win32" />
+		<echo message=" 6. DBX 4 Firebird driver for Delphi XE2 Win64" />
+		<echo message=" 7. DBX 4 Firebird driver for Delphi XE3 Win32" />
+		<echo message=" 8. DBX 4 Firebird driver for Delphi XE3 Win64" />
+		<echo message=" 9. DBX 4 Firebird driver for Delphi XE4 Win32" />
+		<echo message="10. DBX 4 Firebird driver for Delphi XE4 Win64" />
+		<echo message="X. Exit" />
 		<echo />
-		<input message="Please choose option to ant:" validargs="1,2,3,4,5,6,7,8,9" addproperty="p.option" defaultvalue="1" />
+		<input message="Please choose option to ant:" validargs="1,2,3,4,5,6,7,8,9,10,x,X" addproperty="p.option" defaultvalue="1" />
 
 		<antcall target="t.execute"/>
 	</target>
@@ -30,10 +32,10 @@
 			<equals arg1="${p.tag.program}" arg2="d11" />
 		</condition>
 
-		<property name="program" location="${env.HOMEDRIVE}${env.HOMEPATH}\Project\output.${p.tag.program}\moon\${p.platform}\${p.config}\dbxfbTests.exe" />
+		<property name="program" location="${env.HOMEDRIVE}${env.HOMEPATH}\development\output.${p.tag.program}\moon\${p.platform}\${p.config}\dbxfbTests.exe" />
 
 		<echo file="${p.script}">
-			${program} -config ${program.conf} -drivers ${env.HOMEDRIVE}${env.HOMEPATH}\project\output.d11\moon\drivers -test ${test} -console
+			${program} -config ${program.conf} -drivers ${env.HOMEDRIVE}${env.HOMEPATH}\development\output.d18\moon\drivers -test ${test} -console
 		</echo>
 
 		<exec executable="cmd" spawn="false">
@@ -92,8 +94,18 @@
 			</or>
 		</condition>
 
+		<condition property="p.tag.program" value="d18">
+			<or>
+				<equals arg1="${p.option}" arg2="9" />
+				<equals arg1="${p.option}" arg2="10" />
+			</or>
+		</condition>
+
 		<condition property="p.option.exit">
-			<equals arg1="${p.option}" arg2="9" />
+			<or>
+				<equals arg1="${p.option}" arg2="x" />
+				<equals arg1="${p.option}" arg2="X" />
+			</or>
 		</condition>
 	</target>
 	
@@ -109,6 +121,7 @@
 				<equals arg1="${p.option}" arg2="4" />
 				<equals arg1="${p.option}" arg2="5" />
 				<equals arg1="${p.option}" arg2="7" />
+				<equals arg1="${p.option}" arg2="9" />
 			</or>
 		</condition>
 		
@@ -116,6 +129,7 @@
 			<or>
 				<equals arg1="${p.option}" arg2="6" />
 				<equals arg1="${p.option}" arg2="8" />
+				<equals arg1="${p.option}" arg2="10" />
 			</or>
 		</condition>
 	</target>
