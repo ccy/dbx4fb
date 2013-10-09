@@ -2372,6 +2372,11 @@ end;
 procedure TTestCase_DBX_Server_Embed.Test_Unavailable_Database;
 var C1, C2: TSQLConnection;
 begin
+  if (Pos('Firebird 2.0', FTestData1.ServerVersion) > 0) or
+     (Pos('Firebird 2.0', FTestData2.ServerVersion) > 0)
+  then
+    Exit;
+
   C1 := TSQLConnection.Create(nil);
   C2 := TSQLConnection.Create(nil);
   try
