@@ -99,6 +99,8 @@ begin
     SetCurrentDir(ExtractFilePath(FVendorLib));
     V := FVendorLib;
     FHandle := LoadLibrary(PChar(V));
+    if FHandle = 0 then
+      RaiseLastOSError;
   finally
     SetCurrentDir(sDir);
   end;
