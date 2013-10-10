@@ -32,8 +32,6 @@ var F: string;
     i: integer;
     h: THandle;
 begin
-  Sleep(1); {$Message 'In firebird embedded, this delay will make the FreeLibrary safer and won''t cause unexpected error for massive LoadLibrary / FreeLibrary calls'}
-
   SetLength(F, 1000);
   i := GetModuleFileName(FHandle, PChar(F), 1000);
   Assert(i > 0);

@@ -155,6 +155,7 @@ end;
 function TMetaDataProvider_Firebird.GetColumnType(const aColNo: TInt32): TInt32;
 var iType, iSubType, iScale: Smallint;
 begin
+  Result := TDBXDataTypes.UnknownType;
   iType := FSQLDA.Vars[aColNo].sqltype and not 1;
   iSubType := FSQLDA.Vars[aColNo].sqlsubtype;
   iScale := FSQLDA.Vars[aColNo].sqlscale;
@@ -233,6 +234,7 @@ function TMetaDataProvider_Firebird_D2007.GetColumnType(const aColNo: TInt32):
     TInt32;
 var iType, iSubType, iScale: Smallint;
 begin
+  Result := TDBXDataTypes.UnknownType;
   iType := FSQLDA.Vars[aColNo].sqltype and not 1;
   iSubType := FSQLDA.Vars[aColNo].sqlsubtype;
   iScale := FSQLDA.Vars[aColNo].sqlscale;
