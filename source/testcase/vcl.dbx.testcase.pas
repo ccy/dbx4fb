@@ -2669,8 +2669,7 @@ begin
 end;
 
 procedure TTestCase_DBX_TParam.Test_Param_NonUnicodeString;
-var P: TParam;
-    Q: TParams;
+var Q: TParams;
     S: AnsiString;
     B: TBytes;
 begin
@@ -2682,7 +2681,7 @@ begin
 
   Q := TParams.Create;
   try
-    Q.CreateParam(ftString, 'P', ptInput).AsString := S;
+    Q.CreateParam(ftString, 'P', ptInput).AsAnsiString := S;
     FConnection.Execute('INSERT INTO T_PARAM VALUES(2, :P, 1)', Q);
   finally
     Q.Free;
@@ -2691,7 +2690,7 @@ begin
   FCDS.Close;
   FCDS.Open;
   CheckEquals(1, FCDS.RecordCount);
-  CheckEquals(S, FCDS.FindField('Field_Str').AsString);
+  CheckEquals(S, FCDS.FindField('Field_Str').AsAnsiString);
 end;
 
 procedure TTestCase_DBX_TParam.Test_Param_AnsiString;
