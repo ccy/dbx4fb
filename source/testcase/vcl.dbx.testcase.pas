@@ -2681,7 +2681,7 @@ begin
 
   Q := TParams.Create;
   try
-    Q.CreateParam(ftString, 'P', ptInput).AsAnsiString := S;
+    Q.CreateParam(ftString, 'P', ptInput).{$if CompilerVersion = 18.5}AsString{$else}AsAnsiString{$ifend} := S;
     FConnection.Execute('INSERT INTO T_PARAM VALUES(2, :P, 1)', Q);
   finally
     Q.Free;
@@ -2690,7 +2690,7 @@ begin
   FCDS.Close;
   FCDS.Open;
   CheckEquals(1, FCDS.RecordCount);
-  CheckEquals(S, FCDS.FindField('Field_Str').AsAnsiString);
+  CheckEquals(S, FCDS.FindField('Field_Str').{$if CompilerVersion = 18.5}AsString{$else}AsAnsiString{$ifend});
 end;
 
 procedure TTestCase_DBX_TParam.Test_Param_AnsiString;
