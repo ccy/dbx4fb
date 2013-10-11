@@ -9,11 +9,6 @@ uses SysUtils, Classes, DB, SqlExpr, Provider, DBClient, FMTBcd,
      ;
 
 type{$M+}
-  EDBXError = {$if CompilerVersion <= 21}TDBXError{$ifend}
-              {$if (CompilerVersion >= 22) and (CompilerVersion <= 23)}EAccessViolation{$ifend}
-              {$if CompilerVersion =24}TDBXError{$ifend}
-              {$if CompilerVersion >=25}EAccessViolation{$ifend};
-
   ITestData = interface(IInterface)
   ['{2DCC2E1F-BCE2-4D04-A61E-03DBFC031D0E}']
     function GetODS: string;
@@ -960,7 +955,7 @@ procedure TTestCase_DBX_General.Test_Invalid_VendorLib;
 begin
   FConnection.Close;
   FConnection.Params.Values[TDBXPropertyNames.VendorLib] := 'no.such.vendorlib';
-  CheckException(FConnection.Open, EDBXError);
+  CheckException(FConnection.Open, EAccessViolation);
 end;
 
 procedure TTestCase_DBX_General.Test_Open_Close;
