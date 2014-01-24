@@ -351,26 +351,34 @@ var L: TStringList;
     sImpl: string;
 begin
   L := TStringList.Create;
-  L.Text := FParams;
-  S := TFirebirdServiceManager.New(FVendorLib, L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
   try
-    sImpl := S.GetServerImplementation;
-    if L.Values[HOSTNAME_KEY] = '' then
-      sDatabase := IncludeTrailingPathDelimiter('%TEMP%')
-    else if ContainsText(sImpl, 'Windows') then begin
+    L.Text := FParams;
 
-      if Pos('dbxint', FLibraryName) > 0 then // Interbase Driver need hostname string in database parameter
-        sDatabase := L.Values[HOSTNAME_KEY] + ':';
+    S := TFirebirdServiceManager.New(FVendorLib, L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
+    try
+      sImpl := S.GetServerImplementation;
+      if L.Values[HOSTNAME_KEY] = '' then
+        sDatabase := IncludeTrailingPathDelimiter('%TEMP%')
+      else if ContainsText(sImpl, 'Windows') then begin
 
-      if AnsiStartsText('localhost', L.Values[HOSTNAME_KEY]) then
-        sDatabase := sDatabase + IncludeTrailingPathDelimiter('%TEMP%')
+        if Pos('dbxint', FLibraryName) > 0 then // Interbase Driver need hostname string in database parameter
+          sDatabase := L.Values[HOSTNAME_KEY] + ':';
+
+        if AnsiStartsText('localhost', L.Values[HOSTNAME_KEY]) then
+          sDatabase := sDatabase + IncludeTrailingPathDelimiter('%TEMP%')
+        else
+          sDatabase := sDatabase + 'c:\';
+      end else if ContainsText(sImpl, 'Linux') then
+        sDatabase := sDatabase + '/tmp/'
       else
-        sDatabase := sDatabase + 'c:\';
-    end else if ContainsText(sImpl, 'Linux') then
-      sDatabase := sDatabase + '/tmp/'
-    else
-      Assert(False);
-    sDatabase := sDatabase + TUniqueName.New('T_');
+        Assert(False);
+      sDatabase := sDatabase + TUniqueName.New('T_');
+
+      FServerVersion := S.GetServerVersion;
+      FName := Format('%s (%s) Host: %s Database: %s', [sImpl, FServerVersion, L.Values[HOSTNAME_KEY], sDatabase]);
+    finally
+      S.Free;
+    end;
 
     TFirebirdDatabase.CreateDatabase(FVendorLib, L.Values[HOSTNAME_KEY], sDatabase, L.Values[szUSERNAME], L.Values[szPASSWORD]);
 
@@ -383,11 +391,7 @@ begin
 
     L.Values[DATABASENAME_KEY] := sDatabase;
     FParams := L.Text;
-
-    FServerVersion := S.GetServerVersion;
-    FName := Format('%s (%s) Host: %s Database: %s', [sImpl, FServerVersion, L.Values[HOSTNAME_KEY], sDatabase]);
   finally
-    S.Free;
     L.Free;
   end;
 end;
