@@ -555,6 +555,7 @@ procedure TTestCase_DBX.SetUp;
 begin
   inherited;
   FConnection := TSQLConnection.Create(nil);
+  FConnection.LoginPrompt := False;
   FTestData.Setup(FConnection);
   FSQLMonitor := TSQLMonitor.Create(nil);
   FSQLMonitor.SQLConnection := FConnection;
@@ -2380,10 +2381,12 @@ begin
   C2 := TSQLConnection.Create(nil);
   try
     FTestData1.Setup(C1);
+    C1.LoginPrompt := False;
     C1.Open;
     CheckTrue(C1.Connected);
 
     FTestData2.Setup(C2);
+    C2.LoginPrompt := False;
     C2.Open;
     CheckTrue(C2.Connected);
   finally
