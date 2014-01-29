@@ -54,7 +54,7 @@
 			</sequential>
 		</for>
 
-		<for param="i" begin="1" end="${p.server.count}" parallel="true" threadCount="3">
+		<for param="i" begin="1" end="${p.server.count}" parallel="true" threadCount="1">
 			<sequential>
 				<antcall target="dbx.test">
 					<param name="test" value="server_@{i}" />
