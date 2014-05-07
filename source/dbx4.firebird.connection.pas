@@ -108,7 +108,7 @@ end;
 
 function TDBXConnection_Firebird.Close: TDBXErrorCode;
 begin
-  FTransactionPool.Free;
+  FreeAndNil(FTransactionPool);
   if FDBHandle <> nil then begin
     FFirebirdLibrary.isc_detach_database(StatusVector.pValue, GetDBHandle);
     StatusVector.CheckResult(Result, TDBXErrorCodes.ConnectionFailed);
@@ -178,7 +178,7 @@ begin
   FFirebirdLibrary.isc_attach_database(StatusVector.pValue, Length(sServerName), PISC_SCHAR(sServerName), GetDBHandle, Length(DPB), PISC_SCHAR(DPB));
   StatusVector.CheckResult(Result, TDBXErrorCodes.ConnectionFailed);
 
-  FTransactionPool.Free;
+  Assert(FTransactionPool = nil);
   FTransactionPool := TFirebirdTransactionPool.Create(FFirebirdLibrary, GetDBHandle);
 end;
 
