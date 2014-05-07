@@ -962,7 +962,7 @@ procedure TTestCase_DBX_General.Test_Invalid_VendorLib;
 begin
   FConnection.Close;
   FConnection.Params.Values[TDBXPropertyNames.VendorLib] := 'no.such.vendorlib';
-  CheckException(FConnection.Open, EAccessViolation);
+  CheckException(FConnection.Open, TDBXError);
 end;
 
 procedure TTestCase_DBX_General.Test_Open_Close;
