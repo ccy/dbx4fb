@@ -2,20 +2,19 @@ unit vcl.dbx.main;
 
 interface
 
-procedure StartApp;
+function StartApp: Cardinal;
 
 implementation
 
 uses SysUtils, Windows, Forms,
      TestFramework, GUITestRunner, TextTestRunner, vcl.dbx.cmdlines;
 
-procedure StartApp;
+function StartApp: Cardinal;
 var P: array of HMODULE;
     H: HMODULE;
-    iExitCode: integer;
     i: integer;
 begin
-  iExitCode := 0;
+  Result := 0;
 
   i := 2;
   {$ifndef Unicode}Inc(i);{$endif}
@@ -34,7 +33,7 @@ begin
         with TextTestRunner.RunRegisteredTests do begin
           try
             if not WasSuccessful then Readln;
-            iExitCode := ErrorCount + FailureCount;
+            Result := ErrorCount + FailureCount;
           finally
             Free;
           end;
@@ -52,7 +51,6 @@ begin
   end;
 
   TestFramework.ClearRegistry;
-  ExitProcess(iExitCode);
 end;
 
 end.
