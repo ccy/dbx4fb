@@ -555,6 +555,7 @@ end;
 procedure TTestCase_DBX.SetUp;
 begin
   inherited;
+  ScreenCursorProc := nil;
   FConnection := TSQLConnection.Create(nil);
   FConnection.LoginPrompt := False;
   FTestData.Setup(FConnection);
