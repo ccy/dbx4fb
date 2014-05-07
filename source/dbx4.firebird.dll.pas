@@ -132,8 +132,6 @@ function DBXConnection_Commit(Handle: TDBXConnectionHandle; TransactionHandle:
     TDBXTransactionHandle): TDBXErrorCode; stdcall;
 begin
   Result := IDBXConnection(Handle).Commit(TransactionHandle);
-  if Result = 0 then
-    IInterface(TransactionHandle) := nil;
 end;
 
 function DBXConnection_Connect(Handle: TDBXConnectionHandle; Count: TInt32;
@@ -181,8 +179,6 @@ function DBXConnection_Rollback(Handle: TDBXConnectionHandle;
     TransactionHandle: TDBXTransactionHandle): TDBXErrorCode; stdcall;
 begin
   Result := IDBXConnection(Handle).Rollback(TransactionHandle);
-  if Result = 0 then
-    IInterface(TransactionHandle) := nil;
 end;
 
 function DBXConnection_SetCallbackEvent(Handle: TDBXConnectionHandle;

@@ -72,7 +72,7 @@ function TDBXConnection_Firebird.BeginTransaction(
   out TransactionHandle: TDBXTransactionHandle;
   IsolationLevel: TInt32): TDBXErrorCode;
 var O: TTransactionInfo;
-    N: IFirebirdTransaction;
+    N: TFirebirdTransaction;
 begin
   {$Message 'Unable to find isc_start_transaction header translation'}
   try
@@ -91,7 +91,7 @@ begin
   if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
 
   TransactionHandle := nil;
-  IFirebirdTransaction(TransactionHandle) := N;
+  TFirebirdTransaction(TransactionHandle) := N;
   Result := TDBXErrorCodes.None;
 end;
 
@@ -119,7 +119,7 @@ end;
 function TDBXConnection_Firebird.Commit(
   TransactionHandle: TDBXTransactionHandle): TDBXErrorCode;
 begin
-  FTransactionPool.Commit(StatusVector, IFirebirdTransaction(TransactionHandle));
+  FTransactionPool.Commit(StatusVector, TFirebirdTransaction(TransactionHandle));
   StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError);
 end;
 
@@ -225,7 +225,7 @@ end;
 function TDBXConnection_Firebird.Rollback(
   TransactionHandle: TDBXTransactionHandle): TDBXErrorCode;
 begin
-  FTransactionPool.RollBack(StatusVector, IFirebirdTransaction(TransactionHandle));
+  FTransactionPool.RollBack(StatusVector, TFirebirdTransaction(TransactionHandle));
   StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError);
 end;
 
