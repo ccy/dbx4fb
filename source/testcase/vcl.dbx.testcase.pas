@@ -132,6 +132,7 @@ type{$M+}
     procedure Test_Transaction_RepeatableRead;
     procedure Test_Transaction_ReadCommitted;
     procedure Test_Transaction_WaitLock;
+    procedure Test_Transaction_WaitLock_Fail;
   end;
 
   TTestCase_DBX_FieldType = class(TTestCase_DBX)
@@ -2233,6 +2234,40 @@ begin
   end;
 end;
 
+procedure TTestCase_DBX_Transaction.Test_Transaction_WaitLock_Fail;
+var TTestSuite_DBX1, TTestSuite_DBX2: TDBXTransaction;
+    i: Integer;
+begin
+  if Pos('Firebird 1.', GetTestData.ServerVersion) <> 0 then Exit;
+
+  FConnection.ExecuteDirect('CREATE TABLE T_LOCK(FIELD1 VARCHAR(10), FIELD2 INTEGER)');
+
+  try
+    TTestSuite_DBX1 := FConnection.BeginTransaction;
+    try
+      FConnection.ExecuteDirect('INSERT INTO T_LOCK VALUES(''ITEM-01'', 1)');
+
+      TTestSuite_DBX2 := FConnection.BeginTransaction;
+
+      FConnection.ExecuteDirect('DROP TABLE T_LOCK');
+      for i := 1 to 5 do begin
+        try
+          FConnection.CommitFreeAndNil(TTestSuite_DBX2);
+        except
+          if i = 5 then
+            FConnection.RollbackFreeAndNil(TTestSuite_DBX2);
+        end;
+      end;
+
+      FConnection.CommitFreeAndNil(TTestSuite_DBX1);
+    except
+      FConnection.RollbackFreeAndNil(TTestSuite_DBX1);
+      raise;
+    end;
+  finally
+    FConnection.ExecuteDirect('DROP TABLE T_LOCK');
+  end;
+end;
 
 procedure TTestCase_DBX_DataSnap.SetUp;
 var S: string;
