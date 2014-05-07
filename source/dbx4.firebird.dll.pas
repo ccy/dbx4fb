@@ -208,8 +208,11 @@ function DBXLoader_GetDriver(Count: TInt32; Names, Values: TRawByteStringArray;
     TDBXErrorCode; stdcall;
 var o: IDBXDriver;
     i: integer;
+    N, V: TWideStringArray;
 begin
-  o := TDBXDriver_Firebird.Create(Count, ToWideStringArray(Names), ToWideStringArray(Values));
+  N := ToWideStringArray(Names);
+  V := ToWideStringArray(Values);
+  o := TDBXDriver_Firebird.Create(Count, N, V);
   if o.Loaded then begin
     pDriver := nil;
     IDBXDriver(pDriver) := o;
@@ -219,9 +222,9 @@ begin
     Result := TDBXErrorCodes.DriverInitFailed;
 
     for i := 0 to Count - 1 do begin
-      if Names[i] = TDBXPropertyNames.VendorLib then begin
-        {$if CompilerVersion=18.5}WStrPCopy(ErrorMessage, Format(sDLLLoadError, [Values[i], Result]));{$ifend}
-        {$if CompilerVersion>=20}StrPCopy(ErrorMessage, Format(sDLLLoadError, [Values[i], Result]));{$ifend}
+      if N[i] = TDBXPropertyNames.VendorLib then begin
+        {$if CompilerVersion=18.5}WStrPCopy(ErrorMessage, Format(sDLLLoadError, [V[i], Result]));{$ifend}
+        {$if CompilerVersion>=20}StrPCopy(ErrorMessage, Format(sDLLLoadError, [V[i], Result]));{$ifend}
         Break;
       end;
     end;
