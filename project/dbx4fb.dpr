@@ -15,6 +15,7 @@ library dbx4fb;
 {$R 'library.res' '..\..\build\rc\library.rc'}
 
 uses
+  FastMM4,
   firebird.ibase.h in '..\..\core\source\firebird\firebird.ibase.h.pas',
   firebird.types_pub.h in '..\..\core\source\firebird\firebird.types_pub.h.pas',
   firebird.sqlda_pub.h in '..\..\core\source\firebird\firebird.sqlda_pub.h.pas',

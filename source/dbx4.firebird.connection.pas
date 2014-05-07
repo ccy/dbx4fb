@@ -21,9 +21,6 @@ type
   strict private
     FDBHandle: isc_db_handle;
   private
-    FCallbackEvent: DBXTraceCallback;
-    FCallbackHandle: DBXCallbackHandle;
-    FDebuggerListener: IFirebirdLibraryDebuggerListener;
     FDatabase: WideString;
     FFirebirdLibrary: IFirebirdLibrary;
     FHostName: WideString;
@@ -35,7 +32,6 @@ type
     FTrimChar: boolean;
     FUserName: WideString;
     FServerCharSet: WideString;
-    procedure CheckDebugger;
   protected
     function BeginTransaction(out TransactionHandle: TDBXTransactionHandle;
         IsolationLevel: TInt32): TDBXErrorCode;
@@ -93,17 +89,6 @@ begin
   TransactionHandle := nil;
   TFirebirdTransaction(TransactionHandle) := N;
   Result := TDBXErrorCodes.None;
-end;
-
-procedure TDBXConnection_Firebird.CheckDebugger;
-begin
-  if Assigned(FDebuggerListener) then
-    (FFirebirdLibrary as IFirebirdLibraryDebugger).Remove(FDebuggerListener);
-  FDebuggerListener := nil;
-  if Assigned(FCallBackEvent) and Assigned(FCallbackHandle) then begin
-    FDebuggerListener := TFirebirdClientDebuggerListener_DBXCallBack.Create(FCallbackEvent, FCallbackHandle);
-    (FFirebirdLibrary as IFirebirdLibraryDebugger).Add(FDebuggerListener);
-  end;
 end;
 
 function TDBXConnection_Firebird.Close: TDBXErrorCode;
@@ -231,14 +216,17 @@ end;
 
 function TDBXConnection_Firebird.SetCallbackEvent(CallbackHandle:
     DBXCallbackHandle; CallbackEvent: DBXTraceCallback): TDBXErrorCode;
+var D: IFirebirdLibraryDebuggerListener;
 begin
-  FCallbackHandle := CallbackHandle;
-  FCallbackEvent := CallbackEvent;
-  Result := TDBXErrorCodes.None;
-  CheckDebugger;
-end;
+  D := nil;
 
-{ TFirebirdClientDebuggerListener_DBXCallBack }
+  if Assigned(CallBackEvent) and Assigned(CallbackHandle) then
+    D := TFirebirdClientDebuggerListener_DBXCallBack.Create(CallbackEvent, CallbackHandle);
+
+  (FFirebirdLibrary as IFirebirdLibraryDebugger).SetListener(D);
+
+  Result := TDBXErrorCodes.None;
+end;
 
 constructor TFirebirdClientDebuggerListener_DBXCallBack.Create(const
     aCallbackEvent: DBXTraceCallback; const aCallbackHandle: DBXCallbackHandle);
