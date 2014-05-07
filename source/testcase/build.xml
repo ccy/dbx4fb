@@ -139,7 +139,7 @@
 			<equals arg1="${p.option}" arg2="1" />
 		</condition>
 		
-		<condition property="p.embedded.count" value="22" else="7">
+		<condition property="p.embedded.count" value="23" else="8">
 			<or>
 				<equals arg1="${p.platform}" arg2="" />
 				<equals arg1="${p.platform}" arg2="Win32" />
