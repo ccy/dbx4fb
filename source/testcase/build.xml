@@ -18,9 +18,13 @@
 		<echo message=" 8. DBX 4 Firebird driver for Delphi XE3 Win64" />
 		<echo message=" 9. DBX 4 Firebird driver for Delphi XE4 Win32" />
 		<echo message="10. DBX 4 Firebird driver for Delphi XE4 Win64" />
+		<echo message="11. DBX 4 Firebird driver for Delphi XE5 Win32" />
+		<echo message="12. DBX 4 Firebird driver for Delphi XE5 Win64" />
+		<echo message="13. DBX 4 Firebird driver for Delphi XE6 Win32" />
+		<echo message="14. DBX 4 Firebird driver for Delphi XE6 Win64" />
 		<echo message="X. Exit" />
 		<echo />
-		<input message="Please choose option to ant:" validargs="1,2,3,4,5,6,7,8,9,10,x,X" addproperty="p.option" defaultvalue="1" />
+		<input message="Please choose option to ant:" validargs="1,2,3,4,5,6,7,8,9,10,11,12,13,14,x,X" addproperty="p.option" defaultvalue="1" />
 
 		<antcall target="t.execute"/>
 	</target>
@@ -129,6 +133,20 @@
 			</or>
 		</condition>
 
+		<condition property="p.tag.program" value="d19">
+			<or>
+				<equals arg1="${p.option}" arg2="11" />
+				<equals arg1="${p.option}" arg2="12" />
+			</or>
+		</condition>
+
+		<condition property="p.tag.program" value="d20">
+			<or>
+				<equals arg1="${p.option}" arg2="13" />
+				<equals arg1="${p.option}" arg2="14" />
+			</or>
+		</condition>
+
 		<condition property="p.option.exit">
 			<or>
 				<equals arg1="${p.option}" arg2="x" />
@@ -150,6 +168,8 @@
 				<equals arg1="${p.option}" arg2="5" />
 				<equals arg1="${p.option}" arg2="7" />
 				<equals arg1="${p.option}" arg2="9" />
+				<equals arg1="${p.option}" arg2="11" />
+				<equals arg1="${p.option}" arg2="13" />
 			</or>
 		</condition>
 		
@@ -158,6 +178,8 @@
 				<equals arg1="${p.option}" arg2="6" />
 				<equals arg1="${p.option}" arg2="8" />
 				<equals arg1="${p.option}" arg2="10" />
+				<equals arg1="${p.option}" arg2="12" />
+				<equals arg1="${p.option}" arg2="14" />
 			</or>
 		</condition>
 	</target>
