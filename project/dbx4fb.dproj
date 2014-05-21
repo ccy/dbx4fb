@@ -4,7 +4,7 @@
         <MainSource>dbx4fb.dpr</MainSource>
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
         <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
-        <ProjectVersion>14.6</ProjectVersion>
+        <ProjectVersion>15.4</ProjectVersion>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <Base>True</Base>
         <AppType>Library</AppType>
@@ -61,6 +61,7 @@
     </PropertyGroup>
     <Import Project="..\..\build\optset\Base.optset" Condition="'$(Base)'!='' And Exists('..\..\build\optset\Base.optset')"/>
     <PropertyGroup Condition="'$(Base)'!=''">
+        <SanitizedProjectName>dbx4fb</SanitizedProjectName>
         <Manifest_File>None</Manifest_File>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1033</VerInfo_Locale>
