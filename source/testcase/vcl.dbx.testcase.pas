@@ -2002,48 +2002,30 @@ begin
 end;
 
 procedure TTestCase_DBX_TSQLDataSet.Test_ctQuery;
-var L: TStringList;
 begin
-  L := TStringList.Create;
-  try
-    FDataSet.CommandType := ctQuery;
-    FDataSet.CommandText := 'SELECT FIELD AS Field1 FROM T_DATASET';
-    FDataSet.Open;
-    CheckTrue(Assigned(FDataSet.FindField('Field1')));
-    FDataSet.Close;
-  finally
-    L.Free;
-  end;
+  FDataSet.CommandType := ctQuery;
+  FDataSet.CommandText := 'SELECT FIELD AS Field1 FROM T_DATASET';
+  FDataSet.Open;
+  CheckTrue(Assigned(FDataSet.FindField('Field1')));
+  FDataSet.Close;
 end;
 
 procedure TTestCase_DBX_TSQLDataSet.Test_GetRowsAffected;
-var L: TStringList;
 begin
-  L := TStringList.Create;
-  try
-    FDataSet.CommandType := ctTable;
-    FDataSet.CommandText := 'T_DATASET';
-    FDataSet.Open;
-    FDataSet.Prepared := False;
-    FDataSet.Close;
-  finally
-    L.Free;
-  end;
+  FDataSet.CommandType := ctTable;
+  FDataSet.CommandText := 'T_DATASET';
+  FDataSet.Open;
+  FDataSet.Prepared := False;
+  FDataSet.Close;
 end;
 
 procedure TTestCase_DBX_TSQLDataSet.Test_Field_ReadOnly;
-var L: TStringList;
 begin
-  L := TStringList.Create;
-  try
-    FDataSet.CommandType := ctTable;
-    FDataSet.CommandText := 'T_DATASET';
-    FDataSet.Open;
-    CheckFalse(FDataSet.Fields[0].ReadOnly);
-    FDataSet.Close;
-  finally
-    L.Free;
-  end;
+  FDataSet.CommandType := ctTable;
+  FDataSet.CommandText := 'T_DATASET';
+  FDataSet.Open;
+  CheckFalse(FDataSet.Fields[0].ReadOnly);
+  FDataSet.Close;
 end;
 
 function TTest_DBX_FieldType_NOT_NULL.GetFieldType: string;
