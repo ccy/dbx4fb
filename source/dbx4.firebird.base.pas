@@ -24,11 +24,13 @@ type
     function GetSQLDialect: integer;
     function GetTransactionPool: TFirebirdTransactionPool;
     function GetTrimChar: Boolean;
+    function GetWaitOnLocks: Boolean;
     property DBHandle: pisc_db_handle read GetDBHandle;
     property ServerCharSet: WideString read GetServerCharSet;
     property SQLDialect: integer read GetSQLDialect;
     property TransactionPool: TFirebirdTransactionPool read GetTransactionPool;
     property TrimChar: Boolean read GetTrimChar;
+    property WaitOnLocks: Boolean read GetWaitOnLocks;
   end;
 
   TDBXBase_Firebird = class abstract(TDBXBase, IDBXBase_Firebird)

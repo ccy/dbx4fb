@@ -32,6 +32,7 @@ type
     FTrimChar: boolean;
     FUserName: WideString;
     FServerCharSet: WideString;
+    FWaitOnLocks: Boolean;
   protected
     function BeginTransaction(out TransactionHandle: TDBXTransactionHandle;
         IsolationLevel: TInt32): TDBXErrorCode;
@@ -46,6 +47,7 @@ type
     function GetSQLDialect: integer;
     function GetTransactionPool: TFirebirdTransactionPool;
     function GetTrimChar: Boolean;
+    function GetWaitOnLocks: Boolean;
     function IsolationLevel: TInt32;
     function Rollback(TransactionHandle: TDBXTransactionHandle): TDBXErrorCode;
     function SetCallbackEvent(CallbackHandle: DBXCallbackHandle; CallbackEvent:
@@ -70,13 +72,17 @@ function TDBXConnection_Firebird.BeginTransaction(
 var O: TTransactionInfo;
     N: TFirebirdTransaction;
 begin
-  {$Message 'Unable to find isc_start_transaction header translation'}
+  if IsolationLevel and FirebirdTransaction_WaitOnLocks = 0 then
+    O.WaitOnLocks := FWaitOnLocks
+  else
+    O.WaitOnLocks := IsolationLevel and FirebirdTransaction_WaitOnLocks = FirebirdTransaction_WaitOnLocks;
+
+  IsolationLevel := IsolationLevel and $00FF;
   try
-    case IsolationLevel of
-      TDBXIsolations.RepeatableRead: O.Isolation := isoRepeatableRead;
-      else
-        O.Isolation := isoReadCommitted;
-    end;
+    if IsolationLevel = TDBXIsolations.RepeatableRead then
+      O.Isolation := isoRepeatableRead
+    else
+      O.Isolation := isoReadCommitted;
     N := FTransactionPool.Add(O);
   except
     Result := TDBXErrorCodes.VendorError;
@@ -112,8 +118,10 @@ function TDBXConnection_Firebird.Connect(Count: TInt32; Names, Values:
     TWideStringArray): TDBXErrorCode;
 var i: integer;
     DPB, sServerName: AnsiString;
+    T: TTransactionInfo;
 begin
   FServerCharSet := 'None';
+  FWaitOnLocks := False;
   for i := 0 to Count - 1 do begin
     if Names[i] = TDBXPropertyNames.Database then
       FDatabase := ExpandFileNameString(Values[i])
@@ -144,6 +152,8 @@ begin
         FIsolationLevel := TDBXIsolations.SnapShot
       else
         FIsolationLevel := TDBXIsolations.ReadCommitted
+    end else if SameText(Names[i], WAITONLOCKS_KEY) then begin
+      TryStrToBool(Values[i], FWaitOnLocks);
     end else if SameText(Names[i], 'Delphi2007Connection') then begin
       if not TryStrToBool(Values[i], FIsDelphi2007Connection) then
         FIsDelphi2007Connection := False;
@@ -164,7 +174,13 @@ begin
   StatusVector.CheckResult(Result, TDBXErrorCodes.ConnectionFailed);
 
   Assert(FTransactionPool = nil);
-  FTransactionPool := TFirebirdTransactionPool.Create(FFirebirdLibrary, GetDBHandle);
+  T.ID := 0;
+  if FIsolationLevel = TDBXIsolations.RepeatableRead then
+    T.Isolation := isoRepeatableRead
+  else
+    T.Isolation := isoReadCommitted;
+  T.WaitOnLocks := FWaitOnLocks;
+  FTransactionPool := TFirebirdTransactionPool.Create(FFirebirdLibrary, GetDBHandle, T);
 end;
 
 function TDBXConnection_Firebird.GetDBHandle: pisc_db_handle;
@@ -200,6 +216,11 @@ end;
 function TDBXConnection_Firebird.GetTrimChar: Boolean;
 begin
   Result := FTrimChar;
+end;
+
+function TDBXConnection_Firebird.GetWaitOnLocks: Boolean;
+begin
+  Result := FWaitOnLocks;
 end;
 
 function TDBXConnection_Firebird.IsolationLevel: TInt32;
