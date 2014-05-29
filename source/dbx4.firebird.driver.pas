@@ -9,6 +9,7 @@ type
   private
     FHandle: THandle;
     FVendorLib: WideString;
+    FServerCharSet: WideString;
     FPath: IInterface;
     procedure LoadDriver;
   protected
@@ -25,7 +26,7 @@ type
 
 implementation
 
-uses SysUtils, Windows;
+uses SysUtils, Windows, Data.SqlConst;
 
 function TDBXDriver_Firebird.Close: TDBXErrorCode;
 var F: string;
@@ -55,11 +56,12 @@ constructor TDBXDriver_Firebird.Create(const Count: TInt32; Names,
 var i: integer;
 begin
   inherited Create;
+  FServerCharSet := 'NONE';
   for i := 0 to Count - 1 do begin
-    if Names[i] = TDBXPropertyNames.VendorLib then begin
+    if Names[i] = SQLSERVER_CHARSET_KEY then
+      FServerCharSet := Values[i]
+    else if Names[i] = TDBXPropertyNames.VendorLib then
       FVendorLib := Values[i];
-      Break;
-    end;
   end;
   LoadDriver;
 end;
@@ -83,7 +85,7 @@ end;
 
 function TDBXDriver_Firebird.NewLibrary: IFirebirdLibrary;
 begin
-  Result := TFirebirdLibraryFactory.New(FHandle);
+  Result := TFirebirdLibraryFactory.New(FHandle, FServerCharSet);
 end;
 
 procedure TDBXDriver_Firebird.LoadDriver;
