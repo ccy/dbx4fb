@@ -146,7 +146,7 @@
 			</or>
 		</condition>
 		
-		<condition property="p.server.count" value="5" else="4">
+		<condition property="p.server.count" value="4" else="2">
 			<or>
 				<equals arg1="${p.platform}" arg2="" />
 				<equals arg1="${p.platform}" arg2="Win32" />
