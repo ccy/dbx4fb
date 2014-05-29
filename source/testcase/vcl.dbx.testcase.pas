@@ -604,6 +604,10 @@ begin
   {$ifndef Unicode}Exit;{$endif}
   if (Pos('Firebird 1.', GetTestData.ServerVersion) <> 0) or (Pos('Firebird 2.0', GetTestData.ServerVersion) <> 0) then Exit;
 
+  FConnection.Close;
+  FConnection.Params.Values[SQLSERVER_CHARSET_KEY] := 'UTF8';
+  FConnection.Open;
+
   S := 'CREATE TABLE T_INSERT_UTF8 ' +
        '( ' +
        '  F1 VARCHAR(100) CHARACTER SET UTF8 ' +
