@@ -32,13 +32,21 @@
 			<equals arg1="${p.tag.program}" arg2="d11" />
 		</condition>
 
+		<condition property="p.suite" value="-suite ${suite}" else="">
+			<isset property="suite" />
+		</condition>
+
+		<condition property="p.core_2978" value="-CORE_2978" else="">
+			<isset property="CORE_2978" />
+		</condition>
+
 		<property name="program" location="${env.HOMEDRIVE}${env.HOMEPATH}\development\output.${p.tag.program}\moon\${p.platform}\${p.config}\dbxfbTests.exe" />
 
 		<echo file="${p.script}">
-			${program} -config ${program.conf} -drivers ${env.HOMEDRIVE}${env.HOMEPATH}\development\output.d18\moon\drivers -test ${test} -console
+			${program} -config ${program.conf} -drivers ${env.HOMEDRIVE}${env.HOMEPATH}\development\drivers -test ${test} ${p.suite} ${p.core_2978} -console
 		</echo>
 
-		<exec executable="cmd" spawn="false">
+		<exec executable="cmd" spawn="false" failonerror="true">
 			<arg line="/c ${p.script}" />
 		</exec>
 
@@ -46,15 +54,26 @@
 	</target>
 
 	<target name="t.execute" depends="t.option,t.platform,t.platform.testcount" unless="p.option.exit">
-		<for param="i" begin="1" end="${p.embedded.count}" parallel="true" threadCount="1">
+		<for param="i" begin="1" end="${p.embedded.count}" parallel="true" threadCount="${env.NUMBER_OF_PROCESSORS}">
 			<sequential>
 				<antcall target="dbx.test">
 					<param name="test" value="embedded_@{i}" />
+					<param name="suite" value="1" />					
+					<param name="CORE_2978" value="" />
 				</antcall>
 			</sequential>
 		</for>
 
-		<for param="i" begin="1" end="${p.server.count}" parallel="true" threadCount="1">
+		<for param="i" begin="1" end="${p.embedded.count}">
+			<sequential>
+				<antcall target="dbx.test">
+					<param name="test" value="embedded_@{i}" />
+					<param name="suite" value="2" />
+				</antcall>
+			</sequential>
+		</for>
+
+		<for param="i" begin="1" end="${p.server.count}" parallel="true" threadCount="${env.NUMBER_OF_PROCESSORS}">
 			<sequential>
 				<antcall target="dbx.test">
 					<param name="test" value="server_@{i}" />

@@ -707,6 +707,7 @@ var S: widestring;
     C: Char;
     D: TDataSet;
 begin
+  if TCmdLineParams_App.CORE_2978 then Exit;
   {$ifndef Unicode}Exit;{$endif}
   FConnection.Close;
   FConnection.Params.Values[SQLSERVER_CHARSET_KEY] := 'WIN1252';
@@ -3098,6 +3099,6 @@ end;
 
 initialization
   TTestSuite_DBX.CheckTestDataFile;
-  TTestSuite_DBX1.Setup;
-  TTestSuite_DBX2.Setup;
+  if TCmdLineParams_App.TestSuite1 then TTestSuite_DBX1.Setup;
+  if TCmdLineParams_App.TestSuite2 then TTestSuite_DBX2.Setup;
 end.
