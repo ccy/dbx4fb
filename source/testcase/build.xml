@@ -181,14 +181,14 @@
 			</or>
 		</condition>
 
-		<condition property="p.embedded_2.end" value="24" else="9">
+		<condition property="p.embedded_2.end" value="25" else="10">
 			<or>
 				<equals arg1="${p.platform}" arg2="" />
 				<equals arg1="${p.platform}" arg2="Win32" />
 			</or>
 		</condition>
 
-		<condition property="p.server.count" value="4" else="2">
+		<condition property="p.server.count" value="5" else="3">
 			<or>
 				<equals arg1="${p.platform}" arg2="" />
 				<equals arg1="${p.platform}" arg2="Win32" />
