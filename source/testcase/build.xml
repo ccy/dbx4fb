@@ -54,7 +54,7 @@
 	</target>
 
 	<target name="t.execute" depends="t.option,t.platform,t.platform.testcount" unless="p.option.exit">
-		<for param="i" begin="1" end="${p.embedded.count}" parallel="true" threadCount="${env.NUMBER_OF_PROCESSORS}">
+		<for param="i" begin="1" end="${p.embedded_1.end}" parallel="true" threadCount="${env.NUMBER_OF_PROCESSORS}">
 			<sequential>
 				<antcall target="dbx.test">
 					<param name="test" value="embedded_@{i}" />
@@ -64,7 +64,16 @@
 			</sequential>
 		</for>
 
-		<for param="i" begin="1" end="${p.embedded.count}">
+		<for param="i" begin="${p.embedded_2.begin}" end="${p.embedded_2.end}">
+			<sequential>
+				<antcall target="dbx.test">
+					<param name="test" value="embedded_@{i}" />
+					<param name="suite" value="1" />					
+				</antcall>
+			</sequential>
+		</for>
+
+		<for param="i" begin="1" end="${p.embedded_2.end}">
 			<sequential>
 				<antcall target="dbx.test">
 					<param name="test" value="embedded_@{i}" />
@@ -157,14 +166,28 @@
 		<condition property="p.platform" value="">
 			<equals arg1="${p.option}" arg2="1" />
 		</condition>
-		
-		<condition property="p.embedded.count" value="23" else="8">
+
+		<condition property="p.embedded_1.end" value="20" else="5">
 			<or>
 				<equals arg1="${p.platform}" arg2="" />
 				<equals arg1="${p.platform}" arg2="Win32" />
 			</or>
 		</condition>
-		
+
+		<condition property="p.embedded_2.begin" value="21" else="6">
+			<or>
+				<equals arg1="${p.platform}" arg2="" />
+				<equals arg1="${p.platform}" arg2="Win32" />
+			</or>
+		</condition>
+
+		<condition property="p.embedded_2.end" value="24" else="9">
+			<or>
+				<equals arg1="${p.platform}" arg2="" />
+				<equals arg1="${p.platform}" arg2="Win32" />
+			</or>
+		</condition>
+
 		<condition property="p.server.count" value="4" else="2">
 			<or>
 				<equals arg1="${p.platform}" arg2="" />

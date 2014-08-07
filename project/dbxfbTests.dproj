@@ -50,10 +50,10 @@
         <CfgDependentOn>..\..\build\optset\Base.optset</CfgDependentOn>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
-        <Debugger_RunParams>-config %HomeDrive%%HomePath%\development\source\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\development\drivers -test embedded_23</Debugger_RunParams>
+        <Debugger_RunParams>-config %HomeDrive%%HomePath%\development\source\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\development\drivers -test embedded_24</Debugger_RunParams>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
-        <Debugger_RunParams>-config %HomeDrive%%HomePath%\development\source\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\development\drivers -test embedded_8</Debugger_RunParams>
+        <Debugger_RunParams>-config %HomeDrive%%HomePath%\development\source\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\development\drivers -test embedded_9</Debugger_RunParams>
     </PropertyGroup>
     <Import Project="..\..\build\optset\Debug.optset" Condition="'$(Cfg_1)'!='' And Exists('..\..\build\optset\Debug.optset')"/>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
