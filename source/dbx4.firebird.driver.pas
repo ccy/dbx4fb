@@ -26,18 +26,24 @@ type
 
 implementation
 
-uses SysUtils, Windows, Data.SqlConst;
+uses SysUtils, Windows, System.Generics.Collections, Data.SqlConst, WindowsEx;
 
 function TDBXDriver_Firebird.Close: TDBXErrorCode;
 var F: string;
     i: integer;
     h: THandle;
+    fb_shutdown: function(timeout: Cardinal; reason: Integer): Integer; stdcall;
 begin
   SetLength(F, 1000);
   i := GetModuleFileName(FHandle, PChar(F), 1000);
   Assert(i > 0);
   SetLength(F, i);
 
+  if TProcessModules.GetLoadCount(FHandle) = 1 {CORE-4508} then begin
+    fb_shutdown := GetProcAddress(FHandle, 'fb_shutdown');
+    if Assigned(fb_shutdown) then
+      fb_shutdown(20000, 0);
+  end;
   if not FreeLibrary(FHandle) then
     Result := TDBXErrorCodes.DriverInitFailed
   else begin

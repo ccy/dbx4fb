@@ -129,6 +129,9 @@
         <DCCReference Include="..\..\core\source\firebird\firebird.blr.h.pas"/>
         <DCCReference Include="..\..\core\source\rtl\SysUtilsEx.pas"/>
         <DCCReference Include="..\source\dbx4.firebird.dll.d14.pas"/>
+        <DCCReference Include="..\..\core\source\rtl\Windows.PEB.pas"/>
+        <DCCReference Include="..\..\core\source\rtl\Windows.ntdll.pas"/>
+        <DCCReference Include="..\..\core\source\rtl\WindowsEx.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -185,12 +188,7 @@
                 <Source>
                     <Source Name="MainSource">dbx4fb.dpr</Source>
                 </Source>
-                <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k180.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp180.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcboffice2k180.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcbofficexp180.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
-                </Excluded_Packages>
+                <Excluded_Packages/>
             </Delphi.Personality>
             <Platforms>
                 <Platform value="OSX32">False</Platform>

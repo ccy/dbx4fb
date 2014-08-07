@@ -38,7 +38,10 @@ uses
   firebird.charsets in '..\..\core\source\firebird\firebird.charsets.pas',
   firebird.blr.h in '..\..\core\source\firebird\firebird.blr.h.pas',
   SysUtilsEx in '..\..\core\source\rtl\SysUtilsEx.pas',
-  dbx4.firebird.dll.d14 in '..\source\dbx4.firebird.dll.d14.pas';
+  dbx4.firebird.dll.d14 in '..\source\dbx4.firebird.dll.d14.pas',
+  Windows.PEB in '..\..\core\source\rtl\Windows.PEB.pas',
+  Windows.ntdll in '..\..\core\source\rtl\Windows.ntdll.pas',
+  WindowsEx in '..\..\core\source\rtl\WindowsEx.pas';
 
 begin
 end.
