@@ -16,13 +16,12 @@ var P: array of HMODULE;
 begin
   Result := 0;
 
-  i := 2;
+  i := 1;
   {$ifndef Unicode}Inc(i);{$endif}
   SetLength(P, i);
 
   P[0] := LoadPackage('SQL.patch.rtl.bpl');
-  P[1] := LoadPackage('SQL.patch.vcl.bpl');
-  {$ifndef Unicode}P[2] := LoadPackage('SQL.patch.dbx.bpl');{$endif}
+  {$ifndef Unicode}P[1] := LoadPackage('SQL.patch.dbx.bpl');{$endif}
 
   try
     if TCmdLineParams_App.RunAsConsole then begin
