@@ -41,7 +41,8 @@ uses
   dbx4.firebird.dll.d14 in '..\source\dbx4.firebird.dll.d14.pas',
   Windows.PEB in '..\..\core\source\rtl\Windows.PEB.pas',
   Windows.ntdll in '..\..\core\source\rtl\Windows.ntdll.pas',
-  WindowsEx in '..\..\core\source\rtl\WindowsEx.pas';
+  WindowsEx in '..\..\core\source\rtl\WindowsEx.pas',
+  System.QC109233 in '..\..\core\source\patch\System.QC109233.pas';
 
 begin
 end.
