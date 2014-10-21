@@ -51,9 +51,11 @@
         <CfgDependentOn>..\..\build\optset\Base.optset</CfgDependentOn>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
+        <Debugger_HostApplication>$(ActiveHostApplication)</Debugger_HostApplication>
         <Debugger_RunParams>-config %HomeDrive%%HomePath%\development\source\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\development\drivers -test embedded_25</Debugger_RunParams>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
+        <Debugger_HostApplication>$(ActiveHostApplication)</Debugger_HostApplication>
         <Debugger_RunParams>-config %HomeDrive%%HomePath%\development\source\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\development\drivers -test embedded_10</Debugger_RunParams>
     </PropertyGroup>
     <Import Project="..\..\build\optset\Debug.optset" Condition="'$(Cfg_1)'!='' And Exists('..\..\build\optset\Debug.optset')"/>
@@ -134,12 +136,6 @@
                 <Source>
                     <Source Name="MainSource">dbxfbTests.dpr</Source>
                 </Source>
-                <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcboffice2k180.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcbofficexp180.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k180.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp180.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
-                </Excluded_Packages>
             </Delphi.Personality>
             <Platforms>
                 <Platform value="OSX32">False</Platform>
