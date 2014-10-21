@@ -1485,6 +1485,11 @@ end;
 
 procedure TTestCase_DBX_FieldType.Test_DECIMAL_LONG;
 begin
+  Param.AsCurrency := 0;
+  Execute;
+  CheckEquals(TFMTBCDField, Field.ClassType);
+  CheckEquals(0, Field.AsCurrency);
+
   Param.AsFMTBCD := StrToBcdN('234.56');
   Execute;
   CheckEquals(TFMTBCDField, Field.ClassType);
