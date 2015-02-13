@@ -200,21 +200,21 @@
 			<equals arg1="${p.option}" arg2="1" />
 		</condition>
 
-		<condition property="p.embedded_1.end" value="20" else="5">
+		<condition property="p.embedded_1.end" value="21" else="6">
 			<or>
 				<equals arg1="${p.platform}" arg2="" />
 				<equals arg1="${p.platform}" arg2="Win32" />
 			</or>
 		</condition>
 
-		<condition property="p.embedded_2.begin" value="21" else="6">
+		<condition property="p.embedded_2.begin" value="22" else="7">
 			<or>
 				<equals arg1="${p.platform}" arg2="" />
 				<equals arg1="${p.platform}" arg2="Win32" />
 			</or>
 		</condition>
 
-		<condition property="p.embedded_2.end" value="25" else="10">
+		<condition property="p.embedded_2.end" value="26" else="11">
 			<or>
 				<equals arg1="${p.platform}" arg2="" />
 				<equals arg1="${p.platform}" arg2="Win32" />
