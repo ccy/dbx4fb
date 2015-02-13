@@ -71,11 +71,11 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <Debugger_RunParams>-config %HomeDrive%%HomePath%\Project\source\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\Development\drivers -test embedded_25</Debugger_RunParams>
+        <Debugger_RunParams>-config %HomeDrive%%HomePath%\Development\source\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\Development\drivers -test embedded_26</Debugger_RunParams>
         <Debugger_HostApplication>$(ActiveHostApplication)</Debugger_HostApplication>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
-        <Debugger_RunParams>-config %HomeDrive%%HomePath%\Project\source\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\Development\drivers -test embedded_10</Debugger_RunParams>
+        <Debugger_RunParams>-config %HomeDrive%%HomePath%\Development\source\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\Development\drivers -test embedded_11</Debugger_RunParams>
         <Debugger_HostApplication>$(ActiveHostApplication)</Debugger_HostApplication>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
     </PropertyGroup>
@@ -104,7 +104,6 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <RcCompile Include="..\..\build\rc\library.rc">
-            <ContainerId>RC</ContainerId>
             <Form>library.res</Form>
         </RcCompile>
         <DCCReference Include="..\..\core\source\firebird\firebird.ibase.h.pas"/>
