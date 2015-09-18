@@ -7,7 +7,7 @@
         <TargetedPlatforms>3</TargetedPlatforms>
         <AppType>Console</AppType>
         <FrameworkType>None</FrameworkType>
-        <ProjectVersion>16.1</ProjectVersion>
+        <ProjectVersion>18.0</ProjectVersion>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
@@ -28,6 +28,12 @@
         <CfgParent>Base</CfgParent>
         <Base>true</Base>
     </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win32)'!=''">
+        <Cfg_1_Win32>true</Cfg_1_Win32>
+        <CfgParent>Cfg_1</CfgParent>
+        <Cfg_1>true</Cfg_1>
+        <Base>true</Base>
+    </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_2)'!=''">
         <Cfg_2>true</Cfg_2>
         <CfgParent>Base</CfgParent>
@@ -35,6 +41,7 @@
     </PropertyGroup>
     <Import Project="..\..\build\optset\Base.optset" Condition="'$(Base)'!='' And Exists('..\..\build\optset\Base.optset')"/>
     <PropertyGroup Condition="'$(Base)'!=''">
+        <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
         <SanitizedProjectName>dbxfbTests</SanitizedProjectName>
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <UsePackages>true</UsePackages>
@@ -51,16 +58,21 @@
         <CfgDependentOn>..\..\build\optset\Base.optset</CfgDependentOn>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
+        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <Debugger_HostApplication>$(ActiveHostApplication)</Debugger_HostApplication>
         <Debugger_RunParams>-config %HomeDrive%%HomePath%\development\source\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\development\drivers -test embedded_26</Debugger_RunParams>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
+        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <Debugger_HostApplication>$(ActiveHostApplication)</Debugger_HostApplication>
         <Debugger_RunParams>-config %HomeDrive%%HomePath%\development\source\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\development\drivers -test embedded_11</Debugger_RunParams>
     </PropertyGroup>
     <Import Project="..\..\build\optset\Debug.optset" Condition="'$(Cfg_1)'!='' And Exists('..\..\build\optset\Debug.optset')"/>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <CfgDependentOn>..\..\build\optset\Debug.optset</CfgDependentOn>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
     </PropertyGroup>
     <Import Project="..\..\build\optset\Release.optset" Condition="'$(Cfg_2)'!='' And Exists('..\..\build\optset\Release.optset')"/>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
@@ -138,6 +150,10 @@
                 </Source>
             </Delphi.Personality>
             <Platforms>
+                <Platform value="Android">False</Platform>
+                <Platform value="iOSDevice32">False</Platform>
+                <Platform value="iOSDevice64">False</Platform>
+                <Platform value="iOSSimulator">False</Platform>
                 <Platform value="OSX32">False</Platform>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">True</Platform>

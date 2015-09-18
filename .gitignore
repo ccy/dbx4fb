@@ -1,5 +1,7 @@
 *.local
-*.res
 *.identcache
 *.dsk
 *.tvsconfig
+*.stat
+Win32/
+Win64/

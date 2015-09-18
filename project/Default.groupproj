@@ -3,7 +3,7 @@
         <ProjectGuid>{69c7e279-5fcd-4b25-bcc0-8c2286502fe1}</ProjectGuid>
     </PropertyGroup>
     <ItemGroup>
-        <Projects Include="dbx4fb.dproj">
+        <Projects Include="..\..\dbx4fb\project\dbx4fb.dproj">
             <Dependencies/>
         </Projects>
         <Projects Include="..\..\core\project\patch.rtl.dproj">
@@ -33,13 +33,13 @@
         </BorlandProject>
     </ProjectExtensions>
     <Target Name="dbx4fb">
-        <MSBuild Projects="dbx4fb.dproj"/>
+        <MSBuild Projects="..\..\dbx4fb\project\dbx4fb.dproj"/>
     </Target>
     <Target Name="dbx4fb:Clean">
-        <MSBuild Projects="dbx4fb.dproj" Targets="Clean"/>
+        <MSBuild Projects="..\..\dbx4fb\project\dbx4fb.dproj" Targets="Clean"/>
     </Target>
     <Target Name="dbx4fb:Make">
-        <MSBuild Projects="dbx4fb.dproj" Targets="Make"/>
+        <MSBuild Projects="..\..\dbx4fb\project\dbx4fb.dproj" Targets="Make"/>
     </Target>
     <Target Name="patch_rtl">
         <MSBuild Projects="..\..\core\project\patch.rtl.dproj"/>
