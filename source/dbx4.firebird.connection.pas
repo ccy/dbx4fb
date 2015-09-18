@@ -59,7 +59,7 @@ type
 
 implementation
 
-uses SysUtils, Windows, SqlConst, SysUtilsEx;
+uses SysUtils, Windows, SqlConst;
 
 constructor TDBXConnection_Firebird.Create(const aDriver: IDBXDriver);
 begin
