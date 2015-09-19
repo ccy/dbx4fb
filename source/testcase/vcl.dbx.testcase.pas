@@ -120,6 +120,7 @@ type{$M+}
     procedure Test_Param_Single_Shortint;
     procedure Test_Insert_Returning;
     procedure Test_SystemTable_Char_Field;
+    procedure Test_RoleName;
   end;
 
   TTestCase_DBX_Transaction = class(TTestCase_DBX)
@@ -474,7 +475,6 @@ begin
             SQLDIALECT_KEY + '=3'
             + #13#10 + szUSERNAME + '=SYSDBA'
             + #13#10 + szPASSWORD + '=masterkey'
-            + #13#10 + ROLENAME_KEY + '=RoleName'
             + #13#10 + SQLSERVER_CHARSET_KEY + '=NONE'
             + #13#10 + 'BlobSize=-1'
             + #13#10 + 'LocaleCode=0000'
@@ -661,6 +661,30 @@ begin
     P.Free;
   end;
   {$ifend}
+end;
+
+procedure TTestCase_DBX_General.Test_RoleName;
+var sUser: string;
+begin
+  if not FileExists(FConnection.Params.Values[DATABASENAME_KEY]) then Exit;
+
+  FConnection.ExecuteDirect('CREATE TABLE T_RoleName(AutoKey INTEGER)');
+
+  sUser := 'U' + GetTickCount.ToString;
+  FConnection.ExecuteDirect(Format('CREATE USER %s password ''password'' grant ADMIN ROLE', [sUser]));
+  try
+    FConnection.ExecuteDirect(Format('GRANT RDB$ADMIN TO %s', [sUser]));
+    FConnection.Close;
+    FConnection.Params.Values[szUSERNAME] := sUser;
+    FConnection.Params.Values[szPASSWORD] := 'password';
+    FConnection.Params.Values[ROLENAME_KEY] := 'RDB$ADMIN';
+    FConnection.Open;
+
+    FConnection.Execute('SELECT * FROM T_RoleName', nil);
+  finally
+    FConnection.ExecuteDirect(Format('DROP USER %s', [sUser]));
+    FConnection.ExecuteDirect('DROP TABLE T_RoleName');
+  end;
 end;
 
 procedure TTestCase_DBX_General.Test_CAST_SQL_DECIMAL_Bug;
