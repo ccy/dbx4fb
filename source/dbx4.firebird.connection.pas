@@ -27,6 +27,7 @@ type
     FIsDelphi2007Connection: boolean;
     FIsolationLevel: TInt32;
     FPassword: WideString;
+    FRoleName: WideString;
     FSQLDialect: integer;
     FTransactionPool: TFirebirdTransactionPool;
     FTrimChar: boolean;
@@ -121,6 +122,7 @@ var i: integer;
     T: TTransactionInfo;
 begin
   FServerCharSet := 'None';
+  FRoleName := '';
   FWaitOnLocks := False;
   for i := 0 to Count - 1 do begin
     if Names[i] = TDBXPropertyNames.Database then
@@ -131,6 +133,8 @@ begin
       FUserName := Values[i]
     else if Names[i] = TDBXPropertyNames.Password then
       FPassword := Values[i]
+    else if Names[i] = ROLENAME_KEY then
+      FRoleName := Values[i]
     else if SameText(Names[i], SQLSERVER_CHARSET_KEY) then
       FServerCharSet := Values[i]
     else if SameText(Names[i], SQLDIALECT_KEY) then begin
@@ -163,7 +167,8 @@ begin
   DPB := AnsiChar(isc_dpb_version1) +
          AnsiChar(isc_dpb_lc_ctype) + AnsiChar(Length(FServerCharSet)) + AnsiString(FServerCharSet) +
          AnsiChar(isc_dpb_user_name) + AnsiChar(Length(FUserName)) + AnsiString(FUserName) +
-         AnsiChar(isc_dpb_password) + AnsiChar(Length(FPassword)) + AnsiString(FPassword);
+         AnsiChar(isc_dpb_password) + AnsiChar(Length(FPassword)) + AnsiString(FPassword) +
+         AnsiChar(isc_dpb_sql_role_name) + AnsiChar(Length(FRoleName)) + AnsiString(FRoleName);
 
   sServerName := AnsiString(FDatabase);
   if FHostName <> '' then
