@@ -218,6 +218,7 @@ type{$M+}
     procedure Test_Master_Detail;
     procedure Test_Self_Manage_Transaction;
     procedure Test_MalformString;
+    procedure Test_UTF8_EmptyString;
   end;
 
   TTestCase_DBX_Server_Embed = class(TTestCase, ITestCase_DBX2)
@@ -2401,6 +2402,36 @@ begin
       FConnection.RollbackFreeAndNil(T);
       raise;
     end;
+  end;
+end;
+
+procedure TTestCase_DBX_DataSnap.Test_UTF8_EmptyString;
+var D: TDataSet;
+begin
+  {$ifndef Unicode}Exit;{$endif}
+  if (Pos('Firebird 1.', GetTestData.ServerVersion) <> 0) or (Pos('Firebird 2.0', GetTestData.ServerVersion) <> 0) then Exit;
+
+  FCDS.SetProvider(FDSP);
+  FCDS.Open;
+  FCDS.AppendRecord(['A', '']);
+  FCDS.AppendRecord(['B', 'B']);
+  FCDS.AppendRecord(['C']);
+  FCDS.ApplyUpdates(0);
+
+  FConnection.Execute('SELECT * FROM T_DATASET WHERE F_VARCHAR_UTF8 IS NULL', nil, D);
+  try
+    CheckEquals(1, D.RecordCount);
+    CheckEquals('C', D.Fields[0].AsString);
+  finally
+    D.Free;
+  end;
+
+  FConnection.Execute('SELECT * FROM T_DATASET WHERE F_VARCHAR_UTF8 = ''''', nil, D);
+  try
+    CheckEquals(1, D.RecordCount);
+    CheckEquals('A', D.Fields[0].AsString);
+  finally
+    D.Free;
   end;
 end;
 
