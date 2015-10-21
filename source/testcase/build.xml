@@ -60,7 +60,7 @@
 	</target>
 
 	<target name="t.execute" depends="t.option,t.platform,t.platform.testcount" unless="p.option.exit">
-		<for param="i" begin="1" end="${p.embedded_1.end}" parallel="true" threadCount="${env.NUMBER_OF_PROCESSORS}">
+		<for param="i" begin="1" end="${p.embedded_1.end}" parallel="true" threadCount="${env.NUMBER_OF_PROCESSORS}" keepgoing="true">
 			<sequential>
 				<antcall target="dbx.test">
 					<param name="test" value="embedded_@{i}" />
@@ -70,7 +70,7 @@
 			</sequential>
 		</for>
 
-		<for param="i" begin="${p.embedded_2.begin}" end="${p.embedded_2.end}">
+		<for param="i" begin="${p.embedded_2.begin}" end="${p.embedded_2.end}" keepgoing="true">
 			<sequential>
 				<antcall target="dbx.test">
 					<param name="test" value="embedded_@{i}" />
@@ -79,7 +79,7 @@
 			</sequential>
 		</for>
 
-		<for param="i" begin="1" end="${p.embedded_2.end}">
+		<for param="i" begin="1" end="${p.embedded_2.end}" keepgoing="true">
 			<sequential>
 				<antcall target="dbx.test">
 					<param name="test" value="embedded_@{i}" />
@@ -88,7 +88,7 @@
 			</sequential>
 		</for>
 
-		<for param="i" begin="1" end="${p.server.count}" parallel="true" threadCount="${env.NUMBER_OF_PROCESSORS}">
+		<for param="i" begin="1" end="${p.server.count}" parallel="true" threadCount="${env.NUMBER_OF_PROCESSORS}" keepgoing="true">
 			<sequential>
 				<antcall target="dbx.test">
 					<param name="test" value="server_@{i}" />
