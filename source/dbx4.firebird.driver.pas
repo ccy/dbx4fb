@@ -31,7 +31,6 @@ uses SysUtils, Windows, System.Generics.Collections, Data.SqlConst;
 function TDBXDriver_Firebird.Close: TDBXErrorCode;
 var F: string;
     i: integer;
-    h: THandle;
     L: IFirebirdLibrary;
 begin
   SetLength(F, 1000);
@@ -41,15 +40,11 @@ begin
 
   L := TFirebirdLibraryFactory.New(FHandle);
   L.CORE_4508;
-  L := nil;
 
   if not FreeLibrary(FHandle) then
     Result := TDBXErrorCodes.DriverInitFailed
   else begin
-    {$Message 'Firebird bug: http://tracker.firebirdsql.org/browse/CORE-2186'}
-    h := GetModuleHandle(PChar(ExtractFilePath(F) + 'intl\fbintl.dll'));
-    if h <> 0 then
-      FreeLibrary(h);
+    L.CORE_2186(F);
     Result := TDBXErrorCodes.None;
   end;
 
