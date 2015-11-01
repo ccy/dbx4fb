@@ -31,14 +31,14 @@
         <DCC_BplOutput>.\$(Platform)\$(Config)</DCC_BplOutput>
         <DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
         <VerInfo_MinorVer>1</VerInfo_MinorVer>
-        <VerInfo_Build>48</VerInfo_Build>
+        <VerInfo_Build>49</VerInfo_Build>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_MajorVer>4</VerInfo_MajorVer>
         <VerInfo_Release>2015</VerInfo_Release>
         <VerInfo_DLL>true</VerInfo_DLL>
         <SanitizedProjectName>dbx4fb</SanitizedProjectName>
         <Manifest_File>None</Manifest_File>
-        <VerInfo_Keys>CompanyName=E Stream Software Sdn Bhd;FileDescription=E Stream Software Sdn Bhd;FileVersion=4.1.2015.48;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=DBExpress 4 for Firebird;ProductVersion=4.1;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=E Stream Software Sdn Bhd;FileDescription=E Stream Software Sdn Bhd;FileVersion=4.1.2015.49;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=DBExpress 4 for Firebird;ProductVersion=4.1;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <GenDll>true</GenDll>
     </PropertyGroup>
