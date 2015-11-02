@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{5A6A0336-4724-4D67-8C47-9B5241AADA19}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="dbx4fb.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="dbx4fbrt.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="dbx4fb">
+        <MSBuild Projects="dbx4fb.dproj"/>
+    </Target>
+    <Target Name="dbx4fb:Clean">
+        <MSBuild Projects="dbx4fb.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="dbx4fb:Make">
+        <MSBuild Projects="dbx4fb.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="dbx4fbrt">
+        <MSBuild Projects="dbx4fbrt.dproj"/>
+    </Target>
+    <Target Name="dbx4fbrt:Clean">
+        <MSBuild Projects="dbx4fbrt.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="dbx4fbrt:Make">
+        <MSBuild Projects="dbx4fbrt.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="dbx4fb;dbx4fbrt"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="dbx4fb:Clean;dbx4fbrt:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="dbx4fb:Make;dbx4fbrt:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
