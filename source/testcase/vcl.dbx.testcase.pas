@@ -515,12 +515,15 @@ var L: TStringList;
     S: TFirebirdServiceManager;
 begin
   L := TStringList.Create;
-  L.Text := aParams;
-  S := TFirebirdServiceManager.New(ExpandfileNameString(aLibraryName), L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
   try
-    Result := S.GetServerVersion;
+    L.Text := aParams;
+    S := TFirebirdServiceManager.New(ExpandfileNameString(aLibraryName), L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
+    try
+      Result := S.GetServerVersion;
+    finally
+      S.Free;
+    end;
   finally
-    S.Free;
     L.Free;
   end;
 end;
