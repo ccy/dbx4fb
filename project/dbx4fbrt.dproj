@@ -2,7 +2,7 @@
     <PropertyGroup>
         <ProjectGuid>{2A8ECD1D-F394-4959-AC8C-C40802933F6A}</ProjectGuid>
         <MainSource>dbx4fbrt.dpk</MainSource>
-        <ProjectVersion>18.0</ProjectVersion>
+        <ProjectVersion>18.1</ProjectVersion>
         <FrameworkType>None</FrameworkType>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
