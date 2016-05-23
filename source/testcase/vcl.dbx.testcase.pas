@@ -928,7 +928,7 @@ end;
 procedure TTestCase_DBX_General.Test_GetTableNames;
 var L: TStringList;
 begin
-  FConnection.ExecuteDirect('CREATE VIEW VIEW_OF_TEST AS SELECT * FROM RDB$Relations');
+  FConnection.ExecuteDirect('CREATE VIEW VIEW_OF_TEST AS SELECT * FROM RDB$ROLES');
 
   L := TStringList.Create;
   try
