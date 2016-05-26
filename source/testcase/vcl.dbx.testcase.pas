@@ -2550,13 +2550,13 @@ class procedure TTestSuite_DBX1.Setup;
 begin
   RegisterTest(
                COMMITRETAIN_KEY + '=False'
-    + #13#10 + WAITONLOCKS_KEY + '=False'
+    + #13#10 + WAITONLOCKS_KEY + '=True'
     + #13#10 + TRIMCHAR + '=False'
   );
 
   RegisterTest(
                COMMITRETAIN_KEY + '=False'
-    + #13#10 + WAITONLOCKS_KEY + '=False'
+    + #13#10 + WAITONLOCKS_KEY + '=True'
     + #13#10 + TRIMCHAR + '=True'
   );
 end;
