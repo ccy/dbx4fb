@@ -49,8 +49,8 @@ type
         IsNull: LongBool): TDBXErrorCode;
     function GetBcd(Ordinal: TInt32; out Value: TBcd; out IsNull: LongBool):
         TDBXErrorCode;
-    function GetBoolean(Ordinal: TInt32; out Value, IsNull: LongBool):
-        TDBXErrorCode;
+    function GetBoolean(Ordinal: TInt32; out Value: WordBool; out IsNull:
+        LongBool): TDBXErrorCode;
     function GetByteLength(Ordinal: TInt32; out Length: Int64; out IsNull:
         LongBool): TDBXErrorCode;
     function GetBytes(Ordinal: TInt32; Offset: Int64; Value: TBytes; const
@@ -81,6 +81,7 @@ type
     function SetAnsiString(Ordinal: TInt32; const Value: TDBXAnsiString; Length:
         Int64): TDBXErrorCode;
     function SetBcd(Ordinal: TInt32; Value: TBcd): TDBXErrorCode;
+    function SetBoolean(Ordinal: TInt32; Value: WordBool): TDBXErrorCode;
     function SetByte(Ordinal: TInt32; Value: Byte): TDBXErrorCode;
     function SetBytes(Ordinal: TInt32; BlobOffset: Int64; Value: TBytes; LastIndex:
         TInt32; ValueOffset, Length: Int64): TDBXErrorCode;

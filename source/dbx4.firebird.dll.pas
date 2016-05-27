@@ -266,8 +266,10 @@ end;
 
 function DBXRow_GetBoolean(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
     LongBool; out IsNull: LongBool): TDBXErrorCode; stdcall;
+var B: WordBool;
 begin
-  Result := (IDBXBase(Handle) as IDBXRow).GetBoolean(Ordinal, Value, IsNull);
+  Result := (IDBXBase(Handle) as IDBXRow).GetBoolean(Ordinal, B, IsNull);
+  Value := B;
 end;
 
 function DBXRow_GetByteLength(Handle: TDBXRowHandle; Ordinal: TInt32; out
@@ -361,8 +363,7 @@ end;
 function DBXWritableRow_SetBoolean(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; Value: LongBool): TDBXErrorCode; stdcall;
 begin
-  Assert(False);
-  Result := TDBXErrorCodes.None;
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetBoolean(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetBytes(Handle: TDBXWritableRowHandle; Ordinal:

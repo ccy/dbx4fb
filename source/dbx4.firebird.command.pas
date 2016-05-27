@@ -92,6 +92,8 @@ begin
     Result := SizeOf(TBcd)
   else if V.CheckType(SQL_SHORT) and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) then
     Result := SizeOf(TBcd)
+  else if V.CheckType(SQL_BOOLEAN) then
+    Result := SizeOf(WordBool)
   else
     Result := V.Size;
 end;
@@ -184,6 +186,7 @@ begin
         Unsupported;
     end;
     SQL_BLOB: Result := TDBXDataTypes.BlobType;
+    SQL_BOOLEAN: Result := TDBXDataTypes.BooleanType;
     SQL_INT64: begin
       if (iSubType = 0) and (iScale = 0) then
         Result := TDBXDataTypes.Int64Type
@@ -519,6 +522,7 @@ begin
                     Format('WHEN B.RDB$FIELD_TYPE=%d THEN %d ', [blr_varying,   TDBXDataTypes.AnsiStringType]) +
                     Format('WHEN B.RDB$FIELD_TYPE=%d THEN %d ', [blr_text,      TDBXDataTypes.AnsiStringType]) +
 
+                    Format('WHEN B.RDB$FIELD_TYPE=%d THEN %d ', [blr_bool,      TDBXDataTypes.BooleanType]) +
                     Format('WHEN B.RDB$FIELD_TYPE=%d THEN %d ', [blr_float,     TDBXDataTypes.DoubleType]) +
                     Format('WHEN B.RDB$FIELD_TYPE=%d THEN %d ', [blr_double,    TDBXDataTypes.DoubleType]) +
                     Format('WHEN B.RDB$FIELD_TYPE=%d THEN %d ', [blr_sql_date,  TDBXDataTypes.DateType]) +

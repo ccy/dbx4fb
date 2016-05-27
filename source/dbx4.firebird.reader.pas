@@ -39,8 +39,8 @@ type
     function Close: TDBXErrorCode; override;
     function GetAnsiString(Ordinal: TInt32; Value: TDBXAnsiStringBuilder; out
         IsNull: LongBool): TDBXErrorCode;
-    function GetBoolean(Ordinal: TInt32; out Value, IsNull: LongBool):
-        TDBXErrorCode;
+    function GetBoolean(Ordinal: TInt32; out Value: WordBool; out IsNull:
+        LongBool): TDBXErrorCode;
     function GetByteLength(Ordinal: TInt32; out Length: Int64; out IsNull:
         LongBool): TDBXErrorCode;
     function GetBytes(Ordinal: TInt32; Offset: Int64; Value: TBytes; const
@@ -208,8 +208,8 @@ begin
   Result := NotSupported;
 end;
 
-function TDBXRow_Firebird_GetDatabase.GetBoolean(Ordinal: TInt32; out Value,
-    IsNull: LongBool): TDBXErrorCode;
+function TDBXRow_Firebird_GetDatabase.GetBoolean(Ordinal: TInt32; out Value:
+    WordBool; out IsNull: LongBool): TDBXErrorCode;
 begin
   if (Ordinal = 3) or (Ordinal = 4) then
     Value := True

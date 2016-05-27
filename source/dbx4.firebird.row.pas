@@ -16,6 +16,8 @@ type
     FTrimChar: boolean;
     function GetBcd(Ordinal: TInt32; out Value: PBcd; out IsNull: LongBool):
         TDBXErrorCode; overload;
+    function GetBoolean(Ordinal: TInt32; out Value: PWordBool; out IsNull:
+        LongBool): TDBXErrorCode; overload;
     function GetDate(Ordinal: TInt32; out Value: PDate; out IsNull: LongBool):
         TDBXErrorCode; overload;
     function GetDouble(Ordinal: TInt32; out Value: PDouble; out IsNull: LongBool):
@@ -36,8 +38,8 @@ type
         IsNull: LongBool): TDBXErrorCode;
     function GetBcd(Ordinal: TInt32; out Value: TBcd; out IsNull: LongBool):
         TDBXErrorCode; overload;
-    function GetBoolean(Ordinal: TInt32; out Value, IsNull: LongBool):
-        TDBXErrorCode;
+    function GetBoolean(Ordinal: TInt32; out Value: WordBool; out IsNull:
+        LongBool): TDBXErrorCode; overload;
     function GetByteLength(Ordinal: TInt32; out Length: Int64; out IsNull:
         LongBool): TDBXErrorCode;
     function GetBytes(Ordinal: TInt32; Offset: Int64; Value: TBytes; const
@@ -65,6 +67,7 @@ type
     function SetAnsiString(Ordinal: TInt32; const Value: TDBXAnsiString; Length:
         Int64): TDBXErrorCode;
     function SetBcd(Ordinal: TInt32; Value: TBcd): TDBXErrorCode;
+    function SetBoolean(Ordinal: TInt32; Value: WordBool): TDBXErrorCode;
     function SetByte(Ordinal: TInt32; Value: Byte): TDBXErrorCode;
     function SetBytes(Ordinal: TInt32; BlobOffset: Int64; Value: TBytes; LastIndex:
         TInt32; ValueOffset, Length: Int64): TDBXErrorCode;
@@ -148,10 +151,22 @@ begin
   Result := GetBcd(Ordinal, p, IsNull);
 end;
 
-function TDBXRow_Firebird.GetBoolean(Ordinal: TInt32; out Value, IsNull:
-    LongBool): TDBXErrorCode;
+function TDBXRow_Firebird.GetBoolean(Ordinal: TInt32; out Value: PWordBool; out
+    IsNull: LongBool): TDBXErrorCode;
+var V, B: boolean;
 begin
-  Result := NotSupported;
+  Get_oVar(Ordinal).GetBoolean(@V, B);
+  Value^ := V;
+  IsNull := B;
+  Result := TDBXErrorCodes.None;
+end;
+
+function TDBXRow_Firebird.GetBoolean(Ordinal: TInt32; out Value: WordBool; out
+    IsNull: LongBool): TDBXErrorCode;
+var p: PWordBool;
+begin
+  p := @Value;
+  Result := GetBoolean(Ordinal, p, IsNull);
 end;
 
 function TDBXRow_Firebird.GetByteLength(Ordinal: TInt32; out Length: Int64; out
@@ -229,6 +244,7 @@ begin
     TDBXDataTypes.AnsiStringType: Result := GetAnsiString(Ordinal, Pointer(Value), IsNull);
     TDBXDataTypes.WideStringType: Result := GetWideString(Ordinal, Pointer(Value), IsNull);
     TDBXDataTypes.BcdType:        Result := GetBcd(Ordinal, PBcd(Value), IsNull);
+    TDBXDataTypes.BooleanType:    Result := GetBoolean(Ordinal, PWordBool(Value), IsNull);
     TDBXDataTypes.DateType:       Result := GetDate(Ordinal, PDate(Value), IsNull);
     TDBXDataTypes.Int16Type:      Result := GetInt16(Ordinal, PSmallInt(Value), IsNull);
     TDBXDataTypes.Int32Type:      Result := GetInt32(Ordinal, PLongint(Value), IsNull);
@@ -365,6 +381,15 @@ end;
 function TDBXRow_Firebird.SetBcd(Ordinal: TInt32; Value: TBcd): TDBXErrorCode;
 begin
   FDSQL.i_SQLDA[Ordinal].SetBCD(@Value, False);
+  Result := TDBXErrorCodes.None;
+end;
+
+function TDBXRow_Firebird.SetBoolean(Ordinal: TInt32; Value: WordBool):
+    TDBXErrorCode;
+var B: Boolean;
+begin
+  B := Value;
+  FDSQL.i_SQLDA[Ordinal].SetBoolean(@B, False);
   Result := TDBXErrorCodes.None;
 end;
 
