@@ -11,7 +11,7 @@ uses SysUtils, Classes, DB, SqlExpr, Provider, DBClient, FMTBcd,
 type{$M+}
   ITestData = interface(IInterface)
   ['{2DCC2E1F-BCE2-4D04-A61E-03DBFC031D0E}']
-    function GetODS: string;
+    function GetODS: UInt16;
     function GetName: string;
     function GetServerVersion: string;
     procedure Setup(const aConnection: TSQLConnection);
@@ -27,11 +27,11 @@ type{$M+}
     FName: string;
     FParams: WideString;
     FVendorLib: string;
-    FODS: string;
+    FODS: UInt16;
     FServerVersion: string;
     procedure CreateDatabase;
   protected
-    function GetODS: string;
+    function GetODS: UInt16;
     function GetName: string;
     function GetServerVersion: string;
     procedure Setup(const aConnection: TSQLConnection);
@@ -298,6 +298,7 @@ implementation
 
 uses SqlConst, Windows, StrUtils, WideStrings,
   SqlTimSt, DateUtils, Math, IniFiles,
+  firebird.ods.h,
   SystemEx, SysUtilsEx, firebird.client, firebird.service, UniqueID,
   vcl.dbx.cmdlines;
 
@@ -404,7 +405,7 @@ begin
   Result := FName;
 end;
 
-function TTestData_SQLConnection.GetODS: string;
+function TTestData_SQLConnection.GetODS: UInt16;
 begin
   Result := FODS;
 end;
@@ -839,7 +840,7 @@ var D: TDataSet;
     iCount: integer;
 begin
   iCount := 16;
-  if FTestData.GetODS >= '11.1' then
+  if FTestData.GetODS >= ODS_11_1 then
     iCount := 17;
 
   P := TParams.Create;
@@ -892,7 +893,7 @@ begin
     L2.Add('RDB$FORMAT');
     L2.Add('RDB$FIELD_ID');
     L2.Add('RDB$RELATION_NAME');
-    if FTestData.GetODS >= '11.1' then
+    if FTestData.GetODS >= ODS_11_1 then
       L2.Add('RDB$RELATION_TYPE');
     L2.Add('RDB$SECURITY_CLASS');
     L2.Add('RDB$EXTERNAL_FILE');
