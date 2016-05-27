@@ -155,6 +155,7 @@ type{$M+}
   published
     procedure Test_BIGINT;
     procedure Test_BIGINT_Limit;
+    procedure Test_BOOLEAN;
     procedure Test_BLOB;
     procedure Test_CHAR;
     procedure Test_CHAR_UNICODE_FSS;
@@ -275,6 +276,7 @@ type{$M+}
     procedure Test_Blob;
   published
     procedure Test_BigInt;
+    procedure Test_Boolean;
     procedure Test_Char;
     procedure Test_Char_UTF8;
     procedure Test_Date;
@@ -1053,7 +1055,12 @@ begin
   else if GetName = 'Test_INTEGER'             then Result := 'INTEGER'
   else if GetName = 'Test_BIGINT'              then Result := 'BIGINT'
   else if GetName = 'Test_BIGINT_Limit'        then Result := 'BIGINT'
-  else if GetName = 'Test_MEMO'                then Result := 'BLOB SUB_TYPE 1'
+  else if GetName = 'Test_BOOLEAN'             then begin
+    if GetTestData.GetODS >= ODS_12_0 then
+      Result := 'BOOLEAN'
+    else
+      Result := 'INTEGER';
+  end else if GetName = 'Test_MEMO'                then Result := 'BLOB SUB_TYPE 1'
   else if GetName = 'Test_MEMO_UTF8'           then Result := 'BLOB SUB_TYPE 1 CHARACTER SET UTF8'
   else if GetName = 'Test_NUMERIC'             then Result := 'NUMERIC(18, 4)'
   else if GetName = 'Test_NUMERIC_SHORT'       then Result := 'NUMERIC(4, 2)'
@@ -1223,6 +1230,49 @@ begin
   Move(Param.AsBlob[0], S[1], Param.GetDataSize);
   {$ifend}
   CheckEquals(string(S), Field.AsString);
+
+  Test_Required;
+end;
+
+procedure TTestCase_DBX_FieldType.Test_BOOLEAN;
+begin
+  if GetTestData.GetODS < ODS_12_0 then Exit;
+
+  Param.AsBoolean := True;
+  Execute;
+  CheckEquals(TBooleanField, Field.ClassType);
+
+  CheckEquals(True, Field.AsBoolean);
+  CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
+
+  Param.AsBoolean := False;
+  Execute;
+  CheckEquals(False, Field.AsBoolean);
+
+  Param.AsString := 'True';
+  Execute;
+  CheckEquals(True, Field.AsBoolean);
+
+  Param.AsString := 'False';
+  Execute;
+  CheckEquals(False, Field.AsBoolean);
+
+  Param.AsWideString := 'True';
+  Execute;
+  CheckEquals(True, Field.AsBoolean);
+
+  Param.AsWideString := 'False';
+  Execute;
+  CheckEquals(False, Field.AsBoolean);
+
+  Param.Value := True;
+  Execute;
+  CheckEquals(True, Field.AsBoolean);
+
+  Param.Value := False;
+  Execute;
+  CheckEquals(False, Field.AsBoolean);
 
   Test_Required;
 end;
@@ -2999,6 +3049,17 @@ begin
   end;
 end;
 
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Boolean;
+begin
+  if GetTestData.GetODS < ODS_12_0 then Exit;
+
+  CheckEquals(0, CreateProc('BOOLEAN', 'True'));
+
+  Check(ftBoolean = FStoredProc.Params[1].DataType);
+
+  CheckEquals(True, FStoredProc.Params[1].AsBoolean);
+end;
+
 procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Char;
 var iLen: integer;
 begin
@@ -3149,7 +3210,7 @@ procedure TTestCase_DBX_TSQLStoredProc_Params.Test_VarChar_UTF8;
 var s: string;
 begin
   {$ifndef Unicode} Exit; {$endif}
-  
+
   if (Pos('Firebird 1.', GetTestData.ServerVersion) <> 0) or (Pos('Firebird 2.0', GetTestData.ServerVersion) <> 0) then Exit;
 
   s := 'One World One Dream ' +
