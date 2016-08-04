@@ -50,7 +50,8 @@ end;
 function DBXBase_Close(Handle: TDBXCommonHandle): TDBXErrorCode; stdcall;
 begin
   Result := IDBXBase(Handle).Close;
-  IDBXBase(Handle) := nil;
+  if Result = TDBXErrorCodes.None then
+    IDBXBase(Handle) := nil;
 end;
 
 function DBXBase_GetErrorMessage(Handle: TDBXCommonHandle; LastErrorCode:
