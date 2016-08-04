@@ -165,7 +165,7 @@ end;
 
 function TDBXReader_Firebird_DSQL.Close: TDBXErrorCode;
 begin
-  FDSQL.Close(StatusVector);
+  Result := FDSQL.Close(StatusVector);
   StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError);
 end;
 
