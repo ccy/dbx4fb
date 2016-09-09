@@ -34,6 +34,7 @@ type
     FUserName: WideString;
     FServerCharSet: WideString;
     FWaitOnLocks: Boolean;
+    FWaitOnLocksTimeOut: Integer;
   protected
     function BeginTransaction(out TransactionHandle: TDBXTransactionHandle;
         IsolationLevel: TInt32): TDBXErrorCode;
@@ -73,6 +74,8 @@ function TDBXConnection_Firebird.BeginTransaction(
 var O: TTransactionInfo;
     N: TFirebirdTransaction;
 begin
+  O.Init;
+  O.WaitOnLocksTimeOut := FWaitOnLocksTimeOut;
   if IsolationLevel and FirebirdTransaction_WaitOnLocks = 0 then
     O.WaitOnLocks := FWaitOnLocks
   else
@@ -124,6 +127,7 @@ begin
   FServerCharSet := 'None';
   FRoleName := '';
   FWaitOnLocks := False;
+  FWaitOnLocksTimeOut := -1;
   for i := 0 to Count - 1 do begin
     if Names[i] = TDBXPropertyNames.Database then
       FDatabase := ExpandFileNameString(Values[i])
@@ -158,6 +162,8 @@ begin
         FIsolationLevel := TDBXIsolations.ReadCommitted
     end else if SameText(Names[i], WAITONLOCKS_KEY) then begin
       TryStrToBool(Values[i], FWaitOnLocks);
+    end else if SameText(Names[i], 'WaitOnLocksTimeOut') then begin
+      TryStrToInt(Values[i], FWaitOnLocksTimeOut);
     end else if SameText(Names[i], 'Delphi2007Connection') then begin
       if not TryStrToBool(Values[i], FIsDelphi2007Connection) then
         FIsDelphi2007Connection := False;
@@ -179,12 +185,14 @@ begin
   StatusVector.CheckResult(Result, TDBXErrorCodes.ConnectionFailed);
 
   Assert(FTransactionPool = nil);
+  T.Init;
   T.ID := 0;
   if FIsolationLevel = TDBXIsolations.RepeatableRead then
     T.Isolation := isoRepeatableRead
   else
     T.Isolation := isoReadCommitted;
   T.WaitOnLocks := FWaitOnLocks;
+  T.WaitOnLocksTimeOut := FWaitOnLocksTimeOut;
   FTransactionPool := TFirebirdTransactionPool.Create(FFirebirdLibrary, GetDBHandle, T);
 end;
 
