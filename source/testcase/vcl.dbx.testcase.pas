@@ -134,6 +134,7 @@ type{$M+}
     procedure Test_Transaction_ReadCommitted;
     procedure Test_Transaction_WaitLock;
     procedure Test_Transaction_WaitLock_Fail;
+    procedure Test_Transcation_WaitLock_TimeOut;
   end;
 
   TTestCase_DBX_FieldType = class(TTestCase_DBX)
@@ -2341,6 +2342,46 @@ begin
   end;
 end;
 
+procedure TTestCase_DBX_Transaction.Test_Transcation_WaitLock_TimeOut;
+var TTestSuite_DBX1, TTestSuite_DBX2: TDBXTransaction;
+    C1, C2: TSQLConnection;
+    i: Integer;
+begin
+  if (Pos('Firebird 1.', GetTestData.ServerVersion) <> 0) or (Pos('Firebird 2.0', GetTestData.ServerVersion) <> 0) then Exit;
+
+  C1 := FConnection;
+
+  C1.ExecuteDirect('CREATE TABLE T_LOCK(FIELD1 VARCHAR(10), FIELD2 INTEGER)');
+  C1.ExecuteDirect('INSERT INTO T_LOCK VALUES(''ITEM-01'', 1)');
+
+  C2 := TSQLConnection.Create(nil);
+  C2.LoginPrompt := False;
+  FTestData.Setup(C2);
+  C2.Open;
+
+  try
+    TTestSuite_DBX1 := C1.BeginTransaction;
+    try
+      C1.ExecuteDirect('UPDATE T_LOCK SET Field2=Field2+1 WHERE Field1 = ''ITEM-01''');
+
+      TTestSuite_DBX2 := C2.BeginTransaction;
+
+      StartExpectingException(TDBXError);
+      C2.ExecuteDirect('UPDATE T_LOCK SET Field2=Field2+1 WHERE Field1 = ''ITEM-01''');
+
+      C1.CommitFreeAndNil(TTestSuite_DBX1);
+      C2.CommitFreeAndNil(TTestSuite_DBX2);
+    except
+      C1.RollbackFreeAndNil(TTestSuite_DBX1);
+      C2.RollbackFreeAndNil(TTestSuite_DBX2);
+      raise;
+    end;
+  finally
+    C1.ExecuteDirect('DROP TABLE T_LOCK');
+    C2.Free;
+  end;
+end;
+
 procedure TTestCase_DBX_DataSnap.SetUp;
 var S: string;
     L: TStringList;
@@ -2601,12 +2642,14 @@ begin
   RegisterTest(
                COMMITRETAIN_KEY + '=False'
     + #13#10 + WAITONLOCKS_KEY + '=True'
+    + #13#10 + 'WaitOnLocksTimeOut' + '=2'
     + #13#10 + TRIMCHAR + '=False'
   );
 
   RegisterTest(
                COMMITRETAIN_KEY + '=False'
     + #13#10 + WAITONLOCKS_KEY + '=True'
+    + #13#10 + 'WaitOnLocksTimeOut' + '=2'
     + #13#10 + TRIMCHAR + '=True'
   );
 end;
