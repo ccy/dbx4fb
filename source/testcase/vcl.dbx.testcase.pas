@@ -221,6 +221,7 @@ type{$M+}
     procedure Test_Self_Manage_Transaction;
     procedure Test_MalformString;
     procedure Test_UTF8_EmptyString;
+    procedure Test_MalformString_UTF8;
   end;
 
   TTestCase_DBX_Server_Embed = class(TTestCase, ITestCase_DBX2)
@@ -2468,6 +2469,59 @@ begin
     end;
   finally
     FConnection.ExecuteDirect('DROP TABLE T_DETAIL');
+  end;
+end;
+
+procedure TTestCase_DBX_DataSnap.Test_MalformString_UTF8;
+var S: string;
+    sMaster, sDetail: TSQLDataSet;
+    cMaster: TClientDataSet;
+    DSP: TDataSetProvider;
+    DS: TDataSource;
+begin
+  S := 'CREATE TABLE T_MASTER( ' +
+       '   DocKey Integer, ' +
+       '   Name VARCHAR(100) CHARACTER SET UTF8 ' +
+       ')';
+  FConnection.ExecuteDirect(S);
+  S := 'INSERT INTO T_Master VALUES(1, NULL)';
+  FConnection.ExecuteDirect(S);
+
+  S := 'CREATE TABLE T_DETAIL( ' +
+       '   DocKey Integer, ' +
+       '   Name VARCHAR(100) CHARACTER SET UTF8 NOT NULL ' +
+       ')';
+  FConnection.ExecuteDirect(S);
+  S := 'INSERT INTO T_Detail VALUES(1, ''b'')';
+  FConnection.ExecuteDirect(S);
+
+  sMaster := TSQLDataSet.Create(nil);
+  DS := TDataSource.Create(nil);
+  sDetail := TSQLDataSet.Create(nil);
+  DSP := TDataSetProvider.Create(nil);
+  cMaster := TClientDataSet.Create(nil);
+  try
+    sMaster.SQLConnection := FConnection;
+    sMaster.CommandText := 'SELECT * FROM T_Master';
+    DS.DataSet := sMaster;
+
+    sDetail.Name := 'Detail';
+    sDetail.DataSource := DS;
+    sDetail.SQLConnection := FConnection;
+    sDetail.CommandText := 'SELECT * FROM T_Detail WHERE Name=:Name';
+
+    DSP.DataSet := sMaster;
+
+    cMaster.SetProvider(DSP);
+    cMaster.Open;
+  finally
+    sMaster.Free;
+    DS.Free;
+    sDetail.Free;
+    DSP.Free;
+    cMaster.Free;
+    FConnection.ExecuteDirect('DROP TABLE T_Master');
+    FConnection.ExecuteDirect('DROP TABLE T_Detail');
   end;
 end;
 
