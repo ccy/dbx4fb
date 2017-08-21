@@ -1408,23 +1408,39 @@ begin
 end;
 
 procedure TTestCase_DBX_FieldType.Test_DATE;
+var A: TArray<TProc>;
+    P: TProc;
 begin
-  Param.AsDate := Date;
-  Execute;
-  CheckEquals(TDateField, Field.ClassType);
-  CheckEquals(4, Field.DataSize);
+  A := [procedure begin Param.AsDate := Date; end
+      , procedure begin Param.AsDateTime := Date; end
+      , procedure begin Param.AsString := FormatDateTime('dd mmm yyyy', Date + 5); end
+      , procedure begin Param.AsWideString := FormatDateTime('dd mmm yyyy', Now); end
+      , procedure begin Param.AsSQLTimeStamp := DateTimeToSQLTimeStamp(Date); end
+  ];
 
-  CheckEquals(Param.AsDate, Field.AsDateTime);
-  CheckEquals(Param.AsDateTime, Field.AsDateTime);
-  CheckEquals(Param.AsString, Field.AsString);
-  CheckEquals(Param.AsWideString, Field.AsWideString);
-  CheckEquals(Param.AsFloat, Field.AsFloat);
-  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+  for P in A do begin
+    P;
+    Execute;
+    CheckEquals(TDateField, Field.ClassType);
+    CheckEquals(4, Field.DataSize);
 
-  Test_Required;
+    CheckEquals(Param.AsDate, Field.AsDateTime);
+    CheckEquals(Param.AsDateTime, Field.AsDateTime);
+    CheckEquals(SQLTimeStampToStr('dd mmm yyyy hh:mm:ss', Param.AsSQLTimeStamp), SQLTimeStampToStr('dd mmm yyyy hh:mm:ss', Field.AsSQLTimeStamp));
+    if Param.DataType = ftDate then begin
+      CheckEquals(Param.AsString, Field.AsString);
+      CheckEquals(Param.AsWideString, Field.AsWideString);
+      CheckEquals(Param.AsFloat, Field.AsFloat);
+      CheckEquals(Param.AsCurrency, Field.AsCurrency);
+    end;
+
+    Test_Required;
+  end;
 end;
 
 procedure TTestCase_DBX_FieldType.Test_DATETIME;
+var A: TArray<TProc>;
+    P: TProc;
 begin
   {$Message 'QC#47267 - Encounter "No value for parameter" error for ftDateTime Param in DBX4'}
   {$if CompilerVersion = 18.5}
@@ -1433,19 +1449,30 @@ begin
   {$if CompilerVersion = 20}
   Exit;   // By pass this test for Delphi 2009 as SqlExpr.SetQueryProcParams does not interpret ftDateTime
   {$ifend}
-  Param.AsDateTime := Date;
-  Execute;
-  CheckEquals(TDateField, Field.ClassType);
-  CheckEquals(4, Field.DataSize);
 
-  CheckEquals(Param.AsDate, Field.AsDateTime);
-  CheckEquals(Param.AsDateTime, Field.AsDateTime);
-  CheckEquals(Param.AsString, Field.AsString);
-  CheckEquals(Param.AsWideString, Field.AsWideString);
-  CheckEquals(Param.AsFloat, Field.AsFloat);
-  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+  A := [procedure begin Param.AsDateTime := Now; end
+      , procedure begin Param.AsString := FormatDateTime('dd mmm yyyy hh:mm:ss', Date + 5); end
+      , procedure begin Param.AsWideString := FormatDateTime('dd mmm yyyy hh:mm:ss', Now); end
+      , procedure begin Param.AsSQLTimeStamp := DateTimeToSQLTimeStamp(Now); end
+  ];
 
-  Test_Required;
+  for P in A do begin
+    P;
+    Execute;
+    CheckEquals(TDateField, Field.ClassType);
+    CheckEquals(4, Field.DataSize);
+
+    CheckEquals(DateOf(Param.AsDate), Field.AsDateTime, 'Param.AsDate');
+    CheckEquals(SQLTimeStampToStr('dd mmm yyyy', Param.AsSQLTimeStamp), SQLTimeStampToStr('dd mmm yyyy', Field.AsSQLTimeStamp));
+    if Param.DataType = ftDateTime then begin
+      CheckEquals(DateToStr(Param.AsDate), Field.AsString, 'Param.AsString');
+      CheckEquals(DateToStr(Param.AsDate), Field.AsWideString, 'Param.AsWideString');
+      CheckEquals(DateOf(Param.AsDate), Field.AsFloat,  'Param.AsFloat');
+      CheckEquals(DateOf(Param.AsDate), Field.AsCurrency,  'Param.AsCurrency');
+    end;
+
+    Test_Required;
+  end;
 end;
 
 procedure TTestCase_DBX_FieldType.Test_DECIMAL;
@@ -1943,19 +1970,34 @@ begin
 end;
 
 procedure TTestCase_DBX_FieldType.Test_TIMESTAMP;
-var T: TSQLTimeStamp;
+var A: TArray<TProc>;
+    P: TProc;
 begin
-  T := DateTimeToSQLTimeStamp(Now);
-  T.Fractions := 0;
-  Param.AsSQLTimeStamp := T;
-  Execute;
-  CheckEquals(TSQLTimeStampField, Field.ClassType);
-  CheckEquals(16, Field.DataSize);
+  A := [procedure
+        var T: TSQLTimeStamp;
+        begin
+          T := DateTimeToSQLTimeStamp(Now);
+          T.Fractions := 0;
+          Param.AsSQLTimeStamp := T;
+        end
+      , procedure begin Param.AsDate := Date; end
+      , procedure begin Param.AsString := FormatDateTime('dd mmm yyyy', Date); end
+      , procedure begin Param.AsWideString := FormatDateTime('dd mmm yyyy', Date); end
+  ];
 
-  CheckEquals(Param.AsString, Field.AsString);
-  CheckEquals(Param.AsWideString, Field.AsWideString);
+  for P in A do begin
+    P;
+    Execute;
+    CheckEquals(TSQLTimeStampField, Field.ClassType);
+    CheckEquals(SizeOf(TSQLTimeStamp), Field.DataSize);
+    CheckEquals(Param.AsDate, Field.AsDateTime);
+    if Param.DataType = ftTimeStamp then begin
+      CheckEquals(Param.AsString, Field.AsString);
+      CheckEquals(Param.AsWideString, Field.AsWideString);
+    end;
 
-  Test_Required;
+    Test_Required;
+  end;
 end;
 
 procedure TTestCase_DBX_FieldType.Test_VARCHAR;
