@@ -1980,9 +1980,9 @@ begin
           T.Fractions := 0;
           Param.AsSQLTimeStamp := T;
         end
-      , procedure begin Param.AsDate := Date; end
-      , procedure begin Param.AsString := FormatDateTime('dd mmm yyyy', Date); end
-      , procedure begin Param.AsWideString := FormatDateTime('dd mmm yyyy', Date); end
+      , procedure begin Param.AsDateTime := Now; end
+      , procedure begin Param.AsString := FormatDateTime('dd mmm yyyy hh:mm:ss', Date); end
+      , procedure begin Param.AsWideString := FormatDateTime('dd mmm yyyy hh:mm:ss', Date); end
   ];
 
   for P in A do begin
@@ -1990,7 +1990,7 @@ begin
     Execute;
     CheckEquals(TSQLTimeStampField, Field.ClassType);
     CheckEquals(SizeOf(TSQLTimeStamp), Field.DataSize);
-    CheckEquals(Param.AsDate, Field.AsDateTime);
+    CheckEquals(DateTimeToStr(Param.AsDateTime), DateTimeToStr(Field.AsDateTime));
     if Param.DataType = ftTimeStamp then begin
       CheckEquals(Param.AsString, Field.AsString);
       CheckEquals(Param.AsWideString, Field.AsWideString);
@@ -2388,7 +2388,6 @@ end;
 procedure TTestCase_DBX_Transaction.Test_Transcation_WaitLock_TimeOut;
 var TTestSuite_DBX1, TTestSuite_DBX2: TDBXTransaction;
     C1, C2: TSQLConnection;
-    i: Integer;
 begin
   if (Pos('Firebird 1.', GetTestData.ServerVersion) <> 0) or (Pos('Firebird 2.0', GetTestData.ServerVersion) <> 0) then Exit;
 
