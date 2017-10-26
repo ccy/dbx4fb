@@ -121,6 +121,7 @@ type{$M+}
     procedure Test_Insert_Returning;
     procedure Test_SystemTable_Char_Field;
     procedure Test_RoleName;
+    procedure Test_UTF8_EmptyString;
   end;
 
   TTestCase_DBX_Transaction = class(TTestCase_DBX)
@@ -638,6 +639,30 @@ begin
     end;
   finally
     FConnection.ExecuteDirect('DROP TABLE T_INSERT_UTF8');
+  end;
+end;
+
+procedure TTestCase_DBX_General.Test_UTF8_EmptyString;
+var s: string;
+    D: TDataSet;
+begin
+  S := 'CREATE TABLE Test_UTF8_EmptyString ' +
+       '( ' +
+       '  F1 VARCHAR(10) CHARACTER SET UTF8, ' +
+       '  F2 VARCHAR(10) CHARACTER SET UTF8' +
+       ')';
+  FConnection.ExecuteDirect(S);
+  try
+    FConnection.ExecuteDirect('INSERT INTO Test_UTF8_EmptyString VALUES(''Hello'', '''')');
+    FConnection.Execute('SELECT * FROM Test_UTF8_EmptyString', nil, D);
+    try
+      CheckEquals('Hello', D.Fields[0].AsWideString);
+      CheckEquals('', D.Fields[1].AsWideString);
+    finally
+      D.Free;
+    end;
+  finally
+    FConnection.ExecuteDirect('DROP TABLE Test_UTF8_EmptyString');
   end;
 end;
 
