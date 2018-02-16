@@ -6,8 +6,10 @@ function StartApp: Cardinal;
 
 implementation
 
-uses SysUtils, Windows, Forms,
-     TestFramework, GUITestRunner, TextTestRunner, vcl.dbx.cmdlines;
+uses
+  Winapi.Windows, System.SysUtils, Vcl.Forms,
+  GUITestRunner, TestFramework, TextTestRunner,
+  vcl.dbx.cmdlines;
 
 function StartApp: Cardinal;
 var P: array of HMODULE;

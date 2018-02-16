@@ -2,7 +2,8 @@ unit vcl.dbx.cmdlines;
 
 interface
 
-uses SysUtilsEx;
+uses
+  SysUtilsEx;
 
 type
   TCmdLineParams_App = class abstract

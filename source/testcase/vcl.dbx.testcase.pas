@@ -2,9 +2,9 @@ unit vcl.dbx.testcase;
 
 interface
 
-uses SysUtils, Classes, DB, SqlExpr, Provider, DBClient, FMTBcd,
+uses System.SysUtils, System.Classes, Data.DB, Data.SqlExpr, Datasnap.Provider, Datasnap.DBClient, Data.FMTBcd,
      TestFrameWork, TestExtensions
-     {$if CompilerVersion > 18}, DBXCommon{$ifend}
+     {$if CompilerVersion > 18}, Data.DBXCommon{$ifend}
      {$if CompilerVersion >= 20}, dbx.firebird{$ifend}
      ;
 
@@ -301,11 +301,11 @@ type{$M+}
 
 implementation
 
-uses SqlConst, Windows, StrUtils, WideStrings,
-  SqlTimSt, DateUtils, Math, IniFiles,
-  firebird.ods.h,
-  SystemEx, SysUtilsEx, firebird.client, firebird.service, UniqueID,
-  vcl.dbx.cmdlines;
+uses
+  Winapi.Windows, System.DateUtils, System.IniFiles, System.Math, System.StrUtils,
+  System.WideStrings, Data.SqlConst, Data.SqlTimSt,
+  firebird.client, firebird.ods.h,
+  firebird.service, SystemEx, SysUtilsEx, UniqueID, vcl.dbx.cmdlines;
 
 {$if RTLVersion <= 23}
 type
