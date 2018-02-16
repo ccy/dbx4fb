@@ -2,8 +2,10 @@ unit dbx4.firebird.connection;
 
 interface
 
-uses DBXCommon, DBXPlatform, DBXDynalink, firebird.client, dbx4.base, dbx4.firebird.base,
-     firebird.ibase.h, firebird.consts_pub.h, firebird.types_pub.h;
+uses
+  Data.DBXCommon, Data.DBXDynalink, Data.DBXPlatform,
+  dbx4.base, dbx4.firebird.base, firebird.client, firebird.consts_pub.h,
+  firebird.ibase.h, firebird.types_pub.h;
 
 type
   TFirebirdClientDebuggerListener_DBXCallBack = class(TInterfacedObject, IFirebirdLibraryDebuggerListener)
@@ -60,7 +62,8 @@ type
 
 implementation
 
-uses SysUtils, Windows, SqlConst;
+uses
+  Winapi.Windows, System.SysUtils, Data.SqlConst;
 
 constructor TDBXConnection_Firebird.Create(const aDriver: IDBXDriver);
 begin

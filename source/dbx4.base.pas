@@ -2,7 +2,9 @@ unit dbx4.base;
 
 interface
 
-uses SysUtils, FmtBcd, SqlTimSt, DBXCommon, DBXPlatform, DBXDynalink;
+uses
+  System.SysUtils, Data.DBXCommon, Data.DBXDynalink, Data.DBXPlatform,
+  Data.FmtBcd, Data.SqlTimSt;
 
 type
   TRawByteStringArray = array of RawByteString;

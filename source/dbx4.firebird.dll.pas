@@ -4,10 +4,10 @@ interface
 
 implementation
 
-uses SysUtils, FmtBcd, SqlTimSt, Windows,
+uses System.SysUtils, Data.FmtBcd, Data.SqlTimSt, Winapi.Windows,
      {$if CompilerVersion=18.5}WideStrUtils,{$ifend}
-     {$if CompilerVersion>=21}DBXCommonResStrs,{$ifend}
-     DBXCommon, DBXPlatform, DBXDynalink,
+     {$if CompilerVersion>=21}Data.DBXCommonResStrs,{$ifend}
+     Data.DBXCommon, Data.DBXPlatform, Data.DBXDynalink,
      dbx4.firebird.driver, dbx4.firebird.connection, dbx4.firebird.command,
      dbx4.firebird.reader, dbx4.base;
 

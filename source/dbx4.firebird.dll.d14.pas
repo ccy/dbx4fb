@@ -4,7 +4,9 @@ interface
 
 implementation
 
-uses SqlTimSt, DBXCommon, DBXDynalink, dbx4.base;
+uses
+  Data.DBXCommon, Data.DBXDynalink, Data.SqlTimSt,
+  dbx4.base;
 
 function DBXRow_GetInt8(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
     ShortInt; out IsNull: LongBool): TDBXErrorCode; stdcall;

@@ -2,7 +2,9 @@ unit dbx4.firebird.driver;
 
 interface
 
-uses Classes, DBXCommon, DBXPlatform, firebird.client, dbx4.base, dbx4.firebird.base;
+uses
+  System.Classes, Data.DBXCommon, Data.DBXPlatform,
+  dbx4.base, dbx4.firebird.base, firebird.client;
 
 type
   TDBXDriver_Firebird = class(TDBXBase, IDBXDriver, IDBXDriver_Firebird)
@@ -26,7 +28,8 @@ type
 
 implementation
 
-uses SysUtils, Windows, System.Generics.Collections, Data.SqlConst;
+uses
+  Winapi.Windows, System.Generics.Collections, System.SysUtils, Data.SqlConst;
 
 function TDBXDriver_Firebird.Close: TDBXErrorCode;
 var F: string;

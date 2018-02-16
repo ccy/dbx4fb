@@ -2,9 +2,9 @@ unit dbx4.firebird.reader;
 
 interface
 
-uses SysUtils, FmtBcd, SqlTimSt, DBXCommon, DBXPlatform,
-     dbx4.base, dbx4.firebird.base,
-     firebird.dsql, firebird.client, firebird.ibase.h;
+uses
+  System.SysUtils, Data.DBXCommon, Data.DBXPlatform, Data.FmtBcd, Data.SqlTimSt,
+  dbx4.base, dbx4.firebird.base, firebird.client, firebird.dsql, firebird.ibase.h;
 
 type
   TDBXReader_Firebird = class abstract(TDBXBase_Firebird)
@@ -86,7 +86,9 @@ type
 
 implementation
 
-uses Windows, dbx4.firebird.row;
+uses
+  Winapi.Windows,
+  dbx4.firebird.row;
 
 constructor TDBXReader_Firebird.Create(const aConnection: IDBXConnection;
     const aMetaData: IMetaDataProvider);

@@ -2,9 +2,10 @@ unit dbx4.firebird.command;
 
 interface
 
-uses Classes, DBXCommon, DBXPlatform, DBXDynalink, firebird.client, firebird.dsql, dbx4.base,
-  dbx4.firebird.connection, dbx4.firebird.reader, dbx4.firebird.base,
-  firebird.ibase.h;
+uses
+  System.Classes, Data.DBXCommon, Data.DBXDynalink, Data.DBXPlatform,
+  dbx4.base, dbx4.firebird.base, dbx4.firebird.connection, dbx4.firebird.reader,
+  firebird.client, firebird.dsql, firebird.ibase.h;
 
 type
   TMetaDataProvider_Firebird = class(TInterfacedObject, IMetaDataProvider)
@@ -61,10 +62,10 @@ type
 
 implementation
 
-uses SysUtils, StrUtils, FMTBcd, SqlTimSt, WideStrings,
-     firebird.charsets, dbx4.firebird.row, dbx4.firebird.metadata,
-     firebird.sqlda_pub.h, firebird.blr.h, firebird.consts_pub.h,
-     firebird.iberror.h;
+uses
+  System.StrUtils, System.SysUtils, System.WideStrings, Data.FMTBcd, Data.SqlTimSt,
+  dbx4.firebird.metadata, dbx4.firebird.row, firebird.blr.h, firebird.charsets,
+  firebird.consts_pub.h, firebird.iberror.h, firebird.sqlda_pub.h;
 
 constructor TMetaDataProvider_Firebird.Create(const aSQLDA: TXSQLDA);
 begin

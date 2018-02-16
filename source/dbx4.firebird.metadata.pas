@@ -2,7 +2,9 @@ unit dbx4.firebird.metadata;
 
 interface
 
-uses DBXCommon, DBXPlatform, dbx4.base;
+uses
+  Data.DBXCommon, Data.DBXPlatform,
+  dbx4.base;
 
 type
   TFieldColumn = record

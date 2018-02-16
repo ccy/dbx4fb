@@ -2,8 +2,9 @@ unit dbx4.firebird.base;
 
 interface
 
-uses DBXCommon, DBXPlatform, dbx4.base,
-     firebird.client, firebird.ibase.h;
+uses
+  Data.DBXCommon, Data.DBXPlatform,
+  dbx4.base, firebird.client, firebird.ibase.h;
 
 type
   IDBXBase_Firebird = interface(IDBXBase)
@@ -49,7 +50,8 @@ type
 
 implementation
 
-uses firebird.iberror.h;
+uses
+  firebird.iberror.h;
 
 function TDBXBase_Firebird.GetErrorMessage(LastErrorCode: TDBXErrorCode;
   ErrorMessage: TDBXWideStringBuilder): TDBXErrorCode;
