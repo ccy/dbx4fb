@@ -68,12 +68,12 @@
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <Debugger_HostApplication>$(ActiveHostApplication)</Debugger_HostApplication>
-        <Debugger_RunParams>-config %HomeDrive%%HomePath%\development\source\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\development\drivers -test embedded_35</Debugger_RunParams>
+        <Debugger_RunParams>-test embedded_35</Debugger_RunParams>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <Debugger_HostApplication>$(ActiveHostApplication)</Debugger_HostApplication>
-        <Debugger_RunParams>-config %HomeDrive%%HomePath%\development\source\moon\dbx\source\testcase\dbxfbTests.ini -drivers %HomeDrive%%HomePath%\development\drivers -test embedded_20</Debugger_RunParams>
+        <Debugger_RunParams>-test embedded_20</Debugger_RunParams>
     </PropertyGroup>
     <Import Project="..\..\build\optset\Debug.optset" Condition="'$(Cfg_1)'!='' And Exists('..\..\build\optset\Debug.optset')"/>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
