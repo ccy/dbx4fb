@@ -3,38 +3,48 @@
 <project name="DBX Test Cases" default="build" basedir=".">
 
 	<taskdef resource="net/sf/antcontrib/antlib.xml"/>
-	
+
+	<fail unless="program" message="missing 'program' property. please specify a executable program path" />
+
 	<property environment="env" />
 	<property name="program.conf" location="dbxfbTests.ini" />
-	
-	<target name="build">
-		<echo message=" 1. DBX 4 Firebird driver for Delphi 2007" />
-		<echo message=" 2. DBX 4 Firebird driver for Delphi 2009" />
-		<echo message=" 3. DBX 4 Firebird driver for Delphi 2010" />
-		<echo message=" 4. DBX 4 Firebird driver for Delphi XE" />
-		<echo message=" 5. DBX 4 Firebird driver for Delphi XE2 Win32" />
-		<echo message=" 6. DBX 4 Firebird driver for Delphi XE2 Win64" />
-		<echo message=" 7. DBX 4 Firebird driver for Delphi XE3 Win32" />
-		<echo message=" 8. DBX 4 Firebird driver for Delphi XE3 Win64" />
-		<echo message=" 9. DBX 4 Firebird driver for Delphi XE4 Win32" />
-		<echo message="10. DBX 4 Firebird driver for Delphi XE4 Win64" />
-		<echo message="11. DBX 4 Firebird driver for Delphi XE5 Win32" />
-		<echo message="12. DBX 4 Firebird driver for Delphi XE5 Win64" />
-		<echo message="13. DBX 4 Firebird driver for Delphi XE6 Win32" />
-		<echo message="14. DBX 4 Firebird driver for Delphi XE6 Win64" />
-		<echo message="15. DBX 4 Firebird driver for Delphi XE7 Win32" />
-		<echo message="16. DBX 4 Firebird driver for Delphi XE7 Win64" />
-		<echo message="17. DBX 4 Firebird driver for Delphi XE8 Win32" />
-		<echo message="18. DBX 4 Firebird driver for Delphi XE8 Win64" />
-		<echo message="19. DBX 4 Firebird driver for Delphi 10 Seattle Win32" />
-		<echo message="20. DBX 4 Firebird driver for Delphi 10 Seattle Win64" />
-		<echo message="21. DBX 4 Firebird driver for Delphi 10.1 Berlin Win32" />
-		<echo message="22. DBX 4 Firebird driver for Delphi 10.1 Berlin Win64" />
-		<echo message="X. Exit" />
-		<echo />
-		<input message="Please choose option to ant:" validargs="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,x,X" addproperty="p.option" defaultvalue="1" />
 
-		<antcall target="t.execute"/>
+	<target name="build" depends="t.platform,t.platform.testcount">
+		<for param="i" begin="1" end="${p.embedded_1.end}" parallel="true" keepgoing="true">
+			<sequential>
+				<antcall target="dbx.test">
+					<param name="test" value="embedded_@{i}" />
+					<param name="suite" value="1" />
+					<param name="CORE_2978" value="" />
+				</antcall>
+			</sequential>
+		</for>
+
+		<for param="i" begin="${p.embedded_2.begin}" end="${p.embedded_2.end}" parallel="true" keepgoing="true">
+			<sequential>
+				<antcall target="dbx.test">
+					<param name="test" value="embedded_@{i}" />
+					<param name="suite" value="1" />
+				</antcall>
+			</sequential>
+		</for>
+
+		<for param="i" begin="1" end="${p.embedded_2.end}" keepgoing="true">
+			<sequential>
+				<antcall target="dbx.test">
+					<param name="test" value="embedded_@{i}" />
+					<param name="suite" value="2" />
+				</antcall>
+			</sequential>
+		</for>
+
+		<for param="i" begin="1" end="${p.server.count}" parallel="true" keepgoing="true">
+			<sequential>
+				<antcall target="dbx.test">
+					<param name="test" value="server_@{i}" />
+				</antcall>
+			</sequential>
+		</for>
 	</target>
 
 	<target name="dbx.test">
@@ -52,10 +62,8 @@
 			<isset property="CORE_2978" />
 		</condition>
 
-		<property name="program" location="${env.HOMEDRIVE}${env.HOMEPATH}\development\output.${p.tag.program}\moon\${p.platform}\${p.config}\dbxfbTests.exe" />
-
 		<echo file="${p.script}">
-			${program} -config ${program.conf} -drivers ${env.HOMEDRIVE}${env.HOMEPATH}\development\drivers -test ${test} ${p.suite} ${p.core_2978} -console
+			${program} -test ${test} ${p.suite} ${p.core_2978} -console
 		</echo>
 
 		<exec executable="cmd" spawn="false" failonerror="true">
@@ -65,199 +73,35 @@
 		<delete file="${p.script}" />
 	</target>
 
-	<target name="t.execute" depends="t.option,t.platform,t.platform.testcount" unless="p.option.exit">
-		<for param="i" begin="1" end="${p.embedded_1.end}" parallel="true" threadCount="${env.NUMBER_OF_PROCESSORS}" keepgoing="true">
-			<sequential>
-				<antcall target="dbx.test">
-					<param name="test" value="embedded_@{i}" />
-					<param name="suite" value="1" />					
-					<param name="CORE_2978" value="" />
-				</antcall>
-			</sequential>
-		</for>
-
-		<for param="i" begin="${p.embedded_2.begin}" end="${p.embedded_2.end}" keepgoing="true">
-			<sequential>
-				<antcall target="dbx.test">
-					<param name="test" value="embedded_@{i}" />
-					<param name="suite" value="1" />					
-				</antcall>
-			</sequential>
-		</for>
-
-		<for param="i" begin="1" end="${p.embedded_2.end}" keepgoing="true">
-			<sequential>
-				<antcall target="dbx.test">
-					<param name="test" value="embedded_@{i}" />
-					<param name="suite" value="2" />
-				</antcall>
-			</sequential>
-		</for>
-
-		<for param="i" begin="1" end="${p.server.count}" parallel="true" threadCount="${env.NUMBER_OF_PROCESSORS}" keepgoing="true">
-			<sequential>
-				<antcall target="dbx.test">
-					<param name="test" value="server_@{i}" />
-				</antcall>
-			</sequential>
-		</for>
-	</target>
-
-	<target name="t.option">
-		<condition property="p.tag.program" value="d11">
-			<equals arg1="${p.option}" arg2="1" />
-		</condition>
-
-		<condition property="p.tag.program" value="d12">
-			<equals arg1="${p.option}" arg2="2" />
-		</condition>
-
-		<condition property="p.tag.program" value="d14">
-			<equals arg1="${p.option}" arg2="3" />
-		</condition>
-
-		<condition property="p.tag.program" value="d15">
-			<equals arg1="${p.option}" arg2="4" />
-		</condition>
-
-		<condition property="p.tag.program" value="d16">
-			<or>
-				<equals arg1="${p.option}" arg2="5" />
-				<equals arg1="${p.option}" arg2="6" />
-			</or>
-		</condition>
-
-		<condition property="p.tag.program" value="d17">
-			<or>
-				<equals arg1="${p.option}" arg2="7" />
-				<equals arg1="${p.option}" arg2="8" />
-			</or>
-		</condition>
-
-		<condition property="p.tag.program" value="d18">
-			<or>
-				<equals arg1="${p.option}" arg2="9" />
-				<equals arg1="${p.option}" arg2="10" />
-			</or>
-		</condition>
-
-		<condition property="p.tag.program" value="d19">
-			<or>
-				<equals arg1="${p.option}" arg2="11" />
-				<equals arg1="${p.option}" arg2="12" />
-			</or>
-		</condition>
-
-		<condition property="p.tag.program" value="d20">
-			<or>
-				<equals arg1="${p.option}" arg2="13" />
-				<equals arg1="${p.option}" arg2="14" />
-			</or>
-		</condition>
-
-		<condition property="p.tag.program" value="xe7">
-			<or>
-				<equals arg1="${p.option}" arg2="15" />
-				<equals arg1="${p.option}" arg2="16" />
-			</or>
-		</condition>
-		
-		<condition property="p.tag.program" value="xe8">
-			<or>
-				<equals arg1="${p.option}" arg2="17" />
-				<equals arg1="${p.option}" arg2="18" />
-			</or>
-		</condition>
-
-		<condition property="p.tag.program" value="dx">
-			<or>
-				<equals arg1="${p.option}" arg2="19" />
-				<equals arg1="${p.option}" arg2="20" />
-			</or>
-		</condition>
-
-		<condition property="p.tag.program" value="rad101">
-			<or>
-				<equals arg1="${p.option}" arg2="21" />
-				<equals arg1="${p.option}" arg2="22" />
-			</or>
-		</condition>
-
-		<condition property="p.option.exit">
-			<or>
-				<equals arg1="${p.option}" arg2="x" />
-				<equals arg1="${p.option}" arg2="X" />
-			</or>
-		</condition>
-	</target>
-	
 	<target name="t.platform">
-		<condition property="p.platform" value="">
-			<equals arg1="${p.option}" arg2="1" />
-		</condition>
-		
-		<condition property="p.platform" value="Win32">
-			<or>
-				<equals arg1="${p.option}" arg2="2" />
-				<equals arg1="${p.option}" arg2="3" />
-				<equals arg1="${p.option}" arg2="4" />
-				<equals arg1="${p.option}" arg2="5" />
-				<equals arg1="${p.option}" arg2="7" />
-				<equals arg1="${p.option}" arg2="9" />
-				<equals arg1="${p.option}" arg2="11" />
-				<equals arg1="${p.option}" arg2="13" />
-				<equals arg1="${p.option}" arg2="15" />
-				<equals arg1="${p.option}" arg2="17" />
-				<equals arg1="${p.option}" arg2="19" />
-				<equals arg1="${p.option}" arg2="21" />
-			</or>
-		</condition>
-
-		<condition property="p.platform" value="Win64">
-			<or>
-				<equals arg1="${p.option}" arg2="6" />
-				<equals arg1="${p.option}" arg2="8" />
-				<equals arg1="${p.option}" arg2="10" />
-				<equals arg1="${p.option}" arg2="12" />
-				<equals arg1="${p.option}" arg2="14" />
-				<equals arg1="${p.option}" arg2="16" />
-				<equals arg1="${p.option}" arg2="18" />
-				<equals arg1="${p.option}" arg2="20" />
-				<equals arg1="${p.option}" arg2="22" />
-			</or>
+		<fail unless="program" />
+		<condition property="p.platform" value="Win32" else="Win64">
+			<contains string="${program}" substring="win32" casesensitive="false" />
 		</condition>
 	</target>
-	
-	<target name="t.platform.testcount">
-		<condition property="p.platform" value="">
-			<equals arg1="${p.option}" arg2="1" />
-		</condition>
 
-		<condition property="p.embedded_1.end" value="21" else="6">
+	<target name="t.platform.testcount">
+		<condition property="p.embedded_1.end" value="23" else="10">
 			<or>
-				<equals arg1="${p.platform}" arg2="" />
-				<equals arg1="${p.platform}" arg2="Win32" />
+				<equals arg1="${p.platform}" arg2="Win32" casesensitive="false" />
 			</or>
 		</condition>
 
-		<condition property="p.embedded_2.begin" value="22" else="7">
+		<condition property="p.embedded_2.begin" value="24" else="11">
 			<or>
-				<equals arg1="${p.platform}" arg2="" />
-				<equals arg1="${p.platform}" arg2="Win32" />
+				<equals arg1="${p.platform}" arg2="Win32" casesensitive="false" />
 			</or>
 		</condition>
 
 		<condition property="p.embedded_2.end" value="35" else="20">
 			<or>
-				<equals arg1="${p.platform}" arg2="" />
-				<equals arg1="${p.platform}" arg2="Win32" />
+				<equals arg1="${p.platform}" arg2="Win32" casesensitive="false" />
 			</or>
 		</condition>
 
 		<condition property="p.server.count" value="5" else="3">
 			<or>
-				<equals arg1="${p.platform}" arg2="" />
-				<equals arg1="${p.platform}" arg2="Win32" />
+				<equals arg1="${p.platform}" arg2="Win32" casesensitive="false" />
 			</or>
 		</condition>
 	</target>
