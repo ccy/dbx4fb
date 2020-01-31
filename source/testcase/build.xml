@@ -93,7 +93,7 @@
 			</or>
 		</condition>
 
-		<condition property="p.embedded_2.end" value="35" else="20">
+		<condition property="p.embedded_2.end" value="36" else="21">
 			<or>
 				<equals arg1="${p.platform}" arg2="Win32" casesensitive="false" />
 			</or>
