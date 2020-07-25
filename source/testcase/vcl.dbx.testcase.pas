@@ -2,11 +2,13 @@ unit vcl.dbx.testcase;
 
 interface
 
-uses System.SysUtils, System.Classes, Data.DB, Data.SqlExpr, Datasnap.Provider, Datasnap.DBClient, Data.FMTBcd,
-     TestFrameWork, TestExtensions
-     {$if CompilerVersion > 18}, Data.DBXCommon{$ifend}
-     {$if CompilerVersion >= 20}, dbx.firebird{$ifend}
-     ;
+uses
+  System.Classes, System.SysUtils, System.Variants, Data.DB, Data.FMTBcd,
+  Data.SqlExpr, Datasnap.DBClient, Datasnap.Provider, TestExtensions,
+  TestFramework
+  {$if CompilerVersion > 18}, Data.DBXCommon{$ifend}
+  {$if CompilerVersion >= 20}, dbx.firebird{$ifend}
+  ;
 
 type{$M+}
   ITestData = interface(IInterface)
@@ -305,7 +307,7 @@ uses
   Winapi.Windows, System.DateUtils, System.IniFiles, System.Math, System.StrUtils,
   System.WideStrings, Data.SqlConst, Data.SqlTimSt,
   firebird.client, firebird.ods.h,
-  firebird.service, SystemEx, SysUtilsEx, UniqueID, vcl.dbx.cmdlines;
+  SysUtilsEx, SystemEx, UniqueID, firebird.service, vcl.dbx.cmdlines;
 
 {$if RTLVersion <= 23}
 type
@@ -1438,8 +1440,8 @@ var A: TArray<TProc>;
 begin
   A := [procedure begin Param.AsDate := Date; end
       , procedure begin Param.AsDateTime := Date; end
-      , procedure begin Param.AsString := FormatDateTime('dd mmm yyyy', Date + 5); end
-      , procedure begin Param.AsWideString := FormatDateTime('dd mmm yyyy', Now); end
+      , procedure begin Param.Value := VarToDateTime(FormatDateTime('dd mmm yyyy', Date + 5)); end
+      , procedure begin Param.Value := VarToDateTime(FormatDateTime('dd mmm yyyy', Now)); end
       , procedure begin Param.AsSQLTimeStamp := DateTimeToSQLTimeStamp(Date); end
   ];
 
@@ -1476,8 +1478,8 @@ begin
   {$ifend}
 
   A := [procedure begin Param.AsDateTime := Now; end
-      , procedure begin Param.AsString := FormatDateTime('dd mmm yyyy hh:mm:ss', Date + 5); end
-      , procedure begin Param.AsWideString := FormatDateTime('dd mmm yyyy hh:mm:ss', Now); end
+      , procedure begin Param.Value := VarToDateTime(FormatDateTime('dd mmm yyyy hh:mm:ss', Date + 5)); end
+      , procedure begin Param.Value := VarToDateTime(FormatDateTime('dd mmm yyyy hh:mm:ss', Now)); end
       , procedure begin Param.AsSQLTimeStamp := DateTimeToSQLTimeStamp(Now); end
   ];
 

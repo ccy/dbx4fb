@@ -7,7 +7,7 @@
         <TargetedPlatforms>3</TargetedPlatforms>
         <AppType>Console</AppType>
         <FrameworkType>None</FrameworkType>
-        <ProjectVersion>18.8</ProjectVersion>
+        <ProjectVersion>19.0</ProjectVersion>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
@@ -86,12 +86,12 @@
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <Debugger_HostApplication>$(ActiveHostApplication)</Debugger_HostApplication>
-        <Debugger_RunParams>-test embedded_36</Debugger_RunParams>
+        <Debugger_RunParams>-test embedded_37</Debugger_RunParams>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <Debugger_HostApplication>$(ActiveHostApplication)</Debugger_HostApplication>
-        <Debugger_RunParams>-test embedded_21</Debugger_RunParams>
+        <Debugger_RunParams>-test embedded_22</Debugger_RunParams>
     </PropertyGroup>
     <Import Project="..\..\build\optset\Debug.optset" Condition="'$(Cfg_1)'!='' And Exists('..\..\build\optset\Debug.optset')"/>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
@@ -178,11 +178,9 @@
             <Platforms>
                 <Platform value="Android">False</Platform>
                 <Platform value="Android64">False</Platform>
-                <Platform value="iOSDevice32">False</Platform>
                 <Platform value="iOSDevice64">False</Platform>
                 <Platform value="iOSSimulator">False</Platform>
                 <Platform value="Linux64">False</Platform>
-                <Platform value="OSX32">False</Platform>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">True</Platform>
             </Platforms>
