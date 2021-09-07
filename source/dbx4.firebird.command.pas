@@ -142,7 +142,7 @@ var iType: SmallInt;
 begin
   Result := FSQLDA.Vars[aColNo].sqlsubtype;
 
-  iType := FSQLDA.Vars[aColNo].sqltype and not 1;
+  iType := FSQLDA.Vars[aColNo].sqltype and $7FFE;
   if iType = SQL_BLOB then begin
     if Result = isc_blob_text then begin
       if FSQLDA.Vars[aColNo].sqlscale = CS_UTF8 then
@@ -159,7 +159,7 @@ function TMetaDataProvider_Firebird.GetColumnType(const aColNo: TInt32): TInt32;
 var iType, iSubType, iScale: Smallint;
 begin
   Result := TDBXDataTypes.UnknownType;
-  iType := FSQLDA.Vars[aColNo].sqltype and not 1;
+  iType := FSQLDA.Vars[aColNo].sqltype and $7FFE;
   iSubType := FSQLDA.Vars[aColNo].sqlsubtype;
   iScale := FSQLDA.Vars[aColNo].sqlscale;
   case iType of
@@ -239,7 +239,7 @@ function TMetaDataProvider_Firebird_D2007.GetColumnType(const aColNo: TInt32):
 var iType, iSubType, iScale: Smallint;
 begin
   Result := TDBXDataTypes.UnknownType;
-  iType := FSQLDA.Vars[aColNo].sqltype and not 1;
+  iType := FSQLDA.Vars[aColNo].sqltype and $7FFE;
   iSubType := FSQLDA.Vars[aColNo].sqlsubtype;
   iScale := FSQLDA.Vars[aColNo].sqlscale;
   case iType of
