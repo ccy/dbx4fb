@@ -63,9 +63,10 @@ type
 implementation
 
 uses
-  System.StrUtils, System.SysUtils, System.WideStrings, Data.FMTBcd, Data.SqlTimSt,
+  System.StrUtils, System.SysUtils, System.WideStrings, Data.FMTBcd,
+  Data.SqlTimSt,
   dbx4.firebird.metadata, dbx4.firebird.row, firebird.blr.h, firebird.charsets,
-  firebird.consts_pub.h, firebird.iberror.h, firebird.sqlda_pub.h;
+  firebird.consts_pub.h, firebird.iberror.h, firebird.ods.h, firebird.sqlda_pub.h, firebird.dsc.h;
 
 constructor TMetaDataProvider_Firebird.Create(const aSQLDA: TXSQLDA);
 begin
@@ -83,15 +84,15 @@ function TMetaDataProvider_Firebird.GetColumnLength(const aColNo: TInt32):
 var V: TXSQLVAR;
 begin
   V := FSQLDA.Vars[aColNo];
-  if V.CheckType(SQL_INT64) and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) then
+  if V.CheckType(SQL_INT64) and (V.sqlsubtype <> dsc_num_type_none) then
     Result := SizeOf(TBcd)
   else if V.CheckType(SQL_FLOAT) then
     Result := SizeOf(Double)
   else if V.CheckType(SQL_TIMESTAMP) then
     Result := SizeOf(TSQLTimeStamp)
-  else if V.CheckType(SQL_LONG) and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) then
+  else if V.CheckType(SQL_LONG) and (V.sqlsubtype <> dsc_num_type_none) then
     Result := SizeOf(TBcd)
-  else if V.CheckType(SQL_SHORT) and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) then
+  else if V.CheckType(SQL_SHORT) and (V.sqlsubtype <> dsc_num_type_none) then
     Result := SizeOf(TBcd)
   else if V.CheckType(SQL_BOOLEAN) then
     Result := SizeOf(WordBool)
@@ -122,9 +123,9 @@ begin
     Result := V.GetTextLen
   else if V.CheckType(SQL_INT64) then //{$if CompilerVersion > 18.5} and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) {$ifend} then
     Result := 19
-  else if V.CheckType(SQL_LONG) and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) then
+  else if V.CheckType(SQL_LONG) and (V.sqlsubtype <> dsc_num_type_none) then
     Result := 9
-  else if V.CheckType(SQL_SHORT) and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) then
+  else if V.CheckType(SQL_SHORT) and (V.sqlsubtype <> dsc_num_type_none) then
     Result := 4
   else
     Result := v.sqllen;
@@ -164,12 +165,10 @@ begin
   iScale := FSQLDA.Vars[aColNo].sqlscale;
   case iType of
     SQL_SHORT: begin
-      if iSubType = 0 then
+      if iSubType = dsc_num_type_none then
         Result := TDBXDataTypes.Int16Type
-      else if (iSubType = 1) or (iSubType = 2) then
-        Result := TDBXDataTypes.BcdType
       else
-        Unsupported;
+        Result := TDBXDataTypes.BcdType
     end;
     SQL_TEXT,
     SQL_VARYING: begin
@@ -179,17 +178,15 @@ begin
         Result := TDBXDataTypes.AnsiStringType;
     end;
     SQL_LONG: begin
-      if iSubType = 0 then
+      if iSubType = dsc_num_type_none then
         Result := TDBXDataTypes.Int32Type
-      else if (iSubType = 1) or (iSubType = 2) then
-        Result := TDBXDataTypes.BcdType
       else
-        Unsupported;
+        Result := TDBXDataTypes.BcdType
     end;
     SQL_BLOB: Result := TDBXDataTypes.BlobType;
     SQL_BOOLEAN: Result := TDBXDataTypes.BooleanType;
     SQL_INT64: begin
-      if (iSubType = 0) and (iScale = 0) then
+      if (iSubType = dsc_num_type_none) and (iScale = 0) then
         Result := TDBXDataTypes.Int64Type
       else
         Result := TDBXDataTypes.BcdType;
@@ -226,9 +223,9 @@ begin
     Result := SizeOf(Double)
   else if V.CheckType(SQL_TIMESTAMP) then
     Result := SizeOf(TSQLTimeStamp)
-  else if V.CheckType(SQL_LONG) and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) then
+  else if V.CheckType(SQL_LONG) and (V.sqlsubtype <> dsc_num_type_none) then
     Result := SizeOf(TBcd)
-  else if V.CheckType(SQL_SHORT) and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) then
+  else if V.CheckType(SQL_SHORT) and (V.sqlsubtype <> dsc_num_type_none) then
     Result := SizeOf(TBcd)
   else
     Result := V.Size;
@@ -244,12 +241,10 @@ begin
   iScale := FSQLDA.Vars[aColNo].sqlscale;
   case iType of
     SQL_SHORT: begin
-      if iSubType = 0 then
+      if iSubType = dsc_num_type_none then
         Result := TDBXDataTypes.Int16Type
-      else if (iSubType = 1) or (iSubType = 2) then
-        Result := TDBXDataTypes.BcdType
       else
-        Unsupported;
+        Result := TDBXDataTypes.BcdType;
     end;
     SQL_TEXT,
     SQL_VARYING: begin
@@ -259,16 +254,14 @@ begin
         Result := TDBXDataTypes.AnsiStringType;
     end;
     SQL_LONG: begin
-      if iSubType = 0 then
+      if iSubType = dsc_num_type_none then
         Result := TDBXDataTypes.Int32Type
-      else if (iSubType = 1) or (iSubType = 2) then
-        Result := TDBXDataTypes.BcdType
       else
-        Unsupported;
+        Result := TDBXDataTypes.BcdType;
     end;
     SQL_BLOB: Result := TDBXDataTypes.BlobType;
     SQL_INT64: begin
-      if (iSubType = 0) and (iScale = 0) then
+      if (iSubType = dsc_num_type_none) and (iScale = 0) then
         Result := TDBXDataTypes.BcdType
       else
         Result := TDBXDataTypes.BcdType;
