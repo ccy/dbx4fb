@@ -96,7 +96,6 @@
         <SanitizedProjectName>dbx4fbrt</SanitizedProjectName>
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <DllSuffix>270</DllSuffix>
         <VerInfo_Keys>CompanyName=E Stream Software Sdn Bhd;FileDescription=E Stream Software Sdn Bhd;FileVersion=4.1.2016.53;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=DBExpress 4 for Firebird;ProductVersion=4.1;Comments=</VerInfo_Keys>
         <VerInfo_MinorVer>1</VerInfo_MinorVer>
         <VerInfo_MajorVer>4</VerInfo_MajorVer>
