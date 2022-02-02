@@ -144,6 +144,7 @@ type{$M+}
   private
     FDataSet: TDataSet;
     FParams: TParams;
+    FHasTable: Boolean;
     procedure Execute;
     function Field: TField;
     function Param: TParam;
@@ -169,18 +170,21 @@ type{$M+}
     procedure Test_DECIMAL;
     procedure Test_DECIMAL_0;
     procedure Test_DECIMAL_18_10;
-    procedure Test_DECIMAL_Limit;
+    procedure Test_DECIMAL_18_4;
+    procedure Test_DECIMAL_19_4;
     procedure Test_DECIMAL_LONG;
     procedure Test_DECIMAL_Misc;
     procedure Test_DOUBLE_PRECISION;
     procedure Test_FLOAT;
+    procedure Test_INT128;
     procedure Test_INTEGER;
     procedure Test_MEMO;
     procedure Test_MEMO_UTF8;
     procedure Test_NUMERIC;
     procedure Test_NUMERIC_0;
     procedure Test_NUMERIC_18_10;
-    procedure Test_NUMERIC_Limit;
+    procedure Test_NUMERIC_18_4;
+    procedure Test_NUMERIC_19_4;
     procedure Test_NUMERIC_LONG;
     procedure Test_NUMERIC_Misc;
     procedure Test_NUMERIC_SHORT;
@@ -727,6 +731,9 @@ procedure TTestCase_DBX_General.Test_CAST_SQL_DECIMAL_Bug;
 var D: TDataSet;
     S: string;
 begin
+  if GetTestData.GetODS < ODS_13_0 then
+    StartExpectingException(TDBXError);
+
   //refer to BU-00010
   try
     S := 'CREATE TABLE T_TEST1 ' +
@@ -747,12 +754,15 @@ begin
          'VALUES (2, 9317.2, 2965.6, 2)';
     FConnection.ExecuteDirect(S);
 
-    StartExpectingException(TDBXError);
     S := 'SELECT CAST(Amount * CurrencyRate AS DECIMAL(18, 8)) / SQTY AS UnitPrice ' +
              'FROM T_TEST1';
 
     try
       FConnection.Execute(S, nil, D);
+      CheckEquals('13361807.36', D.Fields[0].AsString);
+
+      D.Next;
+      CheckEquals('13815544.16', D.Fields[0].AsString);
     finally
       D.Free;
     end;
@@ -871,8 +881,9 @@ var D: TDataSet;
     iCount: integer;
 begin
   iCount := 16;
-  if FTestData.GetODS >= ODS_11_1 then
-    iCount := 17;
+  var iODS := FTestData.GetODS;
+  if iODS >= ODS_11_1 then Inc(iCount);
+  if iODS >= ODS_13_0 then Inc(iCount);
 
   P := TParams.Create;
   try
@@ -927,6 +938,8 @@ begin
     if FTestData.GetODS >= ODS_11_1 then
       L2.Add('RDB$RELATION_TYPE');
     L2.Add('RDB$SECURITY_CLASS');
+    if FTestData.GetODS >= ODS_13_0 then
+      L2.Add('RDB$SQL_SECURITY');
     L2.Add('RDB$EXTERNAL_FILE');
     L2.Add('RDB$RUNTIME');
     L2.Add('RDB$EXTERNAL_DESCRIPTION');
@@ -1089,18 +1102,37 @@ begin
       Result := 'BOOLEAN'
     else
       Result := 'INTEGER';
-  end else if GetName = 'Test_MEMO'                then Result := 'BLOB SUB_TYPE 1'
+  end
+  else if GetName = 'Test_MEMO'                then Result := 'BLOB SUB_TYPE 1'
+  else if GetName = 'Test_INT128'              then begin
+    if GetTestData.GetODS < ODS_13_0 then
+      Result := ''
+    else
+      Result := 'INT128'
+  end
   else if GetName = 'Test_MEMO_UTF8'           then Result := 'BLOB SUB_TYPE 1 CHARACTER SET UTF8'
   else if GetName = 'Test_NUMERIC'             then Result := 'NUMERIC(18, 4)'
   else if GetName = 'Test_NUMERIC_SHORT'       then Result := 'NUMERIC(4, 2)'
   else if GetName = 'Test_NUMERIC_LONG'        then Result := 'NUMERIC(9, 2)'
-  else if GetName = 'Test_NUMERIC_Limit'       then Result := 'NUMERIC(18, 4)'
+  else if GetName = 'Test_NUMERIC_18_4'        then Result := 'NUMERIC(18, 4)'
+  else if GetName = 'Test_NUMERIC_19_4'        then begin
+    if GetTestData.GetODS < ODS_13_0 then
+      Result := ''
+    else
+      Result := 'NUMERIC(19, 4)';
+  end
   else if GetName = 'Test_NUMERIC_Misc'        then Result := 'NUMERIC(18, 4)'
   else if GetName = 'Test_NUMERIC_0'           then Result := 'NUMERIC(18, 0)'
   else if GetName = 'Test_NUMERIC_18_10'       then Result := 'NUMERIC(18, 10)'
   else if GetName = 'Test_DECIMAL'             then Result := 'DECIMAL(18, 4)'
   else if GetName = 'Test_DECIMAL_LONG'        then Result := 'DECIMAL(9, 2)'
-  else if GetName = 'Test_DECIMAL_Limit'       then Result := 'DECIMAL(18, 4)'
+  else if GetName = 'Test_DECIMAL_18_4'        then Result := 'DECIMAL(18, 4)'
+  else if GetName = 'Test_DECIMAL_19_4'        then begin
+    if GetTestData.GetODS < ODS_13_0 then
+      Result := ''
+    else
+      Result := 'DECIMAL(19, 4)';
+  end
   else if GetName = 'Test_DECIMAL_Misc'        then Result := 'DECIMAL(18, 4)'
   else if GetName = 'Test_DECIMAL_0'           then Result := 'DECIMAL(4, 0)'
   else if GetName = 'Test_DECIMAL_18_10'       then Result := 'DECIMAL(18, 10)'
@@ -1134,10 +1166,15 @@ begin
     L.Free;
   end;
 
-  S := 'CREATE TABLE T_FIELD( ' +
-       '   FIELD ' + GetFieldType +
-       ')';
-  FConnection.ExecuteDirect(S);
+  FHasTable := False;
+  var F := GetFieldType;
+  if F <> '' then begin
+    S := 'CREATE TABLE T_FIELD( ' +
+         '   FIELD ' + F +
+         ')';
+    FConnection.ExecuteDirect(S);
+    FHasTable := True;
+  end;
 
   FParams := TParams.Create;
   FParams.CreateParam(ftUnknown, 'VALUE', ptInput);
@@ -1147,7 +1184,8 @@ procedure TTestCase_DBX_FieldType.TearDown;
 begin
   if Assigned(FDataSet) then FreeAndNil(FDataSet);
   FParams.Free;
-  FConnection.ExecuteDirect('DROP TABLE T_FIELD');
+  if FHasTable then
+    FConnection.ExecuteDirect('DROP TABLE T_FIELD');
   inherited;
 end;
 
@@ -1602,17 +1640,35 @@ begin
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 end;
 
-procedure TTestCase_DBX_FieldType.Test_DECIMAL_Limit;
+procedure TTestCase_DBX_FieldType.Test_DECIMAL_18_4;
 var F: TFMTBCDField;
 begin
-  Param.AsFMTBCD := StrToBcdN('922337203685477.5807');
+  Param.AsFMTBCD := StrToBcdN('99999999999999.9999');
   Execute;
   CheckEquals(TFMTBCDField, Field.ClassType);
   F := Field as TFMTBCDField;
-  CheckEquals(19, F.Precision);
+  CheckEquals(MaxBcdPrecision, F.Precision);
   CheckEquals(4, F.Size);
 
-  Param.AsFMTBCD := StrToBcdN('-922337203685477.5808');
+  Param.AsFMTBCD := StrToBcdN('-99999999999999.9999');
+  Execute;
+  CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
+end;
+
+procedure TTestCase_DBX_FieldType.Test_DECIMAL_19_4;
+var F: TFMTBCDField;
+begin
+  if GetTestData.GetODS < ODS_13_0 then Exit;
+
+  Param.AsFMTBCD := StrToBcdN('999999999999999.9999');
+  Execute;
+  CheckEquals(TFMTBCDField, Field.ClassType);
+  F := Field as TFMTBCDField;
+  CheckEquals(MaxFMTBcdDigits, F.Precision);
+  CheckEquals(4, F.Size);
+
+  Param.AsFMTBCD := StrToBcdN('-999999999999999.9999');
   Execute;
   CheckEquals(Param.AsString, Field.AsString);
   CheckEquals(Param.AsWideString, Field.AsWideString);
@@ -1686,6 +1742,52 @@ begin
   CheckEquals(15, F.Precision);
 
   CheckEquals(Param.AsFloat, Field.AsFloat, 0.0001);
+
+  Test_Required;
+end;
+
+procedure TTestCase_DBX_FieldType.Test_INT128;
+begin
+  if GetTestData.GetODS < ODS_13_0 then Exit;
+
+  Param.AsFMTBCD := StrToBcd('1234567890');
+  Execute;
+  CheckEquals(TFMTBCDField, Field.ClassType);
+  CheckEquals(SizeOf(TBcd), Field.DataSize);
+
+  CheckEquals(Param.AsInteger, Field.AsInteger);
+  CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
+  CheckEquals(Param.AsFloat, Field.AsFloat);
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsCurrency := 12345678;
+  Execute;
+  CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsFloat := 123;
+  Execute;
+  CheckEquals('123', Field.AsString);
+
+  Param.AsLargeInt := 9223372036854775807;
+  Execute;
+  CheckEquals(9223372036854775807, Field.Value);
+
+  Param.AsInteger := 1234567890;
+  Execute;
+  CheckEquals(1234567890, Field.AsInteger);
+
+  Param.AsSmallInt := 12345;
+  Execute;
+  CheckEquals(12345, Field.AsInteger);
+
+  Param.AsString := '1234567890';
+  Execute;
+  CheckEquals(1234567890, Field.AsInteger);
+
+  Param.AsWideString := '1234567890';
+  Execute;
+  CheckEquals(1234567890, Field.AsInteger);
 
   Test_Required;
 end;
@@ -1882,19 +1984,39 @@ begin
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 end;
 
-procedure TTestCase_DBX_FieldType.Test_NUMERIC_Limit;
+procedure TTestCase_DBX_FieldType.Test_NUMERIC_18_4;
 var F: TFMTBCDField;
 begin
-  Param.AsFMTBCD := StrToBcdN('922337203685477.5807');
+  Param.AsFMTBCD := StrToBcdN('99999999999999.9999');
   Execute;
   CheckEquals(TFMTBCDField, Field.ClassType);
   F := Field as TFMTBCDField;
-  CheckEquals(19, F.Precision);
+  CheckEquals(MaxBcdPrecision, F.Precision);
   CheckEquals(4, F.Size);
   CheckEquals(Param.AsString, Field.AsString);
   CheckEquals(Param.AsWideString, Field.AsWideString);
 
-  Param.AsFMTBCD := StrToBcdN('-922337203685477.5808');
+  Param.AsFMTBCD := StrToBcdN('-99999999999999.9999');
+  Execute;
+  CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
+end;
+
+procedure TTestCase_DBX_FieldType.Test_NUMERIC_19_4;
+var F: TFMTBCDField;
+begin
+  if GetTestData.GetODS < ODS_13_0 then Exit;
+
+  Param.AsFMTBCD := StrToBcdN('999999999999999.9999');
+  Execute;
+  CheckEquals(TFMTBCDField, Field.ClassType);
+  F := Field as TFMTBCDField;
+  CheckEquals(MaxFMTBcdDigits, F.Precision);
+  CheckEquals(4, F.Size);
+  CheckEquals(Param.AsString, Field.AsString);
+  CheckEquals(Param.AsWideString, Field.AsWideString);
+
+  Param.AsFMTBCD := StrToBcdN('-999999999999999.9999');
   Execute;
   CheckEquals(Param.AsString, Field.AsString);
   CheckEquals(Param.AsWideString, Field.AsWideString);
@@ -2190,7 +2312,9 @@ end;
 
 function TTest_DBX_FieldType_NOT_NULL.GetFieldType: string;
 begin
-  Result := inherited GetFieldType + ' NOT NULL';
+  Result := inherited;
+  if Result <> '' then
+    Result := Result + ' NOT NULL';
   FRequired := True;
 end;
 
@@ -3042,7 +3166,6 @@ begin
     S := Format('CREATE PROCEDURE PROC%d ', [i]) +
          'AS ' +
          'BEGIN ' +
-           'SUSPEND; ' +
          'END ';
     FConnection.ExecuteDirect(S);
   end;
@@ -3050,10 +3173,17 @@ begin
   L := TStringList.Create;
   try
     FConnection.GetProcedureNames(L);
-    CheckEquals(9, L.Count);
+
+    var iCount := 9;
+    if GetTestData.GetODS >= ODS_13_0 then Inc(iCount);
+
+    CheckEquals(iCount, L.Count);
     L.Sort;
     for i := 1 to 9 do
       CheckEquals(Format('PROC%d', [i]), L[i-1]);
+
+    if GetTestData.GetODS >= ODS_13_0 then
+      CheckEquals('TRANSITIONS', L[9]);
   finally
     L.Free;
   end;
