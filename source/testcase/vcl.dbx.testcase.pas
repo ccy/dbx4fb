@@ -365,7 +365,7 @@ begin
   try
     L.Text := FParams;
 
-    S := TFirebirdServiceManager.New(FVendorLib, L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
+    S := TFirebirdServiceManager.New(FVendorLib, L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD], '');
     try
       sImpl := S.GetServerImplementation;
       if L.Values[HOSTNAME_KEY] = '' then
@@ -525,7 +525,7 @@ begin
   L := TStringList.Create;
   try
     L.Text := aParams;
-    S := TFirebirdServiceManager.New(ExpandfileNameString(aLibraryName), L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
+    S := TFirebirdServiceManager.New(ExpandfileNameString(aLibraryName), L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD], '');
     try
       Result := S.GetServerVersion;
     finally
