@@ -96,6 +96,8 @@ begin
     Result := SizeOf(TBcd)
   else if V.CheckType(SQL_BOOLEAN) then
     Result := SizeOf(WordBool)
+  else if V.CheckType(SQL_INT128) then
+    Result := SizeOf(TBcd)
   else
     Result := V.Size;
 end;
@@ -122,11 +124,13 @@ begin
   else if V.CheckType(SQL_VARYING) then
     Result := V.GetTextLen
   else if V.CheckType(SQL_INT64) then //{$if CompilerVersion > 18.5} and ((V.sqlsubtype = 1) or (V.sqlsubtype = 2)) {$ifend} then
-    Result := 19
+    Result := 18
   else if V.CheckType(SQL_LONG) and (V.sqlsubtype <> dsc_num_type_none) then
     Result := 9
   else if V.CheckType(SQL_SHORT) and (V.sqlsubtype <> dsc_num_type_none) then
     Result := 4
+  else if V.CheckType(SQL_INT128) then
+    Result := 38
   else
     Result := v.sqllen;
 end;
@@ -196,6 +200,7 @@ begin
     SQL_TYPE_DATE: Result := TDBXDataTypes.DateType;
     SQL_TYPE_TIME: Result := TDBXDataTypes.TimeType;
     SQL_TIMESTAMP: Result := TDBXDataTypes.TimeStampType;
+    SQL_INT128: Result := TDBXDataTypes.BcdType;
     else
       Unsupported;
   end;
