@@ -4,7 +4,8 @@
 
 	<taskdef resource="net/sf/antcontrib/antlib.xml"/>
 
-	<fail unless="program" message="missing 'program' property. please specify a executable program path" />
+	<fail unless="program" message="missing 'program' property. Example: ant -Dprogram=d:\win32\debug\dbxfbTests.exe -Ddrivers=Y:\firebird" />
+	<fail unless="drivers" message="missing 'drivers' property. Example: ant -Dprogram=d:\win32\debug\dbxfbTests.exe -Ddrivers=Y:\firebird" />
 
 	<property environment="env" />
 	<property name="program.conf" location="dbxfbTests.ini" />
@@ -63,7 +64,7 @@
 		</condition>
 
 		<echo file="${p.script}">
-			${program} -test ${test} ${p.suite} ${p.core_2978} -console
+			${program} -config ${program.conf} -drivers ${drivers} -test ${test} ${p.suite} ${p.core_2978} -console
 		</echo>
 
 		<exec executable="cmd" spawn="false" failonerror="true">
