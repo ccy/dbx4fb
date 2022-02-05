@@ -1,7 +1,6 @@
 program dbxfbTests;
 
 uses
-  FastMM4,
   Winapi.Windows,
   vcl.dbx.testcase in '..\source\testcase\vcl.dbx.testcase.pas',
   vcl.dbx.main in '..\source\testcase\vcl.dbx.main.pas',
@@ -10,6 +9,7 @@ uses
 {$R *.RES}
 
 begin
+  ReportMemoryLeaksOnShutdown := True;
   {$ifdef release}ExitProcess({$endif}
   StartApp
   {$ifdef release}){$endif}
