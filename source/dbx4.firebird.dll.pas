@@ -174,6 +174,12 @@ begin
   Result := TDBXErrorCodes.None;
 end;
 
+function DBXConnection_GetVendorProperty(Handle: TDBXConnectionHandle; Name:
+    TDBXWideString; Value: TDBXWideStringBuilder; MaxLength: Longint):
+    TDBXErrorCode; stdcall;
+begin
+  Result := IDBXConnection(Handle).GetVendorProperty(Name, Value, MaxLength);
+end;
 function DBXConnection_Rollback(Handle: TDBXConnectionHandle;
     TransactionHandle: TDBXTransactionHandle): TDBXErrorCode; stdcall;
 begin
@@ -457,6 +463,7 @@ exports
   DBXConnection_CreateCommand,
   DBXConnection_Disconnect,
   DBXConnection_GetIsolation,
+  DBXConnection_GetVendorProperty,
   DBXConnection_Rollback,
   DBXConnection_SetCallbackEvent,
   DBXDriver_CreateConnection,

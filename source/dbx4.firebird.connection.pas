@@ -51,6 +51,8 @@ type
     function GetSQLDialect: integer;
     function GetTransactionPool: TFirebirdTransactionPool;
     function GetTrimChar: Boolean;
+    function GetVendorProperty(Name: TDBXWideString; Value: TDBXWideStringBuilder;
+        MaxLength: Longint): TDBXErrorCode;
     function GetWaitOnLocks: Boolean;
     function IsolationLevel: TInt32;
     function Rollback(TransactionHandle: TDBXTransactionHandle): TDBXErrorCode;
@@ -232,6 +234,25 @@ end;
 function TDBXConnection_Firebird.GetTrimChar: Boolean;
 begin
   Result := FTrimChar;
+end;
+
+function TDBXConnection_Firebird.GetVendorProperty(Name: TDBXWideString; Value:
+    TDBXWideStringBuilder; MaxLength: Longint): TDBXErrorCode;
+begin
+  var v: string;
+  if Name = 'UnicodeEncoding' then
+    v := 'false'
+  else if Name = 'QuoteCharEnabled' then
+    v := 'false'
+  else if Name = 'ProductVersion' then
+    v := '4.1'
+  else if Name = 'ProductName' then
+    v := 'dbExpress driver for Firebird'
+  else
+    Exit(TDBXErrorCodes.NotImplemented);
+
+  TDBXPlatform.CopyWideStringToBuilder(v, MaxLength, Value);
+  Result := TDBXErrorCodes.None;
 end;
 
 function TDBXConnection_Firebird.GetWaitOnLocks: Boolean;
