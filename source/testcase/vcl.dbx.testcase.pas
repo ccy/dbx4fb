@@ -141,7 +141,6 @@ type{$M+}
   private
     FDataSet: TDataSet;
     FParams: TParams;
-    FHasTable: Boolean;
     procedure Execute;
     function Field: TField;
     function Param: TParam;
@@ -961,7 +960,7 @@ begin
   L := {$if RtlVersion <= 22}TWideStringList{$else}TStringList{$ifend}.Create;
   try
     FConnection.GetIndexNames('RDB$RELATIONS', L);
-    CheckEquals('', L.Text);
+    CheckNotEquals('', L.Text);
   finally
     L.Free;
   end;
@@ -1151,27 +1150,14 @@ begin
 end;
 
 procedure TTestCase_DBX_FieldType.SetUp;
-var S: string;
-    L: TStringList;
 begin
   inherited;
-  L := TStringList.Create;
-  try
-    FConnection.GetTableNames(L, False);
-    if L.IndexOf('T_FIELD') <> -1 then
-      FConnection.ExecuteDirect('DROP TABLE T_FIELD');
-  finally
-    L.Free;
-  end;
-
-  FHasTable := False;
   var F := GetFieldType;
   if F <> '' then begin
-    S := 'CREATE TABLE T_FIELD( ' +
+    var S := 'RECREATE TABLE T_FIELD( ' +
          '   FIELD ' + F +
          ')';
     FConnection.ExecuteDirect(S);
-    FHasTable := True;
   end;
 
   FParams := TParams.Create;
@@ -1182,8 +1168,6 @@ procedure TTestCase_DBX_FieldType.TearDown;
 begin
   if Assigned(FDataSet) then FreeAndNil(FDataSet);
   FParams.Free;
-  if FHasTable then
-    FConnection.ExecuteDirect('DROP TABLE T_FIELD');
   inherited;
 end;
 
@@ -2306,20 +2290,9 @@ begin
 end;
 
 procedure TTestCase_DBX_TSQLDataSet.SetUp;
-var S: string;
-    L: TStringList;
 begin
   inherited;
-  L := TStringList.Create;
-  try
-    FConnection.GetTableNames(L, False);
-    if L.IndexOf('T_DATASET') <> -1 then
-      FConnection.ExecuteDirect('DROP TABLE T_DATASET');
-  finally
-    L.Free;
-  end;
-
-  S := 'CREATE TABLE T_DATASET( ' +
+  var S := 'RECREATE TABLE T_DATASET( ' +
        '   FIELD VARCHAR(100)' +
        ')';
   FConnection.ExecuteDirect(S);
@@ -2331,7 +2304,6 @@ end;
 procedure TTestCase_DBX_TSQLDataSet.TearDown;
 begin
   FDataSet.Free;
-  FConnection.ExecuteDirect('DROP TABLE T_DATASET');
   inherited;
 end;
 
@@ -3220,8 +3192,8 @@ var S: string;
     L: TStringList;
     i: integer;
 begin
-  for i := 1 to 9 do begin
-    S := Format('CREATE PROCEDURE PROC%d ', [i]) +
+  for i := 0 to 9 do begin
+    S := Format('CREATE PROCEDURE A%d ', [i]) +
          'AS ' +
          'BEGIN ' +
          'END ';
@@ -3232,22 +3204,20 @@ begin
   try
     FConnection.GetProcedureNames(L);
 
-    var iCount := 9;
-    if GetTestData.GetODS >= ODS_13_0 then Inc(iCount);
+    for i := 0 to 9 do
+      CheckEquals(Format('A%d', [i]), L[i]);
 
-    CheckEquals(iCount, L.Count);
-    L.Sort;
-    for i := 1 to 9 do
-      CheckEquals(Format('PROC%d', [i]), L[i-1]);
-
-    if GetTestData.GetODS >= ODS_13_0 then
-      CheckEquals('TRANSITIONS', L[9]);
+    if GetTestData.GetODS >= ODS_13_0 then begin
+      i := L.Count - 2;
+      CheckEquals('DATABASE_VERSION', L[i]);
+      CheckEquals('TRANSITIONS', L[i + 1]);
+    end;
   finally
     L.Free;
   end;
 
-  for i := 1 to 9 do
-    FConnection.ExecuteDirect(Format('DROP PROCEDURE PROC%d', [i]));
+  for i := 0 to 9 do
+    FConnection.ExecuteDirect(Format('DROP PROCEDURE A%d', [i]));
 end;
 
 procedure TTestCase_DBX_TSQLStoredProc.Test_MultiParams;
@@ -3416,7 +3386,7 @@ begin
   CheckEquals(0, CreateProc('BIGINT', '123456789012345678'));
 
   {$Message 'QC#64499 TParam does not take TLargeIntField value'}
-  Check(ftFMTBcd = FStoredProc.Params[1].DataType);
+  Check(ftLargeint = FStoredProc.Params[1].DataType);
 
   CheckEquals('123456789012345678', FStoredProc.Params[1].AsString);
 end;
