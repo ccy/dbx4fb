@@ -311,7 +311,7 @@ uses
   Winapi.Windows, System.DateUtils, System.IniFiles, System.Math, System.StrUtils,
   System.WideStrings, Data.SqlConst, Data.SqlTimSt,
   firebird.client, firebird.ods.h,
-  SysUtilsEx, SystemEx, UniqueID, firebird.service, vcl.dbx.cmdlines;
+  firebird.service, vcl.dbx.cmdlines;
 
 {$if RTLVersion <= 23}
 type
@@ -329,6 +329,20 @@ begin
   Result := Execute(SQL, Params, @ResultSet);
 end;
 {$ifend}
+
+function StrToLocaleDecimal(const aValue: string): string;
+var i: integer;
+begin
+  SetLength(Result, Length(aValue));
+  for i := 1 to Length(aValue) do begin
+    if aValue[i] = '.' then
+      Result[i] := {$if RTLVersion>=22}FormatSettings.{$ifend}DecimalSeparator
+    else if aValue[i] = ',' then
+      Result[i] := {$if RTLVersion>=22}FormatSettings.{$ifend}ThousandSeparator
+    else
+      Result[i] := aValue[i];
+  end;
+end;
 
 constructor TTestData_SQLConnection.Create(const aDriverName, aLibraryName,
     aGetDriverFunc, aVendorLib, aParams: string);
@@ -387,7 +401,8 @@ begin
         sDatabase := sDatabase + '/tmp/'
       else
         Assert(False);
-      sDatabase := sDatabase + TUniqueName.New('T_');
+      Randomize;
+      sDatabase := sDatabase + 'T_' + GetTickCount.ToString + IntToStr(Random(High(Integer)));
 
       FServerVersion := S.GetServerVersion;
       FName := Format('%s (%s) Host: %s Database: %s', [sImpl, FServerVersion, L.Values[HOSTNAME_KEY], sDatabase]);
@@ -3428,7 +3443,7 @@ procedure TTestCase_DBX_TSQLStoredProc_Params.Test_DoublePrecision;
 begin
   CheckEquals(0, CreateProc('DOUBLE PRECISION', StrToLocaleDecimal('123.4567890123')));
   Check(ftFloat = FStoredProc.Params[1].DataType);
-  CheckEquals(123.4567890123, FStoredProc.Params[1].AsFloat, SglEps);
+  CheckEquals(123.4567890123, FStoredProc.Params[1].AsFloat, 0.00000001);
 end;
 
 procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Float;

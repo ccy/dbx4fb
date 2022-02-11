@@ -2,14 +2,9 @@ unit vcl.dbx.cmdlines;
 
 interface
 
-uses
-  SysUtilsEx;
-
 type
   TCmdLineParams_App = class abstract
   strict private
-    class var FCmdLineParams: ICmdLineParams;
-    class function CmdLineParams: ICmdLineParams;
     class function GetPersistValue(aKey: string): string;
   public
     class function ConfigFile: string;
@@ -29,17 +24,9 @@ uses
 
 {$WARN SYMBOL_PLATFORM OFF}
 
-class function TCmdLineParams_App.CmdLineParams: ICmdLineParams;
-begin
-  if FCmdLineParams = nil then
-    FCmdLineParams := TCmdLineParams.Create(CmdLine);
-  Result := FCmdLineParams;
-end;
-
 class function TCmdLineParams_App.ConfigFile: string;
 begin
-  Result := CmdLineParams['config'];
-  if Result.IsEmpty then begin
+  if not FindCmdLineSwitch('config', Result) then begin
     Result := GetPersistValue('config');
     if not TFile.Exists(Result) then
       raise Exception.CreateFmt('%s not exist', [Result]);
@@ -48,13 +35,12 @@ end;
 
 class function TCmdLineParams_App.CORE_2978: Boolean;
 begin
-  Result := CmdLineParams.Find('CORE_2978');
+  Result := FindCmdLineSwitch('CORE_2978');
 end;
 
 class function TCmdLineParams_App.Drivers: string;
 begin
-  Result := CmdLineParams['drivers'];
-  if Result.IsEmpty then begin
+  if not FindCmdLineSwitch('drivers', Result) then begin
     Result := GetPersistValue('drivers');
     if not TDirectory.Exists(Result) then
       raise Exception.CreateFmt('%s not exist', [Result]);
@@ -79,7 +65,7 @@ end;
 
 class function TCmdLineParams_App.GetTestName: string;
 begin
-  Result := CmdLineParams['test'];
+  if not FindCmdLineSwitch('test', Result) then Exit('');
 end;
 
 class function TCmdLineParams_App.HasTestName: boolean;
@@ -89,23 +75,19 @@ end;
 
 class function TCmdLineParams_App.RunAsConsole: boolean;
 begin
-  Result := CmdLineParams.Find('console');
+  Result := FindCmdLineSwitch('console');
 end;
 
 class function TCmdLineParams_App.TestSuite1: Boolean;
 begin
-  if CmdLineParams.Find('suite') then
-    Result := CmdLineParams['suite'] = '1'
-  else
-    Result := True;
+  var s := '';
+  Result := not FindCmdLineSwitch('suite', s) or (s = '1');
 end;
 
 class function TCmdLineParams_App.TestSuite2: Boolean;
 begin
-  if CmdLineParams.Find('suite') then
-    Result := CmdLineParams['suite'] = '2'
-  else
-    Result := True;
+  var s := '';
+  Result := not FindCmdLineSwitch('suite', s) or (s = '2');
 end;
 
 end.

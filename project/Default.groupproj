@@ -6,9 +6,6 @@
         <Projects Include="..\..\dbx4fb\project\dbx4fb.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="..\..\core\project\oortl.dproj">
-            <Dependencies/>
-        </Projects>
         <Projects Include="..\..\core\project\oofirebird.dproj">
             <Dependencies/>
         </Projects>
@@ -37,15 +34,6 @@
     </Target>
     <Target Name="dbx4fb:Make">
         <MSBuild Projects="..\..\dbx4fb\project\dbx4fb.dproj" Targets="Make"/>
-    </Target>
-    <Target Name="oortl">
-        <MSBuild Projects="..\..\core\project\oortl.dproj"/>
-    </Target>
-    <Target Name="oortl:Clean">
-        <MSBuild Projects="..\..\core\project\oortl.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="oortl:Make">
-        <MSBuild Projects="..\..\core\project\oortl.dproj" Targets="Make"/>
     </Target>
     <Target Name="oofirebird">
         <MSBuild Projects="..\..\core\project\oofirebird.dproj"/>
@@ -84,13 +72,13 @@
         <MSBuild Projects="dbxfbTests.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="dbx4fb;oortl;oofirebird;DBXCommonDriverEx;DBXFirebirdDriverEx;dbxfbTests"/>
+        <CallTarget Targets="dbx4fb;oofirebird;DBXCommonDriverEx;DBXFirebirdDriverEx;dbxfbTests"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="dbx4fb:Clean;oortl:Clean;oofirebird:Clean;DBXCommonDriverEx:Clean;DBXFirebirdDriverEx:Clean;dbxfbTests:Clean"/>
+        <CallTarget Targets="dbx4fb:Clean;oofirebird:Clean;DBXCommonDriverEx:Clean;DBXFirebirdDriverEx:Clean;dbxfbTests:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="dbx4fb:Make;oortl:Make;oofirebird:Make;DBXCommonDriverEx:Make;DBXFirebirdDriverEx:Make;dbxfbTests:Make"/>
+        <CallTarget Targets="dbx4fb:Make;oofirebird:Make;DBXCommonDriverEx:Make;DBXFirebirdDriverEx:Make;dbxfbTests:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

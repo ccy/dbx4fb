@@ -83,7 +83,7 @@
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <UsePackages>true</UsePackages>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
-        <DCC_UsePackage>vcl;rtl;dunit;DbxCommonDriver;oortl;oofirebird;DBXFirebirdDriverEx;$(DCC_UsePackage)</DCC_UsePackage>
+        <DCC_UsePackage>vcl;rtl;dunit;DbxCommonDriver;oofirebird;DBXFirebirdDriverEx;$(DCC_UsePackage)</DCC_UsePackage>
         <DCC_F>false</DCC_F>
         <DCC_S>false</DCC_S>
         <DCC_ImageBase>00400000</DCC_ImageBase>
