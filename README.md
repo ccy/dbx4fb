@@ -6,13 +6,27 @@
 
 `dbExpress Driver for Firebird` is a high quality driver providing optimum performance for Firebird service data accessing operation.
 
-#Requirements
-`dbx4fb` requires two libraries to build:
+# Build configuration
 
-1. [jedi-apilib](https://github.com/ccy/jedi-apilib):  Repository https://github.com/ccy/jedi-apilib branch [revise](https://github.com/ccy/jedi-apilib/tree/revise)
-2. [delphi-firebird-api](https://github.com/ccy/delphi-firebird-api): Repository: https://github.com/ccy/delphi-firebird-api
+`dbx4fb` requires these libraries to build:
 
-#Donation
+1. [jedi-apilib](https://github.com/ccy/jedi-apilib) - branch [revise](https://github.com/ccy/jedi-apilib/tree/revise)
+2. [delphi-int128](https://github.com/eStreamSoftware/delphi-int128)
+3. [delphi-firebird-api](https://github.com/ccy/delphi-firebird-api)
+
+# Supported Firebird version
+
+The driver support these Firebird version:
+
+- [Firebird 1.5](https://firebirdsql.org/en/firebird-1-5/)
+- [Firebird 2.0](https://firebirdsql.org/en/firebird-2-0/)
+- [Firebird 2.1](https://firebirdsql.org/en/firebird-2-1/)
+- [Firebird 2.5](https://firebirdsql.org/en/firebird-2-5/)
+- [Firebird 3.0](https://firebirdsql.org/en/firebird-3-0/)
+- [Firebird 4.0](https://firebirdsql.org/en/firebird-4-0/)
+
+# Donation
+
 `dbExpress Driver for Firebird` is developed by a group of Delphi and Firebird enthusiast programmers.  You are welcome to use and deploy it freely in your personal or business projects.
 
 We rely on your continue supports to grow this piece of software as long as both `Delphi` and `Firebird` still alive in the market.
