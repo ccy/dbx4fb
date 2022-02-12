@@ -6,12 +6,6 @@
         <Projects Include="..\..\dbx4fb\project\dbx4fb.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="..\..\core\project\DBXCommonDriverEx.dproj">
-            <Dependencies/>
-        </Projects>
-        <Projects Include="..\..\core\project\DBXFirebirdDriverEx.dproj">
-            <Dependencies/>
-        </Projects>
         <Projects Include="dbxfbTests.dproj">
             <Dependencies/>
         </Projects>
@@ -32,24 +26,6 @@
     <Target Name="dbx4fb:Make">
         <MSBuild Projects="..\..\dbx4fb\project\dbx4fb.dproj" Targets="Make"/>
     </Target>
-    <Target Name="DBXCommonDriverEx">
-        <MSBuild Projects="..\..\core\project\DBXCommonDriverEx.dproj"/>
-    </Target>
-    <Target Name="DBXCommonDriverEx:Clean">
-        <MSBuild Projects="..\..\core\project\DBXCommonDriverEx.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="DBXCommonDriverEx:Make">
-        <MSBuild Projects="..\..\core\project\DBXCommonDriverEx.dproj" Targets="Make"/>
-    </Target>
-    <Target Name="DBXFirebirdDriverEx">
-        <MSBuild Projects="..\..\core\project\DBXFirebirdDriverEx.dproj"/>
-    </Target>
-    <Target Name="DBXFirebirdDriverEx:Clean">
-        <MSBuild Projects="..\..\core\project\DBXFirebirdDriverEx.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="DBXFirebirdDriverEx:Make">
-        <MSBuild Projects="..\..\core\project\DBXFirebirdDriverEx.dproj" Targets="Make"/>
-    </Target>
     <Target Name="dbxfbTests">
         <MSBuild Projects="dbxfbTests.dproj"/>
     </Target>
@@ -60,13 +36,13 @@
         <MSBuild Projects="dbxfbTests.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="dbx4fb;DBXCommonDriverEx;DBXFirebirdDriverEx;dbxfbTests"/>
+        <CallTarget Targets="dbx4fb;dbxfbTests"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="dbx4fb:Clean;DBXCommonDriverEx:Clean;DBXFirebirdDriverEx:Clean;dbxfbTests:Clean"/>
+        <CallTarget Targets="dbx4fb:Clean;dbxfbTests:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="dbx4fb:Make;DBXCommonDriverEx:Make;DBXFirebirdDriverEx:Make;dbxfbTests:Make"/>
+        <CallTarget Targets="dbx4fb:Make;dbxfbTests:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

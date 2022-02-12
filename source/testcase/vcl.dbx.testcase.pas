@@ -3,12 +3,9 @@ unit vcl.dbx.testcase;
 interface
 
 uses
-  System.Classes, System.SysUtils, System.Variants, Data.DB, Data.FMTBcd,
-  Data.SqlExpr, Datasnap.DBClient, Datasnap.Provider, TestExtensions,
-  TestFramework
-  {$if CompilerVersion > 18}, Data.DBXCommon{$ifend}
-  {$if CompilerVersion >= 20}, dbx.firebird{$ifend}
-  ;
+  System.Classes, System.SysUtils, System.Variants, Data.DB, Data.DBXCommon,
+  Data.FMTBcd, Data.SqlExpr, Datasnap.DBClient, Datasnap.Provider, TestExtensions,
+  TestFramework;
 
 type{$M+}
   ITestData = interface(IInterface)
