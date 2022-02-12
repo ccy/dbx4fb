@@ -4,8 +4,8 @@ interface
 
 uses
   System.Classes, System.SysUtils, System.Variants, Data.DB, Data.DBXCommon,
-  Data.FMTBcd, Data.SqlExpr, Datasnap.DBClient, Datasnap.Provider, TestExtensions,
-  TestFramework;
+  Data.DBXDynalinkNative, Data.FMTBcd, Data.SqlExpr, Datasnap.DBClient,
+  Datasnap.Provider, TestExtensions, TestFramework;
 
 type{$M+}
   ITestData = interface(IInterface)
@@ -2313,29 +2313,30 @@ begin
 end;
 
 procedure TTestCase_DBX_Transaction.Test_Duplicate_TransactionID;
-{$if CompilerVersion <= 18}var T1, T2: TTransactionDesc;{$ifend}
+var T1, T2: TTransactionDesc;
 begin
-  {$if CompilerVersion <= 18}
+  {$WARNINGS OFF}
   T1.TransactionID := 1;
   T1.IsolationLevel := xilREADCOMMITTED;
   FConnection.StartTransaction(T1);
+  FConnection.Commit(T1);
 
   T2.TransactionID := 1;
   T2.IsolationLevel := xilREADCOMMITTED;
-  StartExpectingException(TDBXError);
   FConnection.StartTransaction(T2);
-  {$ifend}
+  FConnection.Commit(T2);
+  {$WARNINGS ON}
 end;
 
 procedure TTestCase_DBX_Transaction.Test_Invalid_TransactionID;
-{$if CompilerVersion <= 18}var T: TTransactionDesc;{$ifend}
+var T: TTransactionDesc;
 begin
-  {$if CompilerVersion <= 18}
-  StartExpectingException(EDatabaseError);
+  {$WARNINGS OFF}
   T.TransactionID := 0;
   T.IsolationLevel := xilREADCOMMITTED;
   FConnection.StartTransaction(T);
-  {$ifend}
+  FConnection.Commit(T);
+  {$WARNINGS ON}
 end;
 
 procedure TTestCase_DBX_Transaction.Test_Transaction;
