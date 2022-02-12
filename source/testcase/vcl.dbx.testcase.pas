@@ -311,7 +311,7 @@ uses
   Winapi.Windows, System.DateUtils, System.IniFiles, System.Math, System.StrUtils,
   System.WideStrings, Data.SqlConst, Data.SqlTimSt,
   firebird.client, firebird.ods.h,
-  firebird.service, vcl.dbx.cmdlines;
+  firebird.utils, vcl.dbx.cmdlines;
 
 {$if RTLVersion <= 23}
 type
@@ -366,7 +366,7 @@ begin
   L := TStringList.Create;
   try
     L.Text := FParams;
-    TFirebirdDatabase.DropDatabase(FVendorLib, L.Values[HOSTNAME_KEY], L.Values[DATABASENAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
+    FB_DropDatabase(FVendorLib, L.Values[HOSTNAME_KEY], L.Values[DATABASENAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
   finally
     L.Free;
   end;
@@ -374,8 +374,6 @@ end;
 
 procedure TTestData_SQLConnection.CreateDatabase;
 var L: TStringList;
-    S: TFirebirdServiceManager;
-    D: TFirebirdDatabase;
     sDatabase: string;
     sImpl: string;
 begin
@@ -383,41 +381,32 @@ begin
   try
     L.Text := FParams;
 
-    S := TFirebirdServiceManager.New(FVendorLib, L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD], '');
-    try
-      sImpl := S.GetServerImplementation;
-      if L.Values[HOSTNAME_KEY] = '' then
-        sDatabase := IncludeTrailingPathDelimiter('%TEMP%')
-      else if ContainsText(sImpl, 'Windows') then begin
+    var v := FB_GetVersion(FVendorLib, L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
+    sImpl := v.FImplementation;
+    if L.Values[HOSTNAME_KEY] = '' then
+      sDatabase := IncludeTrailingPathDelimiter('%TEMP%')
+    else if ContainsText(sImpl, 'Windows') then begin
 
-        if Pos('dbxint', FLibraryName) > 0 then // Interbase Driver need hostname string in database parameter
-          sDatabase := L.Values[HOSTNAME_KEY] + ':';
+      if Pos('dbxint', FLibraryName) > 0 then // Interbase Driver need hostname string in database parameter
+        sDatabase := L.Values[HOSTNAME_KEY] + ':';
 
-        if AnsiStartsText('localhost', L.Values[HOSTNAME_KEY]) then
-          sDatabase := sDatabase + IncludeTrailingPathDelimiter('%TEMP%')
-        else
-          sDatabase := sDatabase + 'c:\';
-      end else if ContainsText(sImpl, 'Linux') then
-        sDatabase := sDatabase + '/tmp/'
+      if AnsiStartsText('localhost', L.Values[HOSTNAME_KEY]) then
+        sDatabase := sDatabase + IncludeTrailingPathDelimiter('%TEMP%')
       else
-        Assert(False);
-      Randomize;
-      sDatabase := sDatabase + 'T_' + GetTickCount.ToString + IntToStr(Random(High(Integer)));
+        sDatabase := sDatabase + 'c:\';
+    end else if ContainsText(sImpl, 'Linux') then
+      sDatabase := sDatabase + '/tmp/'
+    else
+      Assert(False);
+    Randomize;
+    sDatabase := sDatabase + 'T_' + GetTickCount.ToString + IntToStr(Random(High(Integer)));
 
-      FServerVersion := S.GetServerVersion;
-      FName := Format('%s (%s) Host: %s Database: %s', [sImpl, FServerVersion, L.Values[HOSTNAME_KEY], sDatabase]);
-    finally
-      S.Free;
-    end;
+    FServerVersion := v.FServerStr;
+    FName := Format('%s (%s) Host: %s Database: %s', [sImpl, FServerVersion, L.Values[HOSTNAME_KEY], sDatabase]);
 
-    TFirebirdDatabase.CreateDatabase(FVendorLib, L.Values[HOSTNAME_KEY], sDatabase, L.Values[szUSERNAME], L.Values[szPASSWORD]);
+    FB_CreateDatabase(FVendorLib, L.Values[HOSTNAME_KEY], sDatabase, L.Values[szUSERNAME], L.Values[szPASSWORD]);
 
-    D := TFirebirdDatabase.New(FVendorLib, L.Values[HOSTNAME_KEY], sDatabase, L.Values[szUSERNAME], L.Values[szPASSWORD]);
-    try
-      FODS := D.GetODSVersion;
-    finally
-      D.Free;
-    end;
+    FODS := FB_GetODS(FVendorLib, L.Values[HOSTNAME_KEY], sDatabase, L.Values[szUSERNAME], L.Values[szPASSWORD]);
 
     L.Values[DATABASENAME_KEY] := sDatabase;
     FParams := L.Text;
@@ -538,18 +527,11 @@ end;
 
 class function TTestSuite_DBX.GetServerVersion(aLibraryName, aParams:
     string): string;
-var L: TStringList;
-    S: TFirebirdServiceManager;
 begin
-  L := TStringList.Create;
+  var L := TStringList.Create;
   try
     L.Text := aParams;
-    S := TFirebirdServiceManager.New(ExpandfileNameString(aLibraryName), L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD], '');
-    try
-      Result := S.GetServerVersion;
-    finally
-      S.Free;
-    end;
+    Result := FB_GetVersion(ExpandfileNameString(aLibraryName), L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]).FServerStr;
   finally
     L.Free;
   end;

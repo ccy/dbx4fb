@@ -6,9 +6,6 @@
         <Projects Include="..\..\dbx4fb\project\dbx4fb.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="..\..\core\project\oofirebird.dproj">
-            <Dependencies/>
-        </Projects>
         <Projects Include="..\..\core\project\DBXCommonDriverEx.dproj">
             <Dependencies/>
         </Projects>
@@ -34,15 +31,6 @@
     </Target>
     <Target Name="dbx4fb:Make">
         <MSBuild Projects="..\..\dbx4fb\project\dbx4fb.dproj" Targets="Make"/>
-    </Target>
-    <Target Name="oofirebird">
-        <MSBuild Projects="..\..\core\project\oofirebird.dproj"/>
-    </Target>
-    <Target Name="oofirebird:Clean">
-        <MSBuild Projects="..\..\core\project\oofirebird.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="oofirebird:Make">
-        <MSBuild Projects="..\..\core\project\oofirebird.dproj" Targets="Make"/>
     </Target>
     <Target Name="DBXCommonDriverEx">
         <MSBuild Projects="..\..\core\project\DBXCommonDriverEx.dproj"/>
@@ -72,13 +60,13 @@
         <MSBuild Projects="dbxfbTests.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="dbx4fb;oofirebird;DBXCommonDriverEx;DBXFirebirdDriverEx;dbxfbTests"/>
+        <CallTarget Targets="dbx4fb;DBXCommonDriverEx;DBXFirebirdDriverEx;dbxfbTests"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="dbx4fb:Clean;oofirebird:Clean;DBXCommonDriverEx:Clean;DBXFirebirdDriverEx:Clean;dbxfbTests:Clean"/>
+        <CallTarget Targets="dbx4fb:Clean;DBXCommonDriverEx:Clean;DBXFirebirdDriverEx:Clean;dbxfbTests:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="dbx4fb:Make;oofirebird:Make;DBXCommonDriverEx:Make;DBXFirebirdDriverEx:Make;dbxfbTests:Make"/>
+        <CallTarget Targets="dbx4fb:Make;DBXCommonDriverEx:Make;DBXFirebirdDriverEx:Make;dbxfbTests:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
