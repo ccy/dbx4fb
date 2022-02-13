@@ -9,6 +9,9 @@
         <Projects Include="dbx4fbrt.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="dbxfbTests.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -35,14 +38,23 @@
     <Target Name="dbx4fbrt:Make">
         <MSBuild Projects="dbx4fbrt.dproj" Targets="Make"/>
     </Target>
+    <Target Name="dbxfbTests">
+        <MSBuild Projects="dbxfbTests.dproj"/>
+    </Target>
+    <Target Name="dbxfbTests:Clean">
+        <MSBuild Projects="dbxfbTests.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="dbxfbTests:Make">
+        <MSBuild Projects="dbxfbTests.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="dbx4fb;dbx4fbrt"/>
+        <CallTarget Targets="dbx4fb;dbx4fbrt;dbxfbTests"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="dbx4fb:Clean;dbx4fbrt:Clean"/>
+        <CallTarget Targets="dbx4fb:Clean;dbx4fbrt:Clean;dbxfbTests:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="dbx4fb:Make;dbx4fbrt:Make"/>
+        <CallTarget Targets="dbx4fb:Make;dbx4fbrt:Make;dbxfbTests:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

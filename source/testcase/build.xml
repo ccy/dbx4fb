@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="DBX Test Cases" default="build" basedir=".">
+
+	<taskdef resource="net/sf/antcontrib/antlib.xml"/>
+
+	<fail unless="program" message="missing 'program' property. Example: ant -Dprogram=d:\win32\debug\dbxfbTests.exe -Ddrivers=Y:\firebird" />
+	<fail unless="drivers" message="missing 'drivers' property. Example: ant -Dprogram=d:\win32\debug\dbxfbTests.exe -Ddrivers=Y:\firebird" />
+
+	<property environment="env" />
+	<property name="program.conf" location="dbxfbTests.ini" />
+
+	<target name="build" depends="t.platform,t.platform.testcount">
+		<for param="i" begin="1" end="${p.embedded_1.end}" parallel="true" keepgoing="true">
+			<sequential>
+				<antcall target="dbx.test">
+					<param name="test" value="embedded_@{i}" />
+					<param name="suite" value="1" />
+					<param name="CORE_2978" value="" />
+				</antcall>
+			</sequential>
+		</for>
+
+		<for param="i" begin="${p.embedded_2.begin}" end="${p.embedded_2.end}" parallel="true" keepgoing="true">
+			<sequential>
+				<antcall target="dbx.test">
+					<param name="test" value="embedded_@{i}" />
+					<param name="suite" value="1" />
+				</antcall>
+			</sequential>
+		</for>
+
+		<for param="i" begin="1" end="${p.embedded_2.end}" keepgoing="true">
+			<sequential>
+				<antcall target="dbx.test">
+					<param name="test" value="embedded_@{i}" />
+					<param name="suite" value="2" />
+				</antcall>
+			</sequential>
+		</for>
+
+		<for param="i" begin="1" end="${p.server.count}" parallel="true" keepgoing="true">
+			<sequential>
+				<antcall target="dbx.test">
+					<param name="test" value="server_@{i}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+
+	<target name="dbx.test">
+		<tempfile property="p.script" destdir="${env.TEMP}" suffix=".cmd"/>
+
+		<condition property="p.config" value="" else="release">
+			<equals arg1="${p.tag.program}" arg2="d11" />
+		</condition>
+
+		<condition property="p.suite" value="-suite ${suite}" else="">
+			<isset property="suite" />
+		</condition>
+
+		<condition property="p.core_2978" value="-CORE_2978" else="">
+			<isset property="CORE_2978" />
+		</condition>
+
+		<echo file="${p.script}">
+			${program} -config ${program.conf} -drivers ${drivers} -test ${test} ${p.suite} ${p.core_2978} -console
+		</echo>
+
+		<exec executable="cmd" spawn="false" failonerror="true">
+			<arg line="/c ${p.script}" />
+		</exec>
+
+		<delete file="${p.script}" />
+	</target>
+
+	<target name="t.platform">
+		<fail unless="program" />
+		<condition property="p.platform" value="Win32" else="Win64">
+			<contains string="${program}" substring="win32" casesensitive="false" />
+		</condition>
+	</target>
+
+	<target name="t.platform.testcount">
+		<condition property="p.embedded_1.end" value="23" else="10">
+			<or>
+				<equals arg1="${p.platform}" arg2="Win32" casesensitive="false" />
+			</or>
+		</condition>
+
+		<condition property="p.embedded_2.begin" value="24" else="11">
+			<or>
+				<equals arg1="${p.platform}" arg2="Win32" casesensitive="false" />
+			</or>
+		</condition>
+
+		<condition property="p.embedded_2.end" value="41" else="26">
+			<or>
+				<equals arg1="${p.platform}" arg2="Win32" casesensitive="false" />
+			</or>
+		</condition>
+
+		<condition property="p.server.count" value="5" else="3">
+			<or>
+				<equals arg1="${p.platform}" arg2="Win32" casesensitive="false" />
+			</or>
+		</condition>
+	</target>
+
+</project>
