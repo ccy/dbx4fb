@@ -100,11 +100,7 @@
 			</or>
 		</condition>
 
-		<condition property="p.server.count" value="5" else="3">
-			<or>
-				<equals arg1="${p.platform}" arg2="Win32" casesensitive="false" />
-			</or>
-		</condition>
+		<property name="p.server.count" value="1" />
 	</target>
 
 </project>
