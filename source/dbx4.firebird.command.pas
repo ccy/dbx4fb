@@ -325,11 +325,11 @@ end;
 
 function TDBXCommand_Firebird.CreateParameterRow(out aRow: TDBXRowHandle):
     TDBXErrorCode;
-var M: IMetaDataProvider;
-    o: IDBXBase;
 begin
-  M := NewMetaDataProvider(FDSQL.o_SQLDA);
-  o := TDBXRow_Firebird.Create(FConnection, FDBHandle, M, FDSQL, (FConnection as IDBXConnection_Firebird).TrimChar);
+  var M: IMetaDataProvider := nil;
+  if Assigned(FDSQL) then
+    M := NewMetaDataProvider(FDSQL.o_SQLDA);
+  var o: IDBXBase := TDBXRow_Firebird.Create(FConnection, FDBHandle, M, FDSQL, (FConnection as IDBXConnection_Firebird).TrimChar);
 
   IDBXBase(aRow) := o;
   GetParameterRows.Add(aRow);
@@ -434,6 +434,12 @@ begin
   end;
 
   FDSQL.Prepare(StatusVector, S, FSQLDialect, Count);
+
+  var M := NewMetaDataProvider(FDSQL.o_SQLDA);
+
+  for var o in GetParameterRows do
+    (IDBXBase(o) as IDBXRow).SetDSQL(FDSQL, M);
+
   if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
 end;
 

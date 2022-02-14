@@ -4,10 +4,21 @@ interface
 
 uses
   System.SysUtils, Data.DBXCommon, Data.DBXDynalink, Data.DBXPlatform,
-  Data.FmtBcd, Data.SqlTimSt;
+  Data.FmtBcd, Data.SqlTimSt, firebird.dsql;
 
 type
   TRawByteStringArray = array of RawByteString;
+
+  IMetaDataProvider = interface
+    function GetColumnCount: TInt32;
+    function GetColumnLength(const aColNo: TInt32): LongWord;
+    function GetColumnName(const aColNo: TInt32): WideString;
+    function GetColumnPrecision(const aColNo: TInt32): TInt32;
+    function GetColumnScale(const aColNo: TInt32): TInt32;
+    function GetColumnType(const aColNo: TInt32): TInt32;
+    function GetColumnSubType(const aColNo: TInt32): TInt32;
+    function GetIsNullable(const aColNo: TInt32): boolean;
+  end;
 
   IDBXBase = interface(IInterface)
   ['{671ED8A1-C1CC-46CC-AFD6-62DE69695235}']
@@ -76,6 +87,7 @@ type
         LongBool): TDBXErrorCode;
     function GetWideString(Ordinal: TInt32; Value: TDBXWideStringBuilder; out
         IsNull: LongBool): TDBXErrorCode;
+    procedure SetDSQL(const aSQL: IFirebird_DSQL; const aMetaData: IMetaDataProvider);
   end;
 
   IDBXWritableRow = interface(IDBXBase)
@@ -119,17 +131,6 @@ type
     function Execute(out Reader: IDBXReader): TDBXErrorCode;
     function GetRowsAffected(out Rows: Int64): TDBXErrorCode;
     function Prepare(const SQL: TDBXWideString; Count: TInt32): TDBXErrorCode;
-  end;
-
-  IMetaDataProvider = interface
-    function GetColumnCount: TInt32;
-    function GetColumnLength(const aColNo: TInt32): LongWord;
-    function GetColumnName(const aColNo: TInt32): WideString;
-    function GetColumnPrecision(const aColNo: TInt32): TInt32;
-    function GetColumnScale(const aColNo: TInt32): TInt32;
-    function GetColumnType(const aColNo: TInt32): TInt32;
-    function GetColumnSubType(const aColNo: TInt32): TInt32;
-    function GetIsNullable(const aColNo: TInt32): boolean;
   end;
 
 implementation

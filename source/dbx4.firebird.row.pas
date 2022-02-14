@@ -63,6 +63,7 @@ type
         LongBool): TDBXErrorCode; overload;
     function GetWideString(Ordinal: TInt32; Value: TDBXWideStringBuilder; out
         IsNull: LongBool): TDBXErrorCode;
+    procedure SetDSQL(const aSQL: IFirebird_DSQL; const aMetaData: IMetaDataProvider);
   protected // IDBXWritableRow
     function SetAnsiString(Ordinal: TInt32; const Value: TDBXAnsiString; Length:
         Int64): TDBXErrorCode;
@@ -419,6 +420,16 @@ function TDBXRow_Firebird.SetDouble(Ordinal: TInt32; Value: Double): TDBXErrorCo
 begin
   FDSQL.i_SQLDA[Ordinal].SetDouble(@Value, SizeOf(Value), False);
   Result := TDBXErrorCodes.None;
+end;
+
+procedure TDBXRow_Firebird.SetDSQL(const aSQL: IFirebird_DSQL;
+  const aMetaData: IMetaDataProvider);
+begin
+  Assert(FDSQL = nil);
+  Assert(FMetaData = nil);
+
+  FDSQL := aSQL;
+  FMetaData := aMetaData;
 end;
 
 function TDBXRow_Firebird.SetInt16(Ordinal: TInt32; Value: SmallInt): TDBXErrorCode;
