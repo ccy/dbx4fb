@@ -12,6 +12,7 @@
 
 1. [delphi-int128](https://github.com/eStreamSoftware/delphi-int128)
 2. [delphi-firebird-api](https://github.com/ccy/delphi-firebird-api)
+3. [delphi-detours-library](https://github.com/ccy/delphi-detours-library)
 
 # Supported Firebird version
 

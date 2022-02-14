@@ -4,3 +4,6 @@
 [submodule "delphi-int128"]
 	path = delphi-int128
 	url = ../../eStreamSoftware/delphi-int128
+[submodule "delphi-detours-library"]
+	path = delphi-detours-library
+	url = ../delphi-detours-library

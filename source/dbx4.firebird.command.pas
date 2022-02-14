@@ -146,15 +146,22 @@ begin
   Result := FSQLDA.Vars[aColNo].sqlsubtype;
 
   iType := FSQLDA.Vars[aColNo].sqltype and $7FFE;
-  if iType = SQL_BLOB then begin
-    if Result = isc_blob_text then begin
-      if FSQLDA.Vars[aColNo].sqlscale = CS_UTF8 then
-        // http://tracker.firebirdsql.org/browse/CORE-977 (Put blob charset in XSQLVAR::sqlscale)
-        Result := {$ifdef Unicode}TDBXSubDataTypes{$else}TDBXDataTypes{$endif}.WideMemoSubType
-      else
-        Result := {$ifdef Unicode}TDBXSubDataTypes{$else}TDBXDataTypes{$endif}.MemoSubType;
-    end else
-      Result := 0;
+  case iType of
+    SQL_BLOB: begin
+      if Result = isc_blob_text then begin
+        if FSQLDA.Vars[aColNo].sqlscale = CS_UTF8 then
+          // http://tracker.firebirdsql.org/browse/CORE-977 (Put blob charset in XSQLVAR::sqlscale)
+          Result := {$ifdef Unicode}TDBXSubDataTypes{$else}TDBXDataTypes{$endif}.WideMemoSubType
+        else
+          Result := {$ifdef Unicode}TDBXSubDataTypes{$else}TDBXDataTypes{$endif}.MemoSubType;
+      end else
+        Result := 0;
+    end;
+
+    SQL_Text,
+    SQL_VARYING: begin
+      Result := TDBXDataTypes.CharArrayType;
+    end;
   end;
 end;
 

@@ -15,6 +15,12 @@
         <Projects Include="dbx4fbrt.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="..\delphi-detours-library\Package\Detours.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="DBXFirebirdDriverPatch.dproj">
+            <Dependencies/>
+        </Projects>
         <Projects Include="dbxfbTests.dproj">
             <Dependencies/>
         </Projects>
@@ -62,6 +68,24 @@
     <Target Name="dbx4fbrt:Make">
         <MSBuild Projects="dbx4fbrt.dproj" Targets="Make"/>
     </Target>
+    <Target Name="Detours">
+        <MSBuild Projects="..\delphi-detours-library\Package\Detours.dproj"/>
+    </Target>
+    <Target Name="Detours:Clean">
+        <MSBuild Projects="..\delphi-detours-library\Package\Detours.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Detours:Make">
+        <MSBuild Projects="..\delphi-detours-library\Package\Detours.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="DBXFirebirdDriverPatch">
+        <MSBuild Projects="DBXFirebirdDriverPatch.dproj"/>
+    </Target>
+    <Target Name="DBXFirebirdDriverPatch:Clean">
+        <MSBuild Projects="DBXFirebirdDriverPatch.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DBXFirebirdDriverPatch:Make">
+        <MSBuild Projects="DBXFirebirdDriverPatch.dproj" Targets="Make"/>
+    </Target>
     <Target Name="dbxfbTests">
         <MSBuild Projects="dbxfbTests.dproj"/>
     </Target>
@@ -72,13 +96,13 @@
         <MSBuild Projects="dbxfbTests.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="dbx4fb;Int128p;DFirebirdAPI;dbx4fbrt;dbxfbTests"/>
+        <CallTarget Targets="dbx4fb;Int128p;DFirebirdAPI;dbx4fbrt;Detours;DBXFirebirdDriverPatch;dbxfbTests"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="dbx4fb:Clean;Int128p:Clean;DFirebirdAPI:Clean;dbx4fbrt:Clean;dbxfbTests:Clean"/>
+        <CallTarget Targets="dbx4fb:Clean;Int128p:Clean;DFirebirdAPI:Clean;dbx4fbrt:Clean;Detours:Clean;DBXFirebirdDriverPatch:Clean;dbxfbTests:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="dbx4fb:Make;Int128p:Make;DFirebirdAPI:Make;dbx4fbrt:Make;dbxfbTests:Make"/>
+        <CallTarget Targets="dbx4fb:Make;Int128p:Make;DFirebirdAPI:Make;dbx4fbrt:Make;Detours:Make;DBXFirebirdDriverPatch:Make;dbxfbTests:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
