@@ -308,7 +308,7 @@ uses
   Winapi.Windows, System.DateUtils, System.IniFiles, System.Math, System.StrUtils,
   System.WideStrings, Data.DbxFirebird, Data.DBXMetaDataProvider, Data.SqlConst,
   Data.SqlTimSt,
-  Data.DBXFirebirdMetaDataReader.RSP37064,
+  Data.DBXFirebird.AutoUnloadDriver, Data.DBXFirebirdMetaDataReader.RSP37064,
   Data.DBXFirebirdMetaDataReader.RSP37065, firebird.client, firebird.ods.h,
   firebird.utils, vcl.dbx.cmdlines;
 

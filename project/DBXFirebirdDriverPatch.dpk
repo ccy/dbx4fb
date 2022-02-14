@@ -35,6 +35,7 @@ requires
 
 contains
   Data.DBXFirebirdMetaDataReader.RSP37064 in '..\source\Data.DBXFirebirdMetaDataReader.RSP37064.pas',
-  Data.DBXFirebirdMetaDataReader.RSP37065 in '..\source\Data.DBXFirebirdMetaDataReader.RSP37065.pas';
+  Data.DBXFirebirdMetaDataReader.RSP37065 in '..\source\Data.DBXFirebirdMetaDataReader.RSP37065.pas',
+  Data.DBXFirebird.AutoUnloadDriver in '..\source\Data.DBXFirebird.AutoUnloadDriver.pas';
 
 end.
