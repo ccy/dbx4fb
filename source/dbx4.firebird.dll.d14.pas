@@ -17,7 +17,9 @@ end;
 function DBXRow_GetSingle(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
     single; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
-  Result := TDBXErrorCodes.NotImplemented;
+  var a: double;
+  Result := (IDBXBase(Handle) as IDBXRow).GetDouble(Ordinal, a, IsNull);
+  Value := a;
 end;
 
 function DBXRow_GetTimeStampOffset(Handle: TDBXRowHandle; Ordinal: TInt32; out

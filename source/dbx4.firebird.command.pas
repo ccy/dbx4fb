@@ -84,8 +84,6 @@ begin
   V := FSQLDA.Vars[aColNo];
   if V.CheckType(SQL_INT64) and (V.sqlsubtype <> dsc_num_type_none) then
     Result := SizeOf(TBcd)
-  else if V.CheckType(SQL_FLOAT) then
-    Result := SizeOf(Double)
   else if V.CheckType(SQL_TIMESTAMP) then
     Result := SizeOf(TSQLTimeStamp)
   else if V.CheckType(SQL_LONG) and (V.sqlsubtype <> dsc_num_type_none) then
@@ -200,7 +198,7 @@ begin
       else
         Result := TDBXDataTypes.BcdType;
     end;
-    SQL_FLOAT: Result := TDBXDataTypes.DoubleType;
+    SQL_FLOAT: Result := TDBXDataTypes.SingleType;
     SQL_DOUBLE: Result := TDBXDataTypes.DoubleType;
     SQL_TYPE_DATE: Result := TDBXDataTypes.DateType;
     SQL_TYPE_TIME: Result := TDBXDataTypes.TimeType;
@@ -276,7 +274,7 @@ begin
       else
         Result := TDBXDataTypes.BcdType;
     end;
-    SQL_FLOAT: Result := TDBXDataTypes.DoubleType;
+    SQL_FLOAT: Result := TDBXDataTypes.SingleType;
     SQL_DOUBLE: Result := TDBXDataTypes.DoubleType;
     SQL_TYPE_DATE: Result := TDBXDataTypes.DateType;
     SQL_TYPE_TIME: Result := TDBXDataTypes.TimeType;

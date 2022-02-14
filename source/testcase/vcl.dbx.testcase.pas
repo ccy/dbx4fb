@@ -1207,6 +1207,10 @@ begin
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
+  Param.AsSingle := 123456;
+  Execute;
+  CheckEquals('123456', Field.AsString);
+
   Param.AsFloat := 123;
   Execute;
   CheckEquals('123', Field.AsString);
@@ -1559,6 +1563,11 @@ begin
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
+  Param.AsSingle := 1234.56782;
+  Execute;
+  CheckEquals(StrToLocaleDecimal('1234.5678'), Field.AsString);
+  CheckEquals(StrToLocaleDecimal('1234.5678'), Field.AsWideString);
+
   Param.AsFloat := 123.123456;
   Execute;
   CheckEquals(StrToLocaleDecimal('123.1235'), Field.AsString);
@@ -1627,6 +1636,10 @@ begin
   Execute;
   CheckEquals(TFMTBCDField, Field.ClassType);
   CheckEquals(Param.AsString, Field.AsString);
+
+  Param.AsSingle := 9121;
+  Execute;
+  CheckEquals('9121', Field.AsString);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_DECIMAL_18_10;
@@ -1634,6 +1647,10 @@ begin
   Param.AsCurrency := 1;
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsSingle := 1234.56;
+  Execute;
+  CheckEquals('1234.56', Field.AsString.Substring(0, 7));
 end;
 
 procedure TTestCase_DBX_FieldType.Test_DECIMAL_18_4;
@@ -1650,6 +1667,10 @@ begin
   Execute;
   CheckEquals(Param.AsString, Field.AsString);
   CheckEquals(Param.AsWideString, Field.AsWideString);
+
+  Param.AsSingle := 1234.56782;
+  Execute;
+  CheckEquals('1234.5678', Field.AsString);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_DECIMAL_19_4;
@@ -1668,6 +1689,10 @@ begin
   Execute;
   CheckEquals(Param.AsString, Field.AsString);
   CheckEquals(Param.AsWideString, Field.AsWideString);
+
+  Param.AsSingle := 1234.56782;
+  Execute;
+  CheckEquals('1234.5678', Field.AsString);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_DECIMAL_LONG;
@@ -1725,19 +1750,25 @@ begin
   CheckEquals(Param.AsFloat, Field.AsFloat, 0.00000001);
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
+  Param.AsSingle := 1234.5678;
+  Execute;
+  CheckEquals(Param.AsFloat, Field.AsFloat, 0.00000001);
+
   Test_Required;
 end;
 
 procedure TTestCase_DBX_FieldType.Test_FLOAT;
-var F: TFloatField;
+var F: TSingleField;
 begin
-  Param.AsFloat := 1234.12345678;
+  Param.AsFloat := 1234.567;
   Execute;
-  CheckEquals(TFloatField, Field.ClassType);
-  F := Field as TFloatField;
-  CheckEquals(15, F.Precision);
+  CheckEquals(TSingleField, Field.ClassType);
+  F := Field as TSingleField;
+  CheckEquals(7, F.Precision);
 
+  CheckEquals(Param.AsSingle, Field.AsSingle, 0.0001);
   CheckEquals(Param.AsFloat, Field.AsFloat, 0.0001);
+  CheckEquals(Param.AsCurrency, Field.AsCurrency, 0.0001);
 
   Test_Required;
 end;
@@ -1762,6 +1793,10 @@ begin
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
   Param.AsFloat := 123;
+  Execute;
+  CheckEquals('123', Field.AsString);
+
+  Param.AsSingle := 123;
   Execute;
   CheckEquals('123', Field.AsString);
 
@@ -1800,6 +1835,10 @@ begin
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
   Param.AsSmallInt := 12345;
+  Execute;
+  CheckEquals(Param.AsInteger, Field.AsInteger);
+
+  Param.AsSingle := 12345;
   Execute;
   CheckEquals(Param.AsInteger, Field.AsInteger);
 
@@ -1895,6 +1934,11 @@ begin
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
 
+  Param.AsSingle := 1234.56782;
+  Execute;
+  CheckEquals(StrToLocaleDecimal('1234.5678'), Field.AsString);
+  CheckEquals(StrToLocaleDecimal('1234.5678'), Field.AsWideString);
+
   Param.AsFloat := 123.123456;
   Execute;
   CheckEquals(StrToLocaleDecimal('123.1235'), Field.AsString);
@@ -1971,6 +2015,10 @@ begin
   Execute;
   CheckEquals(TFMTBCDField, Field.ClassType);
   CheckEquals(Param.AsString, Field.AsString);
+
+  Param.AsSingle := 9121;
+  Execute;
+  CheckEquals('9121', Field.AsString);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_NUMERIC_18_10;
@@ -1978,6 +2026,10 @@ begin
   Param.AsCurrency := 1;
   Execute;
   CheckEquals(Param.AsCurrency, Field.AsCurrency);
+
+  Param.AsSingle := 1234.56;
+  Execute;
+  CheckEquals('1234.56', Field.AsString.Substring(0, 7));
 end;
 
 procedure TTestCase_DBX_FieldType.Test_NUMERIC_18_4;
@@ -1996,7 +2048,10 @@ begin
   Execute;
   CheckEquals(Param.AsString, Field.AsString);
   CheckEquals(Param.AsWideString, Field.AsWideString);
-end;
+
+  Param.AsSingle := 1234.56782;
+  Execute;
+  CheckEquals('1234.5678', Field.AsString);end;
 
 procedure TTestCase_DBX_FieldType.Test_NUMERIC_19_4;
 var F: TFMTBCDField;
@@ -2016,6 +2071,10 @@ begin
   Execute;
   CheckEquals(Param.AsString, Field.AsString);
   CheckEquals(Param.AsWideString, Field.AsWideString);
+
+  Param.AsSingle := 1234.56782;
+  Execute;
+  CheckEquals('1234.5678', Field.AsString);
 end;
 
 procedure TTestCase_DBX_FieldType.Test_NUMERIC_LONG;
@@ -2096,6 +2155,10 @@ begin
   CheckEquals(Param.AsSmallInt, Field.AsInteger);
 
   Param.AsWideString := '32145';
+  Execute;
+  CheckEquals(Param.AsSmallInt, Field.AsInteger);
+
+  Param.AsSingle := 32145;
   Execute;
   CheckEquals(Param.AsSmallInt, Field.AsInteger);
 
@@ -3427,8 +3490,8 @@ end;
 procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Float;
 begin
   CheckEquals(0, CreateProc('FLOAT', StrToLocaleDecimal('123.456')));
-  Check(ftFloat = FStoredProc.Params[1].DataType);
-  CheckEquals(123.456, FStoredProc.Params[1].AsFloat, 0.0001);
+  Check(ftSingle = FStoredProc.Params[1].DataType);
+  CheckEquals(123.456, FStoredProc.Params[1].AsSingle, 0.001);
 end;
 
 procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Integer;
