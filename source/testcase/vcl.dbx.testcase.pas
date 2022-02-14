@@ -275,6 +275,7 @@ type{$M+}
     FStoredProc: TSQLStoredProc;
     function CreateProc(const aDecl, aImpl: string): Integer;
     function CreateProc2(const aDecl, aImpl: string): Integer;
+    function CreateProcMix(const aDecl, aImpl: string): Integer;
   protected
     procedure SetUp; override;
     procedure TearDown; override;
@@ -285,6 +286,7 @@ type{$M+}
     procedure Test_Boolean;
     procedure Test_Char;
     procedure Test_Char_UTF8;
+    procedure Test_Char_Mix;
     procedure Test_Date;
     procedure Test_Decimal_18;
     procedure Test_Decimal_4;
@@ -3341,6 +3343,43 @@ begin
   Result := FStoredProc.ExecProc;
 end;
 
+function TTestCase_DBX_TSQLStoredProc_Params.CreateProcMix(const aDecl, aImpl:
+    string): Integer;
+var S: string;
+begin
+  S := Format('CREATE PROCEDURE PROC (iParam1 %s, iParam2 %0:s CHARACTER SET UTF8) RETURNS (oParam1 %0:s, oParam2 %0:s CHARACTER SET UTF8) ', [aDecl]) +
+       'AS ' +
+       'BEGIN ' +
+         ' oParam1 = iParam1; ' +
+         ' oParam2 = iParam2; ' +
+         ' SUSPEND; ' +
+       'END ';
+  FConnection.ExecuteDirect(S);
+  FStoredProc.StoredProcName := 'PROC';
+
+  CheckEquals(4, FStoredProc.Params.Count);
+
+  Check(ptInput = FStoredProc.Params[0].ParamType);
+  CheckEquals('IPARAM1', FStoredProc.Params[0].Name);
+
+  Check(ptInput = FStoredProc.Params[1].ParamType);
+  CheckEquals('IPARAM2', FStoredProc.Params[1].Name);
+
+  Check(ptOutput = FStoredProc.Params[2].ParamType);
+  CheckEquals('OPARAM1', FStoredProc.Params[2].Name);
+
+  Check(ptOutput = FStoredProc.Params[3].ParamType);
+  CheckEquals('OPARAM2', FStoredProc.Params[3].Name);
+
+  Check(FStoredProc.Params[0].DataType = FStoredProc.Params[2].DataType);
+  Check(FStoredProc.Params[1].DataType = FStoredProc.Params[3].DataType);
+
+  FStoredProc.Params[0].AsWideString := aImpl;
+  FStoredProc.Params[1].AsWideString := aImpl;
+
+  Result := FStoredProc.ExecProc;
+end;
+
 function TTestCase_DBX_TSQLStoredProc_Params.CreateProc2(const aDecl,
     aImpl: string): Integer;
 var S: string;
@@ -3426,6 +3465,30 @@ begin
     iLen := 100;
   CheckEquals(iLen, Length(FStoredProc.Params[1].AsString));
   CheckEquals('ABC', Trim(FStoredProc.Params[1].AsString));
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Char_Mix;
+var s: string;
+    iLen: integer;
+begin
+  if (Pos('Firebird 1.', GetTestData.ServerVersion) <> 0) or (Pos('Firebird 2.0', GetTestData.ServerVersion) <> 0) then Exit;
+
+  s := 'One World One Dream ' +
+       #$540C + #$4E00 + #$4E2A + #$4E16 + #$754C + ' ' +
+       #$540C + #$4E00 + #$4E2A + #$68A6 + #$60F3;
+
+  CheckEquals(0, CreateProcMix('CHAR(100)', s));
+  Check(ftFixedWideChar = FStoredProc.Params[1].DataType);
+  Check(ftFixedChar     = FStoredProc.Params[2].DataType);
+  Check(ftFixedWideChar = FStoredProc.Params[3].DataType);
+
+  if IsTrimChar then
+    iLen := 31
+  else
+    iLen := 100;
+
+  CheckEquals(iLen, Length(FStoredProc.Params[3].AsString));
+  CheckEquals(s, Trim(FStoredProc.Params[3].AsString));
 end;
 
 procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Char_UTF8;
