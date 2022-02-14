@@ -10,9 +10,8 @@
 
 `dbx4fb` requires these libraries to build:
 
-1. [jedi-apilib](https://github.com/ccy/jedi-apilib) - branch [revise](https://github.com/ccy/jedi-apilib/tree/revise)
-2. [delphi-int128](https://github.com/eStreamSoftware/delphi-int128)
-3. [delphi-firebird-api](https://github.com/ccy/delphi-firebird-api)
+1. [delphi-int128](https://github.com/eStreamSoftware/delphi-int128)
+2. [delphi-firebird-api](https://github.com/ccy/delphi-firebird-api)
 
 # Supported Firebird version
 

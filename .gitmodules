@@ -1,0 +1,6 @@
+[submodule "delphi-firebird-api"]
+	path = delphi-firebird-api
+	url = ../delphi-firebird-api
+[submodule "delphi-int128"]
+	path = delphi-int128
+	url = ../../eStreamSoftware/delphi-int128
