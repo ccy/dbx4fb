@@ -117,8 +117,6 @@ type
   ['{D509CC08-86E0-459E-8C08-E5E1346C7590}']
     function CreateParameterRow(out aRow: TDBXRowHandle): TDBXErrorCode;
     function Execute(out Reader: IDBXReader): TDBXErrorCode;
-    function ExecuteImmediate(const SQL: TDBXWideString; out aReader: IDBXReader):
-        TDBXErrorCode;
     function GetRowsAffected(out Rows: Int64): TDBXErrorCode;
     function Prepare(const SQL: TDBXWideString; Count: TInt32): TDBXErrorCode;
   end;

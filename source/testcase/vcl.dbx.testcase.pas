@@ -306,9 +306,9 @@ implementation
 
 uses
   Winapi.Windows, System.DateUtils, System.IniFiles, System.Math, System.StrUtils,
-  System.WideStrings, Data.SqlConst, Data.SqlTimSt,
-  firebird.client, firebird.ods.h,
-  firebird.utils, vcl.dbx.cmdlines;
+  System.WideStrings, Data.DbxFirebird, Data.DBXMetaDataProvider, Data.SqlConst,
+  Data.SqlTimSt,
+  firebird.client, firebird.ods.h, firebird.utils, vcl.dbx.cmdlines;
 
 {$if RTLVersion <= 23}
 type
@@ -2820,7 +2820,7 @@ var F: TIniFile;
     i: integer;
     j: Integer;
     sParams: string;
-    sVer, sDriverName: string;
+    sVer: string;
 begin
   Result := TInterfaceList.Create;
 
@@ -2839,10 +2839,9 @@ begin
         sParams := GetParams(sServers.ValueFromIndex[j], aParams);
 
         sVer := GetServerVersion(F.ReadString(GetVendorSectionName, 'default', ''), sParams);
-        sDriverName := sVer.Substring(sVer.IndexOf('Firebird'));
 
         Result.Add(
-          TTestData_SQLConnection.Create(sDriverName, sDrivers.ValueFromIndex[i],
+          TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i],
           sDrivers.Names[i], F.ReadString(GetVendorSectionName, sVer, sVer), sParams)
         );
       end;
@@ -2852,10 +2851,9 @@ begin
         sParams := GetParams('', aParams);
 
         sVer := GetServerVersion(sEmbeds.ValueFromIndex[j], sParams);
-        sDriverName := sVer.Substring(sVer.IndexOf('Firebird'));
 
         Result.Add(
-          TTestData_SQLConnection.Create(sDriverName, sDrivers.ValueFromIndex[i],
+          TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i],
           sDrivers.Names[i], sEmbeds.ValueFromIndex[j], sParams)
         );
       end;
@@ -2919,7 +2917,7 @@ var F: TIniFile;
     i: integer;
     j, k: Integer;
     sParams1, sParams2: string;
-    sVer1, sVer2, sDriverName1, sDriverName2: string;
+    sVer1, sVer2: string;
     L: IInterfaceList;
 begin
   Result := TInterfaceList.Create;
@@ -2936,7 +2934,6 @@ begin
       for j := 0 to sServers.Count - 1 do begin
         sParams1 := GetParams(sServers.ValueFromIndex[j], aParams);
         sVer1 := GetServerVersion(F.ReadString(GetVendorSectionName, 'default', ''), sParams1);
-        sDriverName1 := sVer1.Substring(sVer1.IndexOf('Firebird'));
 
         for k := 0 to sEmbeds.Count - 1 do begin
           if TCmdLineParams_App.HasTestName and (TCmdLineParams_App.GetTestName <> sEmbeds.Names[k]) then Continue;
@@ -2944,16 +2941,15 @@ begin
           L := TInterfaceList.Create;
 
           L.Add(
-            TTestData_SQLConnection.Create(sDriverName1, sDrivers.ValueFromIndex[i],
+            TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i],
             sDrivers.Names[i], F.ReadString(GetVendorSectionName, sVer1, sVer1), sParams1)
           );
 
           sParams2 := GetParams('', aParams);
           sVer2 := GetServerVersion(sEmbeds.ValueFromIndex[k], sParams2);
-          sDriverName2 := sVer2.Substring(sVer2.IndexOf('Firebird'));
 
           L.Add(
-            TTestData_SQLConnection.Create(sDriverName2, sDrivers.ValueFromIndex[i],
+            TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i],
             sDrivers.Names[i], sEmbeds.ValueFromIndex[k], sParams2)
           );
 

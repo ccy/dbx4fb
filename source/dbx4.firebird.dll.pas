@@ -83,10 +83,8 @@ end;
 
 function DBXCommand_ExecuteImmediate(Handle: TDBXCommandHandle; const SQL:
     TDBXWideString; out Reader: TDBXReaderHandle): TDBXErrorCode; stdcall;
-var R: IDBXReader;
 begin
-  Result := IDBXCommand(Handle).ExecuteImmediate(SQL, R);
-  IDBXReader(Reader) := R;
+  Result := TDBXErrorCodes.NotImplemented;
 end;
 
 function DBXCommand_GetNextReader(Handle: TDBXCommandHandle; out Reader:
