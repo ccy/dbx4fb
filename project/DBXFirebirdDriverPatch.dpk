@@ -34,6 +34,7 @@ requires
   Detours;
 
 contains
-  Data.DBXFirebirdMetaDataReader.RSP37064 in '..\source\Data.DBXFirebirdMetaDataReader.RSP37064.pas';
+  Data.DBXFirebirdMetaDataReader.RSP37064 in '..\source\Data.DBXFirebirdMetaDataReader.RSP37064.pas',
+  Data.DBXFirebirdMetaDataReader.RSP37065 in '..\source\Data.DBXFirebirdMetaDataReader.RSP37065.pas';
 
 end.

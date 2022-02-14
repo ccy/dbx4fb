@@ -308,7 +308,8 @@ uses
   Winapi.Windows, System.DateUtils, System.IniFiles, System.Math, System.StrUtils,
   System.WideStrings, Data.DbxFirebird, Data.DBXMetaDataProvider, Data.SqlConst,
   Data.SqlTimSt,
-  Data.DBXFirebirdMetaDataReader.RSP37064, firebird.client, firebird.ods.h,
+  Data.DBXFirebirdMetaDataReader.RSP37064,
+  Data.DBXFirebirdMetaDataReader.RSP37065, firebird.client, firebird.ods.h,
   firebird.utils, vcl.dbx.cmdlines;
 
 {$if RTLVersion <= 23}
@@ -3355,7 +3356,7 @@ procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Char;
 var iLen: integer;
 begin
   CheckEquals(0, CreateProc('CHAR(100)', 'ABC'));
-  Check(ftString = FStoredProc.Params[1].DataType);
+  Check(ftFixedChar = FStoredProc.Params[1].DataType);
   if IsTrimChar then
     iLen := 3
   else
@@ -3377,7 +3378,7 @@ begin
        #$540C + #$4E00 + #$4E2A + #$68A6 + #$60F3;
 
   CheckEquals(0, CreateProc('CHAR(100) CHARACTER SET UTF8', s));
-  Check(ftWideString = FStoredProc.Params[1].DataType);
+  Check(ftFixedWideChar = FStoredProc.Params[1].DataType);
 
   if IsTrimChar then
     iLen := 31

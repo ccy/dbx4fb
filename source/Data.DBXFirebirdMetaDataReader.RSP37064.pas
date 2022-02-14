@@ -2,10 +2,15 @@ unit Data.DBXFirebirdMetaDataReader.RSP37064;
 
 interface
 
+uses
+  Data.DBXFirebirdMetaDataReader;
+
+function ComputeUnicode_RSP37064(Self: TDBXFirebirdTypeFilterCursor): Boolean;
+
 implementation
 
 uses
-  Data.DBXCommonTable, Data.DBXFirebirdMetaDataReader,
+  Data.DBXCommonTable,
   DDetours;
 
 var TDBXFirebirdTypeFilterCursor_ComputeUnicode: function(Self: TDBXFirebirdTypeFilterCursor): Boolean = nil;

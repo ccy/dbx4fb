@@ -216,6 +216,7 @@
         <DCCReference Include="DBXFirebirdDriver.dcp"/>
         <DCCReference Include="Detours.dcp"/>
         <DCCReference Include="..\source\Data.DBXFirebirdMetaDataReader.RSP37064.pas"/>
+        <DCCReference Include="..\source\Data.DBXFirebirdMetaDataReader.RSP37065.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
