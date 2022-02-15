@@ -21,8 +21,7 @@ uses
   dbx4.firebird.reader in '..\source\dbx4.firebird.reader.pas',
   dbx4.firebird.row in '..\source\dbx4.firebird.row.pas',
   dbx4.firebird.metadata in '..\source\dbx4.firebird.metadata.pas',
-  dbx4.firebird.base in '..\source\dbx4.firebird.base.pas',
-  dbx4.firebird.dll.d14 in '..\source\dbx4.firebird.dll.d14.pas';
+  dbx4.firebird.base in '..\source\dbx4.firebird.base.pas';
 
 begin
 end.

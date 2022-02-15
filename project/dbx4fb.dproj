@@ -178,7 +178,6 @@
         <DCCReference Include="..\source\dbx4.firebird.row.pas"/>
         <DCCReference Include="..\source\dbx4.firebird.metadata.pas"/>
         <DCCReference Include="..\source\dbx4.firebird.base.pas"/>
-        <DCCReference Include="..\source\dbx4.firebird.dll.d14.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

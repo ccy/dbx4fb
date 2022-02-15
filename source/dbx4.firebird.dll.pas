@@ -311,6 +311,12 @@ begin
   Result := (IDBXBase(Handle) as IDBXRow).GetFixedBytes(Ordinal, Value, LastIndex, ValueOffset, IsNull);
 end;
 
+function DBXRow_GetInt8(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
+    ShortInt; out IsNull: LongBool): TDBXErrorCode; stdcall;
+begin
+  Result := TDBXErrorCodes.NotImplemented;
+end;
+
 function DBXRow_GetInt16(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
     SmallInt; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
@@ -336,6 +342,14 @@ begin
   Result := TDBXErrorCodes.None;
 end;
 
+function DBXRow_GetSingle(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
+    single; out IsNull: LongBool): TDBXErrorCode; stdcall;
+begin
+  var a: double;
+  Result := (IDBXBase(Handle) as IDBXRow).GetDouble(Ordinal, a, IsNull);
+  Value := a;
+end;
+
 function DBXRow_GetString(Handle: TDBXRowHandle; Ordinal: TInt32; Value:
     TDBXAnsiStringBuilder; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
@@ -352,6 +366,18 @@ function DBXRow_GetTimeStamp(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
     TSQLTimeStamp; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
   Result := (IDBXBase(Handle) as IDBXRow).GetTimeStamp(Ordinal, Value, IsNull);
+end;
+
+function DBXRow_GetTimeStampOffset(Handle: TDBXRowHandle; Ordinal: TInt32; out
+    Value: TSQLTimeStampOffset; out IsNull: LongBool): TDBXErrorCode; stdcall;
+begin
+  Result := TDBXErrorCodes.NotImplemented;
+end;
+
+function DBXRow_GetUInt8(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
+    Byte; out IsNull: LongBool): TDBXErrorCode; stdcall;
+begin
+  Result := TDBXErrorCodes.NotImplemented;
 end;
 
 function DBXRow_GetWideString(Handle: TDBXRowHandle; Ordinal: TInt32; Value:
@@ -392,6 +418,12 @@ begin
   Result := (IDBXRow(Handle) as IDBXWritableRow).SetDouble(Ordinal, Value);
 end;
 
+function DBXWritableRow_SetInt8(Handle: TDBXWritableRowHandle; Ordinal: TInt32;
+    Value: ShortInt): TDBXErrorCode; stdcall;
+begin
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetInt8(Ordinal, Value);
+end;
+
 function DBXWritableRow_SetInt16(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; Value: SmallInt): TDBXErrorCode; stdcall;
 begin
@@ -416,6 +448,12 @@ begin
   Result := (IDBXRow(Handle) as IDBXWritableRow).SetNull(Ordinal);
 end;
 
+function DBXWritableRow_SetSingle(Handle: TDBXWritableRowHandle; Ordinal:
+    TInt32; Value: single): TDBXErrorCode; stdcall;
+begin
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetSingle(Ordinal, Value);
+end;
+
 function DBXWritableRow_SetString(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; const Value: TDBXAnsiString; Length: Int64): TDBXErrorCode; stdcall;
 begin
@@ -432,6 +470,18 @@ function DBXWritableRow_SetTimeStamp(Handle: TDBXWritableRowHandle; Ordinal:
     TInt32; var Value: TSQLTimeStamp): TDBXErrorCode; stdcall;
 begin
   Result := (IDBXRow(Handle) as IDBXWritableRow).SetTimeStamp(Ordinal, Value);
+end;
+
+function DBXWritableRow_SetTimeStampOffset(Handle: TDBXWritableRowHandle;
+    Ordinal: TInt32; var Value: TSQLTimeStampOffset): TDBXErrorCode; stdcall;
+begin
+  Result := TDBXErrorCodes.NotImplemented;
+end;
+
+function DBXWritableRow_SetUInt8(Handle: TDBXWritableRowHandle; Ordinal:
+    TInt32; Value: Byte): TDBXErrorCode; stdcall;
+begin
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetByte(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetWideString(Handle: TDBXWritableRowHandle; Ordinal:
@@ -480,26 +530,34 @@ exports
   DBXRow_GetDate,
   DBXRow_GetDouble,
   DBXRow_GetFixedBytes,
+  DBXRow_GetInt8,
   DBXRow_GetInt16,
   DBXRow_GetInt32,
   DBXRow_GetInt64,
   DBXRow_GetObjectTypeName,
+  DBXRow_GetSingle,
   DBXRow_GetString,
   DBXRow_GetTime,
   DBXRow_GetTimeStamp,
+  DBXRow_GetTimeStampOffset,
+  DBXRow_GetUInt8,
   DBXRow_GetWideString,
   DBXWritableRow_SetBcd,
   DBXWritableRow_SetBoolean,
   DBXWritableRow_SetBytes,
   DBXWritableRow_SetDate,
   DBXWritableRow_SetDouble,
+  DBXWritableRow_SetInt8,
   DBXWritableRow_SetInt16,
   DBXWritableRow_SetInt32,
   DBXWritableRow_SetInt64,
   DBXWritableRow_SetNull,
+  DBXWritableRow_SetSingle,
   DBXWritableRow_SetString,
   DBXWritableRow_SetTime,
   DBXWritableRow_SetTimeStamp,
+  DBXWritableRow_SetTimeStampOffset,
+  DBXWritableRow_SetUInt8,
   DBXWritableRow_SetWideString,
   DBX_SupportWaitOnLocksInIsolationLevel;
 
