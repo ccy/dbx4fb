@@ -167,13 +167,13 @@
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <Debugger_HostApplication>$(ActiveHostApplication)</Debugger_HostApplication>
-        <Debugger_RunParams>-config ..\..\..\source\testcase\dbxfbTests.ini -drivers Y:\firebird -test embedded_42</Debugger_RunParams>
+        <Debugger_RunParams>-config ..\..\..\source\testcase\dbxfbTests.ini -drivers Y:\firebird -test embedded_43</Debugger_RunParams>
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <Debugger_HostApplication>$(ActiveHostApplication)</Debugger_HostApplication>
-        <Debugger_RunParams>-config ..\..\..\source\testcase\dbxfbTests.ini -drivers Y:\firebird -test embedded_27</Debugger_RunParams>
+        <Debugger_RunParams>-config ..\..\..\source\testcase\dbxfbTests.ini -drivers Y:\firebird -test embedded_28</Debugger_RunParams>
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
