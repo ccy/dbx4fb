@@ -13,6 +13,7 @@ library dbx4fb;
 {$R *.res}
 
 uses
+  System.SysUtils.RSP39665 in '..\source\System.SysUtils.RSP39665.pas',
   dbx4.base in '..\source\dbx4.base.pas',
   dbx4.firebird.dll in '..\source\dbx4.firebird.dll.pas',
   dbx4.firebird.driver in '..\source\dbx4.firebird.driver.pas',

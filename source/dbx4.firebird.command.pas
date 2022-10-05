@@ -86,6 +86,8 @@ begin
     Result := SizeOf(TBcd)
   else if V.CheckType(SQL_TIMESTAMP) then
     Result := SizeOf(TSQLTimeStamp)
+  else if V.CheckType(SQL_TIMESTAMP_TZ) then
+    Result := SizeOf(TSQLTimeStampOffset)
   else if V.CheckType(SQL_LONG) and (V.sqlsubtype <> dsc_num_type_none) then
     Result := SizeOf(TBcd)
   else if V.CheckType(SQL_SHORT) and (V.sqlsubtype <> dsc_num_type_none) then
@@ -204,6 +206,7 @@ begin
     SQL_TYPE_TIME: Result := TDBXDataTypes.TimeType;
     SQL_TIMESTAMP: Result := TDBXDataTypes.TimeStampType;
     SQL_INT128: Result := TDBXDataTypes.BcdType;
+    SQL_TIMESTAMP_TZ: Result := TDBXDataTypes.TimeStampOffsetType;
     else
       Unsupported;
   end;

@@ -3,9 +3,10 @@ unit dbx4.firebird.connection;
 interface
 
 uses
-  Data.DBXCommon, Data.DBXDynalink, Data.DBXPlatform,
+  System.SysUtils, Data.DBXCommon, Data.DBXDynalink, Data.DBXPlatform,
   dbx4.base, dbx4.firebird.base, firebird.client, firebird.consts_pub.h,
-  firebird.ibase.h, firebird.types_pub.h;
+  firebird.ibase.h, firebird.types_pub.h,
+  firebird.delphi;
 
 type
   TFirebirdClientDebuggerListener_DBXCallBack = class(TInterfacedObject, IFirebirdLibraryDebuggerListener)
@@ -37,6 +38,7 @@ type
     FServerCharSet: WideString;
     FWaitOnLocks: Boolean;
     FWaitOnLocksTimeOut: Integer;
+    procedure SetupTimeZones(AddTimeZone: TAddTimeZone);
   protected
     function BeginTransaction(out TransactionHandle: TDBXTransactionHandle;
         IsolationLevel: TInt32): TDBXErrorCode;
@@ -65,7 +67,8 @@ type
 implementation
 
 uses
-  Winapi.Windows, System.SysUtils, Data.SqlConst;
+  Winapi.Windows, Data.SqlConst,
+  firebird.dsql;
 
 constructor TDBXConnection_Firebird.Create(const aDriver: IDBXDriver);
 begin
@@ -114,6 +117,8 @@ begin
     StatusVector.CheckResult(Result, TDBXErrorCodes.ConnectionFailed);
   end else
     Result := TDBXErrorCodes.None;
+
+  FFirebirdLibrary.SetupTimeZoneHandler(nil);
 end;
 
 function TDBXConnection_Firebird.Commit(
@@ -199,6 +204,8 @@ begin
   T.WaitOnLocks := FWaitOnLocks;
   T.WaitOnLocksTimeOut := FWaitOnLocksTimeOut;
   FTransactionPool := TFirebirdTransactionPool.Create(FFirebirdLibrary, GetDBHandle, T);
+
+  FFirebirdLibrary.SetupTimeZoneHandler(SetupTimeZones);
 end;
 
 function TDBXConnection_Firebird.GetDBHandle: pisc_db_handle;
@@ -284,6 +291,28 @@ begin
   (FFirebirdLibrary as IFirebirdLibraryDebugger).SetListener(D);
 
   Result := TDBXErrorCodes.None;
+end;
+
+procedure TDBXConnection_Firebird.SetupTimeZones(AddTimeZone: TAddTimeZone);
+begin
+  var Q := 'SELECT a.rdb$time_zone_id, (SELECT RDB$EFFECTIVE_OFFSET FROM rdb$time_zone_util.transitions(a.RDB$TIME_ZONE_NAME, current_timestamp, current_timestamp)) ' +
+             'FROM rdb$time_zones a';
+
+  var L := TFirebird_DSQL.Create(FFirebirdLibrary, FTransactionPool) as IFirebird_DSQL;
+  L.Open(StatusVector, GetDBHandle, nil);
+  try
+    L.Prepare(StatusVector, Q, FSQLDialect);
+    L.Execute(StatusVector);
+    StatusVector.CheckAndRaiseError(FFirebirdLibrary);
+
+    while L.Fetch(StatusVector) <> 100 do begin
+      StatusVector.CheckAndRaiseError(FFirebirdLibrary);
+      AddTimeZone(L.o_SQLDA.Vars[0].AsInt32, L.o_SQLDA.Vars[1].AsInt16);
+    end;
+  finally
+    L.Close(StatusVector);
+    StatusVector.CheckAndRaiseError(FFirebirdLibrary);
+  end;
 end;
 
 constructor TFirebirdClientDebuggerListener_DBXCallBack.Create(const

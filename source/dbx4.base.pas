@@ -87,6 +87,8 @@ type
         TDBXErrorCode;
     function GetTimeStamp(Ordinal: TInt32; out Value: TSQLTimeStamp; out IsNull:
         LongBool): TDBXErrorCode;
+    function GetTimeStampOffset(Ordinal: TInt32; out Value: TSQLTimeStampOffset; out IsNull:
+        LongBool): TDBXErrorCode;
     function GetWideString(Ordinal: TInt32; Value: TDBXWideStringBuilder; out
         IsNull: LongBool): TDBXErrorCode;
     procedure SetDSQL(const aSQL: IFirebird_DSQL; const aMetaData: IMetaDataProvider);
@@ -114,6 +116,7 @@ type
     function SetSingle(Ordinal: TInt32; Value: Single): TDBXErrorCode;
     function SetTime(Ordinal: TInt32; Value: TDBXTime): TDBXErrorCode;
     function SetTimeStamp(Ordinal: TInt32; var Value: TSQLTimeStamp): TDBXErrorCode;
+    function SetTimeStampOffset(Ordinal: TInt32; var Value: TSQLTimeStampOffset): TDBXErrorCode;
     function SetWideString(Ordinal: TInt32; const Value: TDBXWideString; Length:
         Int64): TDBXErrorCode;
   end;

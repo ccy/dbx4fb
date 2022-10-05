@@ -371,7 +371,7 @@ end;
 function DBXRow_GetTimeStampOffset(Handle: TDBXRowHandle; Ordinal: TInt32; out
     Value: TSQLTimeStampOffset; out IsNull: LongBool): TDBXErrorCode; stdcall;
 begin
-  Result := TDBXErrorCodes.NotImplemented;
+  Result := (IDBXBase(Handle) as IDBXRow).GetTimeStampOffset(Ordinal, Value, IsNull);
 end;
 
 function DBXRow_GetUInt8(Handle: TDBXRowHandle; Ordinal: TInt32; out Value:
@@ -475,7 +475,7 @@ end;
 function DBXWritableRow_SetTimeStampOffset(Handle: TDBXWritableRowHandle;
     Ordinal: TInt32; var Value: TSQLTimeStampOffset): TDBXErrorCode; stdcall;
 begin
-  Result := TDBXErrorCodes.NotImplemented;
+  Result := (IDBXRow(Handle) as IDBXWritableRow).SetTimeStampOffset(Ordinal, Value);
 end;
 
 function DBXWritableRow_SetUInt8(Handle: TDBXWritableRowHandle; Ordinal:

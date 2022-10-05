@@ -121,6 +121,7 @@ type{$M+}
     procedure Test_SystemTable_Char_Field;
     procedure Test_RoleName;
     procedure Test_UTF8_EmptyString;
+    procedure Test_Time_Zone;
   end;
 
   TTestCase_DBX_Transaction = class(TTestCase_DBX)
@@ -187,6 +188,7 @@ type{$M+}
     procedure Test_SMALLINT;
     procedure Test_TIME;
     procedure Test_TIMESTAMP;
+    procedure Test_TIMESTAMP_WITH_TIME_ZONE;
     procedure Test_VARCHAR;
     procedure Test_VARCHAR_UNICODE_FSS;
     procedure Test_VARCHAR_UTF8;
@@ -299,6 +301,7 @@ type{$M+}
     procedure Test_SmallInt;
     procedure Test_Time;
     procedure Test_TimeStamp;
+    procedure Test_TimeStamp_With_Time_Zone;
     procedure Test_VarChar;
     procedure Test_VarChar_UTF8;
   end;
@@ -312,6 +315,41 @@ uses
   Data.DBXFirebird.AutoUnloadDriver, Data.DBXFirebirdMetaDataReader.RSP37064,
   Data.DBXFirebirdMetaDataReader.RSP37065, firebird.client, firebird.ods.h,
   firebird.utils, vcl.dbx.cmdlines;
+
+type
+  TSQLTimeStampHelper = record helper for TSQLTimeStamp
+    class operator Equal(a, b: TSQLTimeStamp): Boolean;
+  end;
+
+  TSQLTimeStampOffsetHelper = record helper for TSQLTimeStampOffset
+    class operator Equal(a, b: TSQLTimeStampOffset): Boolean;
+  end;
+
+class operator TSQLTimeStampHelper.Equal(a, b: TSQLTimeStamp):
+    Boolean;
+begin
+  Result := (          a.Year = b.Year)
+        and (         a.Month = b.Month)
+        and (           a.Day = b.Day)
+        and (          a.Hour = b.Hour)
+        and (        a.Minute = b.Minute)
+        and (        a.Second = b.Second)
+        and (     a.Fractions = b.Fractions);
+end;
+
+class operator TSQLTimeStampOffsetHelper.Equal(a, b: TSQLTimeStampOffset):
+    Boolean;
+begin
+  Result := (          a.Year = b.Year)
+        and (         a.Month = b.Month)
+        and (           a.Day = b.Day)
+        and (          a.Hour = b.Hour)
+        and (        a.Minute = b.Minute)
+        and (        a.Second = b.Second)
+        and (     a.Fractions = b.Fractions)
+        and (  a.TimeZoneHour = b.TimeZoneHour)
+        and (a.TimeZoneMinute = b.TimeZoneMinute);
+end;
 
 {$if RTLVersion <= 23}
 type
@@ -841,6 +879,22 @@ begin
   end;
 end;
 
+procedure TTestCase_DBX_General.Test_Time_Zone;
+var D: TDataSet;
+begin
+  if GetTestData.GetODS < ODS_13_0 then Exit;
+
+  var A := TArray<string>.Create('GMT', 'ACT', 'AET', 'AGT', 'ART', 'AST');
+  for var s in A do begin
+    FConnection.Execute(Format('SELECT LOCALTIMESTAMP, CURRENT_TIMESTAMP at time zone ''%s'' FROM RDB$DATABASE', [s]), nil, D);
+    try
+      status(s + ' ' + D.Fields[0].AsString + ' ' + D.Fields[1].AsString);
+    finally
+      D.Free;
+    end;
+  end;
+end;
+
 procedure TTestCase_DBX_General.Test_Connection_Property;
 begin
   CheckTrue(FConnection.TransactionsSupported);
@@ -1141,6 +1195,7 @@ begin
   else if GetName = 'Test_DATETIME'            then Result := 'DATE'
   else if GetName = 'Test_TIME'                then Result := 'TIME'
   else if GetName = 'Test_TIMESTAMP'           then Result := 'TIMESTAMP'
+  else if GetName = 'Test_TIMESTAMP_WITH_TIME_ZONE' then Result := 'TIMESTAMP WITH TIME ZONE'
   else if GetName = 'Test_BLOB'                then Result := 'BLOB SUB_TYPE 0 SEGMENT SIZE 512'
   else
     raise Exception.CreateFmt('Field type not found for test %s', [GetName]);
@@ -1153,6 +1208,8 @@ end;
 
 procedure TTestCase_DBX_FieldType.SetUp;
 begin
+  if (GetTestData.GetODS < ODS_13_0) and (GetName = 'Test_TIMESTAMP_WITH_TIME_ZONE') then Exit;
+
   inherited;
   var F := GetFieldType;
   if F <> '' then begin
@@ -1168,6 +1225,7 @@ end;
 
 procedure TTestCase_DBX_FieldType.TearDown;
 begin
+  if (GetTestData.GetODS < ODS_13_0) and (GetName = 'Test_TIMESTAMP_WITH_TIME_ZONE') then Exit;
   if Assigned(FDataSet) then FreeAndNil(FDataSet);
   FParams.Free;
   inherited;
@@ -2178,7 +2236,9 @@ begin
         end
       , procedure begin Param.AsDateTime := Now; end
       , procedure begin Param.AsString := FormatDateTime('dd mmm yyyy hh:mm:ss', Date); end
+      , procedure begin Param.AsString := FormatDateTime('dd mmm yyyy hh:mm:ss', Now); end
       , procedure begin Param.AsWideString := FormatDateTime('dd mmm yyyy hh:mm:ss', Date); end
+      , procedure begin Param.AsWideString := FormatDateTime('dd mmm yyyy hh:mm:ss', Now); end
   ];
 
   for P in A do begin
@@ -2188,6 +2248,56 @@ begin
     CheckEquals(SizeOf(TSQLTimeStamp), Field.DataSize);
     CheckEquals(DateTimeToStr(Param.AsDateTime), DateTimeToStr(Field.AsDateTime));
     if Param.DataType = ftTimeStamp then begin
+      CheckEquals(Param.AsString, Field.AsString);
+      CheckEquals(Param.AsWideString, Field.AsWideString);
+    end;
+
+    Test_Required;
+  end;
+end;
+
+procedure TTestCase_DBX_FieldType.Test_TIMESTAMP_WITH_TIME_ZONE;
+var A: TArray<TProc>;
+    P: TProc;
+begin
+  if (GetTestData.GetODS < ODS_13_0) and (GetName = 'Test_TIMESTAMP_WITH_TIME_ZONE') then Exit;
+
+  A := [procedure
+        var T: TSQLTimeStamp;
+        begin
+          T := DateTimeToSQLTimeStamp(Now);
+          T.Fractions := 0;
+          Param.AsSQLTimeStamp := T;
+        end
+      , procedure
+        var T: TSQLTimeStampOffset;
+        begin
+          T := DateTimeToSQLTimeStampOffset(Now);
+          T.Fractions := 0;
+          Param.AsSQLTimeStampOffset := T;
+        end
+      , procedure begin Param.AsDateTime := Now; end
+      , procedure begin Param.AsString := VarSQLTimeStampOffsetCreate(Date); end
+      , procedure begin Param.AsString := VarSQLTimeStampOffsetCreate(Now); end
+      , procedure begin Param.AsWideString := VarSQLTimeStampOffsetCreate(Date); end
+      , procedure begin Param.AsWideString := VarSQLTimeStampOffsetCreate(Now); end
+      , procedure begin Param.AsSQLTimeStamp := DateTimeToSQLTimeStamp(Date); end
+      , procedure begin Param.AsSQLTimeStamp := DateTimeToSQLTimeStamp(Now); end
+      , procedure begin Param.AsSQLTimeStampOffset := DateTimeToSQLTimeStampOffset(Date); end
+      , procedure begin Param.AsSQLTimeStampOffset := DateTimeToSQLTimeStampOffset(Now); end
+  ];
+
+  for P in A do begin
+    P;
+    Execute;
+    CheckEquals(TSQLTimeStampOffsetField, Field.ClassType);
+    CheckEquals(SizeOf(TSQLTimeStampOffset), Field.DataSize);
+    if Param.DataType = ftTimeStamp then begin
+      CheckTrue(Param.AsSQLTimeStamp = Field.AsSQLTimeStamp);
+      CheckEquals(Param.AsString, Field.AsString.Substring(0, Param.AsString.Length));
+      CheckEquals(Param.AsWideString, Field.AsWideString.Substring(0, Param.AsWideString.Length));
+    end else if Param.DataType = ftTimeStampOffset then begin
+      CheckTrue(Param.AsSQLTimeStampOffset = Field.AsSQLTimeStampOffset);
       CheckEquals(Param.AsString, Field.AsString);
       CheckEquals(Param.AsWideString, Field.AsWideString);
     end;
@@ -3587,6 +3697,18 @@ begin
   CheckEquals(0, CreateProc('TIMESTAMP', S));
   Check(ftTimeStamp = FStoredProc.Params[1].DataType);
   CheckEquals(S, SQLTimeStampToStr(F, FStoredProc.Params[1].AsSQLTimeStamp));
+end;
+
+procedure TTestCase_DBX_TSQLStoredProc_Params.Test_TimeStamp_With_Time_Zone;
+begin
+  if GetTestData.GetODS < ODS_13_0 then Exit;
+
+  var F := {$if RTLVersion >= 23}FormatSettings.{$ifend}ShortDateFormat + ' ' + {$if RTLVersion >= 23}FormatSettings.{$ifend}LongTimeFormat;
+  var S := SQLTimeStampOffsetToStr(F, DateTimeToSQLTimeStampOffset(Now));
+
+  CheckEquals(0, CreateProc('TIMESTAMP WITH TIME ZONE', S));
+  Check(ftTimeStampOffset = FStoredProc.Params[1].DataType);
+  CheckEquals(S, SQLTimeStampOffsetToStr(F, FStoredProc.Params[1].AsSQLTimeStampOffset));
 end;
 
 procedure TTestCase_DBX_TSQLStoredProc_Params.Test_VarChar;

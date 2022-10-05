@@ -22,6 +22,7 @@ type
     const BooleanType = 13;
     const WideCharType = 14;
     const WideVarcharType = 15;
+    const TimestampOffsetType = 16;
     function Get_FAlltypes: Pointer;
     class function GetAllDataTypes_Address: Pointer;
     function GetAllDataTypes_RSP37065: TDBXDataTypeDescriptionArray;
@@ -50,6 +51,11 @@ begin
   const blr_bool = 23;
   if (Result = -1) and (FieldType = blr_bool) then
     Result := TDBXFirebirdCustomMetaDataReader.BooleanType;
+
+  (* patch: support timestamp offset type *)
+  const blr_timestamp_tz = 29;
+  if (Result = -1) and (FieldType = blr_timestamp_tz) then
+    Result := TDBXFirebirdCustomMetaDataReader.TimestampOffsetType;
 end;
 
 class function TDBXFirebirdCustomMetaDataReaderHelper.GetAllDataTypes_Address: Pointer;
@@ -72,7 +78,7 @@ begin
   A := Get_FAlltypes;
   if A^ = nil then
   begin
-    SetLength(Newtypes, 16(* patch *));
+    SetLength(Newtypes, 17(* patch *));
     (* patch
     if FDefaultCharSetIsUnicode then
       StringType := TDBXDataTypes.WideStringType;
@@ -94,6 +100,7 @@ begin
     Newtypes[TDBXFirebirdCustomMetaDataReader.BooleanType] := TDBXDataTypeDescription.Create('BOOLEAN', TDBXDataTypes.BooleanType, 1, 'BOOLEAN', NullString, -1, -1, NullString, NullString, NullString, NullString, TDBXTypeFlag.BestMatch or TDBXTypeFlag.FixedLength or TDBXTypeFlag.Nullable or TDBXTypeFlag.Searchable or TDBXTypeFlag.Unsigned);
     Newtypes[TDBXFirebirdCustomMetaDataReader.WideCharType] := TDBXDataTypeDescription.Create('CHAR', TDBXDataTypes.WideStringType, 32768, 'CHAR({0})', 'Precision', -1, -1, NullString, NullString, NullString, NullString, TDBXTypeFlag.BestMatch or TDBXTypeFlag.FixedLength or TDBXTypeFlag.Nullable or TDBXTypeFlag.Searchable or TDBXTypeFlag.SearchableWithLike or TDBXTypeFlag.Unsigned or TDBXTypeFlag.UnicodeOption);
     Newtypes[TDBXFirebirdCustomMetaDataReader.WideVarcharType] := TDBXDataTypeDescription.Create('VARCHAR', TDBXDataTypes.WideStringType, 32678, 'VARCHAR({0})', 'Precision', -1, -1, NullString, NullString, NullString, NullString, TDBXTypeFlag.BestMatch or TDBXTypeFlag.Nullable or TDBXTypeFlag.Searchable or TDBXTypeFlag.SearchableWithLike or TDBXTypeFlag.Unsigned or TDBXTypeFlag.UnicodeOption);
+    Newtypes[TDBXFirebirdCustomMetaDataReader.TimestampOffsetType] := TDBXDataTypeDescription.Create('TIMESTAMP WITH TIME ZONE', TDBXDataTypes.TimeStampOffsetType, 0, 'TIMESTAMP WITH TIME ZONE', NullString, -1, -1, '''', '''', NullString, NullString, TDBXTypeFlag.BestMatch or TDBXTypeFlag.FixedLength or TDBXTypeFlag.Nullable or TDBXTypeFlag.Searchable);
     (* patch *)
     A^ := Newtypes;
   end;
