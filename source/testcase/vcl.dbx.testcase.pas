@@ -615,7 +615,7 @@ var s: string;
     sValue: string;
 begin
   {$ifndef Unicode}Exit;{$endif}
-  if (Pos('Firebird 1.', GetTestData.ServerVersion) <> 0) or (Pos('Firebird 2.0', GetTestData.ServerVersion) <> 0) then Exit;
+  if GetTestData.GetODS < ODS_11_1 then Exit;
 
   FConnection.Close;
   FConnection.Params.Values[SQLSERVER_CHARSET_KEY] := 'UTF8';
@@ -774,6 +774,8 @@ var S: widestring;
     C: Char;
     D: TDataSet;
 begin
+  if GetTestData.GetODS < ODS_11_2 then Exit;
+
   if TCmdLineParams_App.CORE_2978 then Exit;
   {$ifndef Unicode}Exit;{$endif}
   FConnection.Close;
@@ -1001,7 +1003,7 @@ procedure TTestCase_DBX_General.Test_Insert_Returning;
 var s: string;
     D: TSQLDataSet;
 begin
-  if Pos('Firebird 1.', GetTestData.ServerVersion) <> 0 then Exit;
+  if GetTestData.GetODS < ODS_11_0 then Exit;
 
   S := 'CREATE TABLE T_INSERT ' +
        '( ' +
@@ -1454,7 +1456,7 @@ end;
 
 procedure TTestCase_DBX_FieldType.Test_CHAR_UTF8;
 begin
-  if Pos('Firebird 1.', GetTestData.ServerVersion) <> 0 then Exit;
+  if GetTestData.GetODS < ODS_11_0 then Exit;
   Test_CHAR_Unicode;
 end;
 
@@ -1871,7 +1873,7 @@ var M: TMemoryStream;
 {$endif}
 begin
   {$ifdef Unicode}
-  if (Pos('Firebird 1.', GetTestData.ServerVersion) <> 0) or (Pos('Firebird 2.0', GetTestData.ServerVersion) <> 0) then Exit;
+  if GetTestData.GetODS < ODS_11_1 then Exit;
 
   M := TMemoryStream.Create;
   try
@@ -2285,7 +2287,7 @@ end;
 
 procedure TTestCase_DBX_FieldType.Test_VARCHAR_UTF8;
 begin
-  if Pos('Firebird 1.', GetTestData.ServerVersion) <> 0 then Exit;
+  if GetTestData.GetODS < ODS_11_0 then Exit;
   Test_VARCHAR_Unicode;
 end;
 
@@ -2539,7 +2541,7 @@ procedure TTestCase_DBX_Transaction.Test_Transaction_WaitLock_Fail;
 var TTestSuite_DBX1, TTestSuite_DBX2: TDBXTransaction;
     i: Integer;
 begin
-  if Pos('Firebird 1.', GetTestData.ServerVersion) <> 0 then Exit;
+  if GetTestData.GetODS < ODS_11_0 then Exit;
 
   FConnection.ExecuteDirect('CREATE TABLE T_LOCK(FIELD1 VARCHAR(10), FIELD2 INTEGER)');
 
@@ -2574,7 +2576,7 @@ procedure TTestCase_DBX_Transaction.Test_Transcation_WaitLock_TimeOut;
 var TTestSuite_DBX1, TTestSuite_DBX2: TDBXTransaction;
     C1, C2: TSQLConnection;
 begin
-  if (Pos('Firebird 1.', GetTestData.ServerVersion) <> 0) or (Pos('Firebird 2.0', GetTestData.ServerVersion) <> 0) then Exit;
+  if GetTestData.GetODS < ODS_11_1 then Exit;
 
   C1 := FConnection;
 
@@ -2784,7 +2786,7 @@ procedure TTestCase_DBX_DataSnap.Test_UTF8_EmptyString;
 var D: TDataSet;
 begin
   {$ifndef Unicode}Exit;{$endif}
-  if (Pos('Firebird 1.', GetTestData.ServerVersion) <> 0) or (Pos('Firebird 2.0', GetTestData.ServerVersion) <> 0) then Exit;
+  if GetTestData.GetODS < ODS_11_1 then Exit;
 
   FCDS.SetProvider(FDSP);
   FCDS.Open;
@@ -2830,8 +2832,8 @@ end;
 procedure TTestCase_DBX_Server_Embed.Test_Unavailable_Database;
 var C1, C2: TSQLConnection;
 begin
-  if (Pos('Firebird 2.0', FTestData1.ServerVersion) > 0) or
-     (Pos('Firebird 2.0', FTestData2.ServerVersion) > 0)
+  if (FTestData1.GetODS = ODS_11_0) or
+     (FTestData2.GetODS = ODS_11_0)
   then
     Exit;
 
@@ -3441,7 +3443,7 @@ procedure TTestCase_DBX_TSQLStoredProc_Params.Test_Char_Mix;
 var s: string;
     iLen: integer;
 begin
-  if (Pos('Firebird 1.', GetTestData.ServerVersion) <> 0) or (Pos('Firebird 2.0', GetTestData.ServerVersion) <> 0) then Exit;
+  if GetTestData.GetODS < ODS_11_0 then Exit;
 
   s := 'One World One Dream ' +
        #$540C + #$4E00 + #$4E2A + #$4E16 + #$754C + ' ' +
@@ -3467,7 +3469,7 @@ var s: string;
 begin
   {$ifndef Unicode} Exit; {$endif}
 
-  if (Pos('Firebird 1.', GetTestData.ServerVersion) <> 0) or (Pos('Firebird 2.0', GetTestData.ServerVersion) <> 0) then Exit;
+  if GetTestData.GetODS < ODS_11_0 then Exit;
 
   s := 'One World One Dream ' +
        #$540C + #$4E00 + #$4E2A + #$4E16 + #$754C + ' ' +
@@ -3599,7 +3601,7 @@ var s: string;
 begin
   {$ifndef Unicode} Exit; {$endif}
 
-  if (Pos('Firebird 1.', GetTestData.ServerVersion) <> 0) or (Pos('Firebird 2.0', GetTestData.ServerVersion) <> 0) then Exit;
+  if GetTestData.GetODS < ODS_11_0 then Exit;
 
   s := 'One World One Dream ' +
        #$540C + #$4E00 + #$4E2A + #$4E16 + #$754C + ' ' +
