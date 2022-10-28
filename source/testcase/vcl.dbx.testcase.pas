@@ -136,6 +136,9 @@ type{$M+}
     procedure Test_Transaction_WaitLock;
     procedure Test_Transaction_WaitLock_Fail;
     procedure Test_Transcation_WaitLock_TimeOut;
+    procedure Test_ReadOnly_Select;
+    procedure Test_ReadOnly_MetaData;
+    procedure Test_ReadOnly_GlobalTemporaryTable;
   end;
 
   TTestCase_DBX_FieldType = class(TTestCase_DBX)
@@ -2488,6 +2491,57 @@ begin
   FConnection.StartTransaction(T);
   FConnection.Commit(T);
   {$WARNINGS ON}
+end;
+
+procedure TTestCase_DBX_Transaction.Test_ReadOnly_Select;
+begin
+  var T := FConnection.BeginTransaction(FirebirdTransaction_ReadOnly);
+  try
+    FConnection.ExecuteDirect('SELECT * FROM RDB$DATABASE');
+    FConnection.CommitFreeAndNil(T);
+  except
+    FConnection.RollbackFreeAndNil(T);
+    raise;
+  end;
+end;
+
+procedure TTestCase_DBX_Transaction.Test_ReadOnly_MetaData;
+begin
+  var T := FConnection.BeginTransaction(FirebirdTransaction_ReadOnly);
+  try
+    StartExpectingException(TDBXError);
+    FConnection.ExecuteDirect('CREATE TABLE T_TRANSACTION(FIELD INTEGER)');
+    FConnection.CommitFreeAndNil(T);
+  except
+    FConnection.RollbackFreeAndNil(T);
+    raise;
+  end;
+end;
+
+procedure TTestCase_DBX_Transaction.Test_ReadOnly_GlobalTemporaryTable;
+begin
+  if GetTestData.GetODS < ODS_11_1 then Exit;
+  var Table := 'T_' + GetTickCount.ToString;
+  var T := FConnection.BeginTransaction;
+  try
+    FConnection.ExecuteDirect(Format('CREATE GLOBAL TEMPORARY TABLE %s(FIELD INTEGER)', [Table]));
+    FConnection.CommitFreeAndNil(T);
+  except
+    FConnection.RollbackFreeAndNil(T);
+    raise;
+  end;
+
+  if GetTestData.GetODS < ODS_11_2 then Exit;
+  if GetTestData.ServerVersion.Contains('2.5.0.26074') then Exit;
+  T := FConnection.BeginTransaction(FirebirdTransaction_ReadOnly);
+  try
+    for var i := 1 to 100 do
+      FConnection.ExecuteDirect(Format('INSERT INTO %s VALUES (%d)', [Table, i]));
+    FConnection.CommitFreeAndNil(T);
+  except
+    FConnection.RollbackFreeAndNil(T);
+    raise;
+  end;
 end;
 
 procedure TTestCase_DBX_Transaction.Test_Transaction;

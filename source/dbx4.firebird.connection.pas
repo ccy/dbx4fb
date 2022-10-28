@@ -89,6 +89,8 @@ begin
   else
     O.WaitOnLocks := IsolationLevel and FirebirdTransaction_WaitOnLocks = FirebirdTransaction_WaitOnLocks;
 
+  O.ReadOnly := IsolationLevel and FirebirdTransaction_ReadOnly = FirebirdTransaction_ReadOnly;
+
   IsolationLevel := IsolationLevel and $00FF;
   try
     if IsolationLevel = TDBXIsolations.RepeatableRead then
