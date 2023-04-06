@@ -81,7 +81,7 @@ end;
 class function TCmdLineParams_App.TestSuite2: Boolean;
 begin
   var s := '';
-  Result := not FindCmdLineSwitch('suite', s) or (s = '2');
+  Result := FindCmdLineSwitch('suite', s) and (s = '2');
 end;
 
 end.

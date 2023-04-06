@@ -11,7 +11,7 @@
 	<property name="program.conf" location="dbxfbTests.ini" />
 
 	<target name="build" depends="t.platform,t.platform.testcount">
-		<for param="i" begin="1" end="${p.embedded_1.end}" parallel="true" keepgoing="true">
+		<for param="i" begin="1" end="${p.embedded.end}" parallel="true" keepgoing="true">
 			<sequential>
 				<antcall target="dbx.test">
 					<param name="test" value="embedded_@{i}" />
@@ -20,16 +20,7 @@
 			</sequential>
 		</for>
 
-		<for param="i" begin="${p.embedded_2.begin}" end="${p.embedded_2.end}" parallel="true" keepgoing="true">
-			<sequential>
-				<antcall target="dbx.test">
-					<param name="test" value="embedded_@{i}" />
-					<param name="suite" value="1" />
-				</antcall>
-			</sequential>
-		</for>
-
-		<for param="i" begin="1" end="${p.embedded_2.end}" keepgoing="true">
+		<for param="i" begin="${p.embedded_2.begin}" end="${p.embedded.end}" parallel="true" keepgoing="true">
 			<sequential>
 				<antcall target="dbx.test">
 					<param name="test" value="embedded_@{i}" />
@@ -77,19 +68,13 @@
 	</target>
 
 	<target name="t.platform.testcount">
-		<condition property="p.embedded_1.end" value="23" else="10">
+		<condition property="p.embedded.end" value="44" else="29">
 			<or>
 				<equals arg1="${p.platform}" arg2="Win32" casesensitive="false" />
 			</or>
 		</condition>
 
-		<condition property="p.embedded_2.begin" value="24" else="11">
-			<or>
-				<equals arg1="${p.platform}" arg2="Win32" casesensitive="false" />
-			</or>
-		</condition>
-
-		<condition property="p.embedded_2.end" value="44" else="29">
+		<condition property="p.embedded_2.begin" value="31" else="16">
 			<or>
 				<equals arg1="${p.platform}" arg2="Win32" casesensitive="false" />
 			</or>
