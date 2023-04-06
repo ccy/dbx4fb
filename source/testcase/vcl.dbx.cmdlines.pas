@@ -14,7 +14,6 @@ type
     class function RunAsConsole: boolean;
     class function TestSuite1: Boolean;
     class function TestSuite2: Boolean;
-    class function CORE_2978: Boolean;
   end;
 
 implementation
@@ -31,11 +30,6 @@ begin
     if not TFile.Exists(Result) then
       raise Exception.CreateFmt('%s not exist', [Result]);
   end;
-end;
-
-class function TCmdLineParams_App.CORE_2978: Boolean;
-begin
-  Result := FindCmdLineSwitch('CORE_2978');
 end;
 
 class function TCmdLineParams_App.Drivers: string;

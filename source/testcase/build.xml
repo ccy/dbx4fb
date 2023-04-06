@@ -16,7 +16,6 @@
 				<antcall target="dbx.test">
 					<param name="test" value="embedded_@{i}" />
 					<param name="suite" value="1" />
-					<param name="CORE_2978" value="" />
 				</antcall>
 			</sequential>
 		</for>
@@ -59,12 +58,8 @@
 			<isset property="suite" />
 		</condition>
 
-		<condition property="p.core_2978" value="-CORE_2978" else="">
-			<isset property="CORE_2978" />
-		</condition>
-
 		<echo file="${p.script}">
-			${program} -config ${program.conf} -drivers ${drivers} -test ${test} ${p.suite} ${p.core_2978} -console
+			${program} -config ${program.conf} -drivers ${drivers} -test ${test} ${p.suite} -console
 		</echo>
 
 		<exec executable="cmd" spawn="false" failonerror="true">

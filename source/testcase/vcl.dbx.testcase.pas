@@ -817,7 +817,6 @@ var S: widestring;
 begin
   if GetTestData.GetODS < ODS_11_2 then Exit;
 
-  if TCmdLineParams_App.CORE_2978 then Exit;
   {$ifndef Unicode}Exit;{$endif}
   FConnection.Close;
   FConnection.Params.Values[SQLSERVER_CHARSET_KEY] := 'WIN1252';
