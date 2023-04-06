@@ -63,7 +63,8 @@ type{$M+}
 
   TTestSuite_DBX2 = class abstract(TTestSuite_DBX)
   private
-    class function NewTestDataList(const aParams: string): IInterfaceList;
+    class function NewTestDataList(const aParams: string = ''):
+        TArray<TArray<ITestData>>;
   public
     class procedure Setup;
   end;
@@ -75,7 +76,7 @@ type{$M+}
 
   ITestCase_DBX2 = interface(IInterface)
   ['{E56373C3-BD6E-444C-B11D-78A8BB842DC6}']
-    procedure SetTestData(const I1, I2: ITestData);
+    procedure SetTestData(aTestDatas: TArray<ITestData>);
   end;
 
   TTestCase_DBX = class(TTestCase, ITestCase_DBX1)
@@ -234,12 +235,11 @@ type{$M+}
 
   TTestCase_DBX_Server_Embed = class(TTestCase, ITestCase_DBX2)
   private
-    FTestData1: ITestData;
-    FTestData2: ITestData;
+    FTestDatas: TArray<ITestData>;
   protected
-    procedure SetTestData(const I1, I2: ITestData);
+    procedure SetTestData(aTestDatas: TArray<ITestData>);
   public
-    class function NewSuite(const aTestData1, aTestData2: ITestData): ITestSuite;
+    class function NewSuite(const aTestDatas: TArray<ITestData>): ITestSuite;
   published
     procedure Test_Unavailable_Database;
   end;
@@ -312,9 +312,9 @@ type{$M+}
 implementation
 
 uses
-  Winapi.Windows, System.DateUtils, System.IniFiles, System.Math, System.StrUtils,
-  System.WideStrings, Data.DbxFirebird, Data.DBXMetaDataProvider, Data.SqlConst,
-  Data.SqlTimSt,
+  Winapi.Windows, System.DateUtils, System.IniFiles, System.IOUtils, System.Math,
+  System.StrUtils, System.WideStrings, Data.DbxFirebird, Data.DBXMetaDataProvider,
+  Data.SqlConst, Data.SqlTimSt,
   Data.DBXFirebird.AutoUnloadDriver, Data.DBXFirebirdMetaDataReader.RSP37064,
   Data.DBXFirebirdMetaDataReader.RSP37065, firebird.client, firebird.ods.h,
   firebird.utils, vcl.dbx.cmdlines;
@@ -2975,46 +2975,37 @@ begin
   end;
 end;
 
-class function TTestCase_DBX_Server_Embed.NewSuite(const aTestData1,
-    aTestData2: ITestData): ITestSuite;
+class function TTestCase_DBX_Server_Embed.NewSuite(const aTestDatas:
+    TArray<ITestData>): ITestSuite;
 var i: integer;
 begin
   Result := Suite;
   for i := 0 to Result.CountTestCases - 1 do
-    (Result.Tests[i] as ITestCase_DBX2).SetTestData(aTestData1, aTestData2);
+    (Result.Tests[i] as ITestCase_DBX2).SetTestData(aTestDatas);
 end;
 
 { TTestCase_DBX_Server_Embed }
 
-procedure TTestCase_DBX_Server_Embed.SetTestData(const I1, I2: ITestData);
+procedure TTestCase_DBX_Server_Embed.SetTestData(aTestDatas: TArray<ITestData>);
 begin
-  FTestData1 := I1;
-  FTestData2 := I2;
+  FTestDatas := Copy(aTestDatas, Low(aTestDatas), Length(aTestDatas));
 end;
 
 procedure TTestCase_DBX_Server_Embed.Test_Unavailable_Database;
-var C1, C2: TSQLConnection;
 begin
-  if (FTestData1.GetODS = ODS_11_0) or
-     (FTestData2.GetODS = ODS_11_0)
-  then
-    Exit;
-
-  C1 := TSQLConnection.Create(nil);
-  C2 := TSQLConnection.Create(nil);
+  var C: TArray<TSQLConnection>;
+  for var i := Low(FTestDatas) to High(FTestDatas) do
+    C := C + [TSQLConnection.Create(nil)];
   try
-    FTestData1.Setup(C1);
-    C1.LoginPrompt := False;
-    C1.Open;
-    CheckTrue(C1.Connected);
-
-    FTestData2.Setup(C2);
-    C2.LoginPrompt := False;
-    C2.Open;
-    CheckTrue(C2.Connected);
+    for var i := Low(FTestDatas) to High(FTestDatas) do begin
+      var o := C[i];
+      FTestDatas[i].Setup(o);
+      o.LoginPrompt := False;
+      o.Open;
+      CheckTrue(o.Connected);
+    end;
   finally
-    C2.Free;
-    C1.Free;
+    for var o in C do o.Free;
   end;
 end;
 
@@ -3115,80 +3106,51 @@ begin
   Result := S as ITestSuite;
 end;
 
-class function TTestSuite_DBX2.NewTestDataList(const aParams: string): IInterfaceList;
+class function TTestSuite_DBX2.NewTestDataList(const aParams: string = ''):
+    TArray<TArray<ITestData>>;
 var F: TIniFile;
-    sDrivers, sServers, sEmbeds: TStringList;
+    sDrivers, sServers: TStringList;
     i: integer;
-    j, k: Integer;
+    j: Integer;
     sParams1, sParams2: string;
-    sVer1, sVer2: string;
-    L: IInterfaceList;
 begin
-  Result := TInterfaceList.Create;
-
   F := TIniFile.Create(GetTestDataFileName);
   sDrivers := TStringList.Create;
   sServers := TStringList.Create;
-  sEmbeds := TStringList.Create;
   try
     F.ReadSectionValues(GetDriverSectionName, sDrivers);
     F.ReadSectionValues(GetServerSectionName, sServers);
-    F.ReadSectionValues(GetEmbeddedSectionName, sEmbeds);
     for i := 0 to sDrivers.Count - 1 do begin
       for j := 0 to sServers.Count - 1 do begin
         sParams1 := GetParams(sServers.ValueFromIndex[j], aParams);
-        sVer1 := GetServerVersion(F.ReadString(GetVendorSectionName, 'default', ''), sParams1);
+        var sDefaultVendorLib := ExpandFileNameString(F.ReadString(GetVendorSectionName, 'default', ''));
 
-        for k := 0 to sEmbeds.Count - 1 do begin
-          if TCmdLineParams_App.HasTestName and (TCmdLineParams_App.GetTestName <> sEmbeds.Names[k]) then Continue;
+        var R: TArray<ITestData> := [TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i], sDrivers.Names[i], sDefaultVendorLib, sParams1)];
 
-          L := TInterfaceList.Create;
-
-          L.Add(
-            TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i],
-            sDrivers.Names[i], F.ReadString(GetVendorSectionName, sVer1, sVer1), sParams1)
-          );
-
-          sParams2 := GetParams('', aParams);
-          sVer2 := GetServerVersion(sEmbeds.ValueFromIndex[k], sParams2);
-
-          L.Add(
-            TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i],
-            sDrivers.Names[i], sEmbeds.ValueFromIndex[k], sParams2)
-          );
-
-          Result.Add(L);
+        for var Engine in TDirectory.GetFiles(
+          IncludeTrailingPathDelimiter(TPath.GetDirectoryName(sDefaultVendorLib)) + 'plugins'
+        , 'engine*.dll'
+        ) do begin
+          R := R + [TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i], sDrivers.Names[i], sDefaultVendorLib, sParams2)];
         end;
+
+        Result := Result + [R];
       end;
     end;
   finally
     sDrivers.Free;
     sServers.Free;
-    sEmbeds.Free;
     F.Free;
   end;
 end;
 
 class procedure TTestSuite_DBX2.Setup;
-var L, M: IInterfaceList;
-    i: integer;
-    T, S: ITestSuite;
-    D0, D1: ITestData;
 begin
-  T := TTestSuite.Create('Test Unavailable Database');
-  L := NewTestDataList('');
-  for i := 0 to L.Count - 1 do begin
-    M := L[i] as IInterfaceList;
-
-    D0 := M[0] as ITestData;
-    D1 := M[1] as ITestData;
-
-    S := TTestSuite.Create(D0.Name + '  ' + D1.Name);
-    S.AddSuite(
-      TTestCase_DBX_Server_Embed.NewSuite(D0, D1)
-    );
-
-    T.AddSuite(S);
+  var T := TTestSuite.Create(ClassName) as ITestSuite;
+  for var o in NewTestDataList do begin
+    var A: TArray<string> := nil;
+    for var p in o do A := A + [p.Name];
+    T.AddSuite(TTestSuite.Create(string.join(' ', A), [TTestCase_DBX_Server_Embed.NewSuite(o)]));
   end;
   TestFrameWork.RegisterTest(T);
 end;
