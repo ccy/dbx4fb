@@ -185,7 +185,6 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="..\source\System.SysUtils.RSP39665.pas"/>
         <DCCReference Include="..\source\dbx4.base.pas"/>
         <DCCReference Include="..\source\dbx4.firebird.dll.pas"/>
         <DCCReference Include="..\source\dbx4.firebird.driver.pas"/>

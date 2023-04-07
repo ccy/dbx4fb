@@ -2,7 +2,6 @@ program dbxfbTests;
 
 uses
   Winapi.Windows,
-  System.SysUtils.RSP39665 in '..\source\System.SysUtils.RSP39665.pas',
   firebird.utils in '..\source\testcase\firebird.utils.pas',
   vcl.dbx.cmdlines in '..\source\testcase\vcl.dbx.cmdlines.pas',
   vcl.dbx.main in '..\source\testcase\vcl.dbx.main.pas',

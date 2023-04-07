@@ -206,7 +206,6 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="..\source\System.SysUtils.RSP39665.pas"/>
         <DCCReference Include="..\source\testcase\firebird.utils.pas"/>
         <DCCReference Include="..\source\testcase\vcl.dbx.cmdlines.pas"/>
         <DCCReference Include="..\source\testcase\vcl.dbx.main.pas"/>
