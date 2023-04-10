@@ -7,6 +7,7 @@ type
   strict private
     class function GetPersistValue(aKey: string): string;
   public
+    class constructor Create;
     class function ConfigFile: string;
     class function Drivers: string;
     class function GetTestName: string;
@@ -19,7 +20,7 @@ type
 implementation
 
 uses
-  System.IniFiles, System.IOUtils, System.SysUtils;
+  Winapi.Windows, System.IniFiles, System.IOUtils, System.SysUtils;
 
 {$WARN SYMBOL_PLATFORM OFF}
 
@@ -30,6 +31,11 @@ begin
     if not TFile.Exists(Result) then
       raise Exception.CreateFmt('%s not exist', [Result]);
   end;
+end;
+
+class constructor TCmdLineParams_App.Create;
+begin
+  SetEnvironmentVariable('drivers', PChar(TCmdLineParams_App.Drivers));
 end;
 
 class function TCmdLineParams_App.Drivers: string;
