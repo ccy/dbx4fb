@@ -76,12 +76,6 @@
         <Cfg_1>true</Cfg_1>
         <Base>true</Base>
     </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win32)'!=''">
-        <Cfg_1_Win32>true</Cfg_1_Win32>
-        <CfgParent>Cfg_1</CfgParent>
-        <Cfg_1>true</Cfg_1>
-        <Base>true</Base>
-    </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_2)'!=''">
         <Cfg_2>true</Cfg_2>
         <CfgParent>Base</CfgParent>
@@ -159,14 +153,13 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
-        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <Debugger_HostApplication>$(ActiveHostApplication)</Debugger_HostApplication>
-        <Debugger_RunParams>-config ..\..\..\source\testcase\dbxfbTests.ini -drivers Y:\firebird -test embedded_44</Debugger_RunParams>
+        <Debugger_RunParams>-config ..\..\..\source\testcase\dbxfbTests.ini -drivers Y:\firebird -test default</Debugger_RunParams>
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
         <Debugger_HostApplication>$(ActiveHostApplication)</Debugger_HostApplication>
-        <Debugger_RunParams>-config ..\..\..\source\testcase\dbxfbTests.ini -drivers Y:\firebird -test embedded_29</Debugger_RunParams>
+        <Debugger_RunParams>-config ..\..\..\source\testcase\dbxfbTests.ini -drivers Y:\firebird -test default</Debugger_RunParams>
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
@@ -186,9 +179,6 @@
         <Cfg_1_OSX64>true</Cfg_1_OSX64>
         <CfgParent>Cfg_1</CfgParent>
         <Cfg_1>true</Cfg_1>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_DebugInformation>0</DCC_DebugInformation>

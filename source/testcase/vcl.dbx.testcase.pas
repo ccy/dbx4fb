@@ -3031,7 +3031,7 @@ begin
 
         sParams := GetParams(sServers.ValueFromIndex[j], aParams);
 
-        sVer := GetServerVersion(F.ReadString(GetVendorSectionName, 'default', ''), sParams);
+        sVer := GetServerVersion(F.ReadString(GetEmbeddedSectionName, 'default', ''), sParams);
 
         Result.Add(
           TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i],
@@ -3121,7 +3121,7 @@ begin
     for i := 0 to sDrivers.Count - 1 do begin
       for j := 0 to sServers.Count - 1 do begin
         sParams1 := GetParams(sServers.ValueFromIndex[j], aParams);
-        var sDefaultVendorLib := ExpandFileNameString(F.ReadString(GetVendorSectionName, 'default', ''));
+        var sDefaultVendorLib := ExpandFileNameString(F.ReadString(GetEmbeddedSectionName, 'default', ''));
 
         var R: TArray<ITestData> := [TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i], sDrivers.Names[i], sDefaultVendorLib, sParams1)];
 
