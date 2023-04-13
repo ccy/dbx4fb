@@ -423,7 +423,7 @@ begin
     L.Text := FParams;
 
     var v := FB_GetVersion(FVendorLib, L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
-    sImpl := v.FImplementation;
+    sImpl := v.&Implementation;
     if L.Values[HOSTNAME_KEY] = '' then
       sDatabase := IncludeTrailingPathDelimiter('%TEMP%')
     else if ContainsText(sImpl, 'Windows') then begin
@@ -442,7 +442,7 @@ begin
     Randomize;
     sDatabase := sDatabase + 'T_' + GetTickCount.ToString + IntToStr(Random(High(Integer)));
 
-    FServerVersion := v.FServerStr;
+    FServerVersion := v.ServerStr;
     FName := Format('%s (%s) Host: %s Database: %s', [sImpl, FServerVersion, L.Values[HOSTNAME_KEY], sDatabase]);
 
     FB_CreateDatabase(FVendorLib, L.Values[HOSTNAME_KEY], sDatabase, L.Values[szUSERNAME], L.Values[szPASSWORD]);
@@ -570,7 +570,7 @@ begin
   var L := TStringList.Create;
   try
     L.Text := aParams;
-    Result := FB_GetVersion(ExpandfileNameString(aLibraryName), L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]).FServerStr;
+    Result := FB_GetVersion(ExpandfileNameString(aLibraryName), L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]).ServerStr;
   finally
     L.Free;
   end;

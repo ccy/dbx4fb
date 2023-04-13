@@ -3,10 +3,16 @@ unit firebird.utils;
 interface
 
 uses
-  FireDAC.Phys.IBWrapper;
+  System.SysUtils;
 
-function FB_GetVersion(VendorLib, Host, UserName, Password: string):
-    TIBInfo.TVersion;
+type
+  TFBVersion = record
+    Service: Integer;
+    ServerStr: string;
+    &Implementation: string;
+  end;
+
+function FB_GetVersion(VendorLib, Host, UserName, Password: string): TFBVersion;
 
 procedure FB_CreateDatabase(VendorLib, Host, Database, UserName, Password:
     string);
@@ -18,120 +24,159 @@ function FB_GetODS(VendorLib, Host, Database, UserName, Password: string): UInt1
 implementation
 
 uses
-  Winapi.Windows, System.SysUtils, FireDAC.Comp.Client, FireDAC.Phys.FB,
-  FireDAC.Phys.IBBase, FireDAC.Phys.IBMeta, FireDAC.Stan.Consts, FireDAC.Stan.Def,
-  FireDAC.VCLUI.Wait;
+  Winapi.Windows, System.Generics.Collections,
+  firebird.client, firebird.consts_pub.h, firebird.ibase.h, firebird.inf_pub.h,
+  firebird.sqlda_pub.h, firebird.types_pub.h;
 
-function ExpandFileNameString(const aFileName: string): string;
-var P: PChar;
-    i: integer;
+function ToBytes(a: UInt32): TBytes; overload; inline;
 begin
-  i := ExpandEnvironmentStrings(PChar(aFileName), nil, 0);
-  P := StrAlloc(i);
-  try
-    ExpandEnvironmentStrings(PChar(aFileName), P, i);
-    Result := StrPas(P);
-  finally
-    StrDispose(P);
-  end;
+  SetLength(Result, SizeOf(a));
+  Move(a, Result[0], SizeOf(a));
 end;
 
-function NewFBDriver(VendorLib: string; Embedded: Boolean): TFDPhysFBDriverLink;
+function BuildDPB(UserName, Password: string): TBytes; inline;
 begin
-  Result := TFDPhysFBDriverLink.Create(nil);
-  Result.VendorLib := VendorLib;
-  Result.Embedded := Embedded;
+  Result := [isc_dpb_version1]
+          + [isc_dpb_sql_dialect, SizeOf(UInt32)] + ToBytes(UInt32(SQL_DIALECT_CURRENT));
+  if not UserName.IsEmpty then Result := Result + [isc_dpb_user_name, Length(UserName)] + TEncoding.ANSI.GetBytes(UserName);
+  if not Password.IsEmpty then Result := Result + [isc_dpb_password, Length(Password)] + TEncoding.ANSI.GetBytes(Password);
 end;
 
 function FB_GetVersion(VendorLib, Host, UserName, Password: string):
-    TIBInfo.TVersion;
+    TFBVersion;
 begin
-  var D := NewFBDriver(VendorLib, Host.IsEmpty);
-  var I := TFDIBInfo.Create(nil);
-  try
-    I.DriverLink := D;
-    I.Host := Host;
-    I.UserName := UserName;
-    I.Password := Password;
+  var P: TBytes := [isc_spb_version, isc_spb_current_version];
+  if not UserName.IsEmpty then P := P + [isc_dpb_user_name, Length(UserName)] + TEncoding.ANSI.GetBytes(UserName);
+  if not Password.IsEmpty then P := P + [isc_dpb_password, Length(Password)] + TEncoding.ANSI.GetBytes(Password);
 
-    I.GetVersion(Result);
-  finally
-//    TIBLib(D.DriverIntf.CliObj).FBrand := TFDPhysIBBrand.ibInterbase; // Prevent unload firebird DLLs from process
-//    D.DriverIntf.Unload;
-    D.DisposeOf;
-    I.DisposeOf;
+  var svcName := AnsiString(TFirebird.service_mgr);
+  if not Host.IsEmpty then svcName := AnsiString(Host) + ':' + svcName;
+
+  var svc: isc_svc_handle := nil;
+
+  var st := TStatusVector.Create as IStatusVector;
+  var L := TFirebirdLibraryFactory.New(VendorLib);
+
+  L.isc_service_attach(st.pValue, Length(svcName), PISC_SCHAR(svcName), @svc, Length(P), @P[0]);
+  st.CheckAndRaiseError(L);
+
+  P := TBytes.Create(isc_info_svc_version, isc_info_svc_server_version, isc_info_svc_implementation, isc_info_end);
+
+  var r: TBytes;
+  SetLength(r, High(Byte));
+  L.isc_service_query(st.pValue, @svc, nil, 0, nil, Length(P), @P[0], Length(r), @r[0]);
+  st.CheckAndRaiseError(L);
+
+  var i := Low(r);
+  while r[i] <> isc_info_end do begin
+    case r[i] of
+      isc_info_svc_version: begin
+        Inc(i);
+        Result.Service := PInteger(@r[i])^;
+        Inc(i, SizeOf(Integer));
+      end;
+      isc_info_svc_server_version: begin
+        Inc(i);
+        Result.ServerStr := TEncoding.ANSI.GetString(r, i + SizeOf(Word), PWord(@r[i])^);
+        Inc(i, SizeOf(Word) + PWord(@r[i])^);
+      end;
+      isc_info_svc_implementation: begin
+        Inc(i);
+        Result.&Implementation := TEncoding.ANSI.GetString(r, i + SizeOf(Word), PWord(@r[i])^);
+        Inc(i, SizeOf(Word) + PWord(@r[i])^);
+      end;
+    end;
   end;
+
+  L.isc_service_detach(st.pValue, @svc);
+  st.CheckAndRaiseError(L);
 end;
 
 procedure FB_CreateDatabase(VendorLib, Host, Database, UserName, Password:
     string);
 begin
-  var D := NewFBDriver(VendorLib, Host.IsEmpty);
-  var C := TFDConnection.Create(nil);
-  try
-    C.Params.Clear;
-    C.Params.Values[S_FD_ConnParam_Common_DriverID] := S_FD_FBId;
-    if not Host.IsEmpty then
-      C.Params.Values[S_FD_ConnParam_Common_Server] := Host;
-    C.Params.Values[S_FD_ConnParam_Common_Database] := ExpandFileNameString(Database);
-    C.Params.Values[S_FD_ConnParam_Common_UserName] := UserName;
-    C.Params.Values[S_FD_ConnParam_Common_Password] := Password;
-    C.Params.Values[S_FD_ConnParam_IB_SQLDialect] := '3';
-    C.Params.Values['CreateDatabase'] := S_FD_True;
-    C.Open;
-  finally
-    C.Free;
-//    TIBLib(D.DriverIntf.CliObj).FBrand := TFDPhysIBBrand.ibInterbase; // Prevent unload firebird DLLs from process
-//    D.DriverIntf.Unload;
-    D.Free;
-  end;
+  var fileName := AnsiString(ExpandFileNameString(Database));
+  if not Host.IsEmpty then fileName := AnsiString(Host) + ':' + fileName;
+
+  var P := BuildDPB(UserName, Password);
+
+  var db: isc_db_handle := nil;
+
+  var st := TStatusVector.Create as IStatusVector;
+  var L := TFirebirdLibraryFactory.New(VendorLib);
+
+  L.isc_create_database(st.pValue, Length(fileName), PISC_SCHAR(fileName), @db, Length(P), @P[0], 0);
+  st.CheckAndRaiseError(L);
+
+  L.isc_detach_database(st.pValue, @db);
+  st.CheckAndRaiseError(L);
 end;
 
 procedure FB_DropDatabase(VendorLib, Host, Database, UserName, Password: string);
 begin
-  var D := NewFBDriver(VendorLib, Host.IsEmpty);
-  var C := TFDConnection.Create(nil);
-  try
-    C.Params.Clear;
-    C.Params.Values[S_FD_ConnParam_Common_DriverID] := S_FD_FBId;
-    if not Host.IsEmpty then
-      C.Params.Values[S_FD_ConnParam_Common_Server] := Host;
-    C.Params.Values[S_FD_ConnParam_Common_Database] := ExpandFileNameString(Database);
-    C.Params.Values[S_FD_ConnParam_Common_UserName] := UserName;
-    C.Params.Values[S_FD_ConnParam_Common_Password] := Password;
-    C.Params.Values[S_FD_ConnParam_IB_SQLDialect] := '3';
-    C.Params.Values[S_FD_ConnParam_IB_DropDatabase] := S_FD_True;
-    C.Open;
-    C.Close;
-  finally
-    C.Free;
-//    TIBLib(D.DriverIntf.CliObj).FBrand := TFDPhysIBBrand.ibInterbase; // Prevent unload firebird DLLs from process
-//    D.DriverIntf.Unload;
-    D.Free;
-  end;
+  var fileName := AnsiString(ExpandFileNameString(Database));
+  if not Host.IsEmpty then fileName := AnsiString(Host) + ':' + fileName;
+
+  var P := BuildDPB(UserName, Password);
+
+  var db: isc_db_handle := nil;
+
+  var st := TStatusVector.Create as IStatusVector;
+  var L := TFirebirdLibraryFactory.New(VendorLib);
+
+  L.isc_attach_database(st.pValue, Length(fileName), PISC_SCHAR(fileName), @db, Length(P), @P[0]);
+  st.CheckAndRaiseError(L);
+
+  L.isc_drop_database(st.pValue, @db);
+  st.CheckAndRaiseError(L);
 end;
 
-function FB_GetODS(VendorLib, Host, Database, UserName, Password: string): UInt16;
+function FB_GetODS(VendorLib, Host, Database, UserName, Password: string):
+    UInt16;
 begin
-  var D := NewFBDriver(VendorLib, Host.IsEmpty);
-  var C := TFDConnection.Create(nil);
-  try
-    C.Params.Clear;
-    C.Params.Values[S_FD_ConnParam_Common_DriverID] := S_FD_FBId;
-    if not Host.IsEmpty then
-      C.Params.Values[S_FD_ConnParam_Common_Server] := Host;
-    C.Params.Values[S_FD_ConnParam_Common_Database] := ExpandFileNameString(Database);
-    C.Params.Values[S_FD_ConnParam_Common_UserName] := UserName;
-    C.Params.Values[S_FD_ConnParam_Common_Password] := Password;
-    C.Params.Values[S_FD_ConnParam_IB_SQLDialect] := '3';
-    C.Open;
-    Result := TIBDatabase(C.ConnectionIntf.CliObj).ods_version shl 4 + TIBDatabase(C.ConnectionIntf.CliObj).ods_minor_version;
-  finally
-    C.Free;
-//    TIBLib(D.DriverIntf.CliObj).FBrand := TFDPhysIBBrand.ibInterbase; // Prevent unload firebird DLLs from process
-//    D.DriverIntf.Unload;
-    D.Free;
+  Result := 0;
+
+  var fileName := AnsiString(ExpandFileNameString(Database));
+  if not Host.IsEmpty then fileName := AnsiString(Host) + ':' + fileName;
+
+  var P := BuildDPB(UserName, Password);
+
+  var db: isc_db_handle := nil;
+
+  var st := TStatusVector.Create as IStatusVector;
+  var L := TFirebirdLibraryFactory.New(VendorLib);
+
+  L.isc_attach_database(st.pValue, Length(fileName), PISC_SCHAR(fileName), @db, Length(P), @P[0]);
+  st.CheckAndRaiseError(L);
+
+  var q := TBytes.Create(isc_info_ods_version, isc_info_ods_minor_version, isc_info_end);
+  var r: TBytes;
+  SetLength(r, High(Byte));
+  L.isc_database_info(st.pValue, @db, Length(q), @q[0], Length(r), @r[0]);
+  st.CheckAndRaiseError(L);
+
+  var i := Low(r);
+  while r[i] <> isc_info_end do begin
+    case r[i] of
+      isc_info_ods_version: begin
+        Inc(i);
+        Assert(PWord(@r[i])^ = 4);
+        Inc(i, SizeOf(Word));
+        Result := PInteger(@r[i])^ shl 4;
+        Inc(i, SizeOf(Integer));
+      end;
+      isc_info_ods_minor_version: begin
+        Inc(i);
+        Assert(PWord(@r[i])^ = 4);
+        Inc(i, SizeOf(Word));
+        Inc(Result, PInteger(@r[i])^);
+        Inc(i, SizeOf(Integer));
+      end;
+    end;
   end;
+
+  L.isc_detach_database(st.pValue, @db);
+  st.CheckAndRaiseError(L);
 end;
 
 end.
