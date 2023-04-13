@@ -28,6 +28,32 @@ uses
   firebird.client, firebird.consts_pub.h, firebird.ibase.h, firebird.inf_pub.h,
   firebird.sqlda_pub.h, firebird.types_pub.h;
 
+type
+  TFBLibrary = class abstract
+    class var FCatalog: TDictionary<string, IFirebirdLibrary>;
+    class constructor Create;
+    class destructor Destroy;
+    class function Get(aVendorLib: string): IFirebirdLibrary;
+  end;
+
+class constructor TFBLibrary.Create;
+begin
+  FCatalog := TDictionary<string, IFirebirdLibrary>.Create;
+end;
+
+class destructor TFBLibrary.Destroy;
+begin
+  FCatalog.Free;
+end;
+
+class function TFBLibrary.Get(aVendorLib: string): IFirebirdLibrary;
+begin
+  if not FCatalog.TryGetValue(aVendorLib, Result) then begin
+    Result := TFirebirdLibraryFactory.New(aVendorLib, True);
+    FCatalog.Add(aVendorLib, Result);
+  end;
+end;
+
 function ToBytes(a: UInt32): TBytes; overload; inline;
 begin
   SetLength(Result, SizeOf(a));
@@ -55,7 +81,7 @@ begin
   var svc: isc_svc_handle := nil;
 
   var st := TStatusVector.Create as IStatusVector;
-  var L := TFirebirdLibraryFactory.New(VendorLib);
+  var L := TFBLibrary.Get(VendorLib);
 
   L.isc_service_attach(st.pValue, Length(svcName), PISC_SCHAR(svcName), @svc, Length(P), @P[0]);
   st.CheckAndRaiseError(L);
@@ -103,7 +129,7 @@ begin
   var db: isc_db_handle := nil;
 
   var st := TStatusVector.Create as IStatusVector;
-  var L := TFirebirdLibraryFactory.New(VendorLib);
+  var L := TFBLibrary.Get(VendorLib);
 
   L.isc_create_database(st.pValue, Length(fileName), PISC_SCHAR(fileName), @db, Length(P), @P[0], 0);
   st.CheckAndRaiseError(L);
@@ -122,7 +148,7 @@ begin
   var db: isc_db_handle := nil;
 
   var st := TStatusVector.Create as IStatusVector;
-  var L := TFirebirdLibraryFactory.New(VendorLib);
+  var L := TFBLibrary.Get(VendorLib);
 
   L.isc_attach_database(st.pValue, Length(fileName), PISC_SCHAR(fileName), @db, Length(P), @P[0]);
   st.CheckAndRaiseError(L);
@@ -144,7 +170,7 @@ begin
   var db: isc_db_handle := nil;
 
   var st := TStatusVector.Create as IStatusVector;
-  var L := TFirebirdLibraryFactory.New(VendorLib);
+  var L := TFBLibrary.Get(VendorLib);
 
   L.isc_attach_database(st.pValue, Length(fileName), PISC_SCHAR(fileName), @db, Length(P), @P[0]);
   st.CheckAndRaiseError(L);
