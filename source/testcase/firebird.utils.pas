@@ -14,8 +14,8 @@ type
 
 function FB_GetVersion(VendorLib, Host, UserName, Password: string): TFBVersion;
 
-procedure FB_CreateDatabase(VendorLib, Host, Database, UserName, Password:
-    string);
+procedure FB_CreateDatabase(VendorLib, Host, Database, UserName, Password,
+    aProviders: string);
 
 procedure FB_DropDatabase(VendorLib, Host, Database, UserName, Password: string);
 
@@ -60,12 +60,13 @@ begin
   Move(a, Result[0], SizeOf(a));
 end;
 
-function BuildDPB(UserName, Password: string): TBytes; inline;
+function BuildDPB(UserName, Password, aProviders: string): TBytes; inline;
 begin
   Result := [isc_dpb_version1]
           + [isc_dpb_sql_dialect, SizeOf(UInt32)] + ToBytes(UInt32(SQL_DIALECT_CURRENT));
   if not UserName.IsEmpty then Result := Result + [isc_dpb_user_name, Length(UserName)] + TEncoding.ANSI.GetBytes(UserName);
   if not Password.IsEmpty then Result := Result + [isc_dpb_password, Length(Password)] + TEncoding.ANSI.GetBytes(Password);
+  if not aProviders.IsEmpty then Result := Result + [isc_dpb_config, Length(aProviders)] + TEncoding.ANSI.GetBytes(aProviders);
 end;
 
 function FB_GetVersion(VendorLib, Host, UserName, Password: string):
@@ -118,13 +119,13 @@ begin
   st.CheckAndRaiseError(L);
 end;
 
-procedure FB_CreateDatabase(VendorLib, Host, Database, UserName, Password:
-    string);
+procedure FB_CreateDatabase(VendorLib, Host, Database, UserName, Password,
+    aProviders: string);
 begin
   var fileName := AnsiString(ExpandFileNameString(Database));
   if not Host.IsEmpty then fileName := AnsiString(Host) + ':' + fileName;
 
-  var P := BuildDPB(UserName, Password);
+  var P := BuildDPB(UserName, Password, aProviders);
 
   var db: isc_db_handle := nil;
 
@@ -143,7 +144,7 @@ begin
   var fileName := AnsiString(ExpandFileNameString(Database));
   if not Host.IsEmpty then fileName := AnsiString(Host) + ':' + fileName;
 
-  var P := BuildDPB(UserName, Password);
+  var P := BuildDPB(UserName, Password, TFirebirdEngines.GetProviders(VendorLib));
 
   var db: isc_db_handle := nil;
 
@@ -165,7 +166,7 @@ begin
   var fileName := AnsiString(ExpandFileNameString(Database));
   if not Host.IsEmpty then fileName := AnsiString(Host) + ':' + fileName;
 
-  var P := BuildDPB(UserName, Password);
+  var P := BuildDPB(UserName, Password, TFirebirdEngines.GetProviders(VendorLib));
 
   var db: isc_db_handle := nil;
 

@@ -38,6 +38,7 @@ type
     FServerCharSet: WideString;
     FWaitOnLocks: Boolean;
     FWaitOnLocksTimeOut: Integer;
+    FProviders: string;
     procedure SetupTimeZones(AddTimeZone: TAddTimeZone);
   protected
     function BeginTransaction(out TransactionHandle: TDBXTransactionHandle;
@@ -179,7 +180,8 @@ begin
     end else if SameText(Names[i], 'Delphi2007Connection') then begin
       if not TryStrToBool(Values[i], FIsDelphi2007Connection) then
         FIsDelphi2007Connection := False;
-    end;
+    end else if SameText(Names[i], TFirebird.FB_Config_Providers) then
+      FProviders := TFirebird.FB_Config_Providers + '=' + Values[i];
   end;
 
   DPB := AnsiChar(isc_dpb_version1) +
@@ -187,6 +189,9 @@ begin
          AnsiChar(isc_dpb_user_name) + AnsiChar(Length(FUserName)) + AnsiString(FUserName) +
          AnsiChar(isc_dpb_password) + AnsiChar(Length(FPassword)) + AnsiString(FPassword) +
          AnsiChar(isc_dpb_sql_role_name) + AnsiChar(Length(FRoleName)) + AnsiString(FRoleName);
+
+  if not FProviders.IsEmpty then
+    DPB := DPB + AnsiChar(isc_dpb_config) + AnsiChar(Length(FProviders)) + AnsiString(FProviders);
 
   sServerName := AnsiString(FDatabase);
   if FHostName <> '' then

@@ -443,11 +443,19 @@ begin
     sDatabase := sDatabase + 'T_' + GetTickCount.ToString + IntToStr(Random(High(Integer)));
 
     FServerVersion := v.ServerStr;
-    FName := Format('%s (%s) Host: %s Database: %s', [sImpl, FServerVersion, L.Values[HOSTNAME_KEY], sDatabase]);
 
-    FB_CreateDatabase(FVendorLib, L.Values[HOSTNAME_KEY], sDatabase, L.Values[szUSERNAME], L.Values[szPASSWORD]);
+    var i := L.IndexOfName(TFirebird.FB_Config_Providers);
+    var sProviders := '';
+    if i <> -1 then sProviders := L[i];
+    FB_CreateDatabase(FVendorLib, L.Values[HOSTNAME_KEY], sDatabase, L.Values[szUSERNAME], L.Values[szPASSWORD], sProviders);
 
     FODS := FB_GetODS(FVendorLib, L.Values[HOSTNAME_KEY], sDatabase, L.Values[szUSERNAME], L.Values[szPASSWORD]);
+
+    var sDB := L.Values[HOSTNAME_KEY];
+    if not sDB.IsEmpty then sDB := sDB + ':';
+    sDB := sDB + ExpandFileNameString(sDatabase);
+
+    FName := Format('%s (%s) Database: %s ODS: %d.%d', [FServerVersion, sImpl, sDB, DECODE_ODS_MAJOR(FODS), DECODE_ODS_MINOR(FODS)]);
 
     L.Values[DATABASENAME_KEY] := sDatabase;
     FParams := L.Text;
@@ -484,6 +492,9 @@ begin
   aConnection.Params.Values[TDBXPropertyNames.LibraryName] := FLibraryName;
   aConnection.Params.Values[TDBXPropertyNames.GetDriverFunc] := FGetDriverFunc;
   aConnection.Params.Values[TDBXPropertyNames.VendorLib] := FVendorLib;
+  var s := TFirebirdEngines.GetProviders(FVendorLib);
+  if not s.IsEmpty then
+    aConnection.Params.Values[TFirebird.FB_Config_Providers] := s;
 {$ifend}
 end;
 
@@ -504,6 +515,8 @@ begin
       F.Free;
     end;
   end;
+
+  SetEnvironmentVariable('drivers', PChar(TCmdLineParams_App.Drivers));
 end;
 
 class function TTestSuite_DBX.GetDriverSectionName: string;
@@ -3041,14 +3054,18 @@ begin
       for j := 0 to sEmbeds.Count - 1 do begin
         if TCmdLineParams_App.HasTestName and (TCmdLineParams_App.GetTestName <> sEmbeds.Names[j]) then Continue;
 
-        sParams := GetParams('', aParams);
-
-        sVer := GetServerVersion(sEmbeds.ValueFromIndex[j], sParams);
-
-        Result.Add(
-          TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i],
-          sDrivers.Names[i], sEmbeds.ValueFromIndex[j], sParams)
-        );
+        var Engines := TFirebirdEngines.Create(sEmbeds.ValueFromIndex[j]);
+        try
+          for var E in Engines do begin
+            sParams := GetParams('', aParams) + sLineBreak + Engines.GetProviders(E);
+            Result.Add(
+              TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i],
+              sDrivers.Names[i], sEmbeds.ValueFromIndex[j], sParams)
+            );
+          end;
+        finally
+          Engines.Free;
+        end;
       end;
     end;
   finally
@@ -3129,6 +3146,7 @@ begin
           IncludeTrailingPathDelimiter(TPath.GetDirectoryName(sDefaultVendorLib)) + 'plugins'
         , 'engine*.dll'
         ) do begin
+          sParams2 := GetParams('', aParams) + sLineBreak + string.Join('=', [TFirebird.FB_Config_Providers, TPath.GetFileNameWithoutExtension(Engine)]);
           R := R + [TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i], sDrivers.Names[i], sDefaultVendorLib, sParams2)];
         end;
 
