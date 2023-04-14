@@ -15,6 +15,7 @@ type
     class function RunAsConsole: boolean;
     class function TestSuite1: Boolean;
     class function TestSuite2: Boolean;
+    class function TestSuite3: Boolean;
   end;
 
 implementation
@@ -88,6 +89,12 @@ class function TCmdLineParams_App.TestSuite2: Boolean;
 begin
   var s := '';
   Result := FindCmdLineSwitch('suite', s) and (s = '2');
+end;
+
+class function TCmdLineParams_App.TestSuite3: Boolean;
+begin
+  var s := '';
+  Result := FindCmdLineSwitch('suite', s) and (s = '3');
 end;
 
 end.
