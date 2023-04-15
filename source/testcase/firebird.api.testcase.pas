@@ -24,6 +24,7 @@ type
     procedure Test_attachDatabase;
     procedure Test_attachServiceManager;
     procedure Test_createDatabase;
+    procedure getConfigManager;
   end;
 
 implementation
@@ -85,6 +86,25 @@ begin
   FreeLibrary(FHandle);
   FEngines.Free;
   inherited;
+end;
+
+procedure TTestCase_FirebirdAPI.getConfigManager;
+begin
+  var c := master.getConfigManager.getFirebirdConf;
+  status('Version: ' + c.getVersion(fbstatus).ToHexString);
+
+  for var e in TFirebirdConf.entries do begin
+    var v: string;
+    case e.data_type of
+      TYPE_BOOLEAN: v := c.asBoolean(c.getKey(e.key)).ToString;
+      TYPE_INTEGER: v := c.asInteger(c.getKey(e.key)).ToString;
+      TYPE_STRING:  v := c.asString(c.getKey(e.key), 0);
+    end;
+    status(e.key + '=' + v);
+  end;
+
+  var s := master.getConfigManager.getDirectory(IConfigManager.DIR_PLUGINS, 0);
+  status('Directory plugins: ' + s);
 end;
 
 procedure TTestCase_FirebirdAPI.Test_attachDatabase;
