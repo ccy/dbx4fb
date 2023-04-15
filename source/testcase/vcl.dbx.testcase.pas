@@ -4,8 +4,8 @@ interface
 
 uses
   System.Classes, System.SysUtils, System.Variants, Data.DB, Data.DBXCommon,
-  Data.DBXDynalinkNative, Data.FMTBcd, Data.SqlExpr, Datasnap.DBClient,
-  Datasnap.Provider, TestExtensions, TestFramework;
+  Data.FMTBcd, Data.SqlExpr, Datasnap.DBClient, Datasnap.Provider, TestExtensions,
+  TestFramework;
 
 type{$M+}
   ITestData = interface(IInterface)
