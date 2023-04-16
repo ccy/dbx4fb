@@ -24,7 +24,7 @@ type
     procedure Test_attachDatabase;
     procedure Test_attachServiceManager;
     procedure Test_createDatabase;
-    procedure getConfigManager;
+    procedure Test_getConfigManager;
   end;
 
 implementation
@@ -88,7 +88,7 @@ begin
   inherited;
 end;
 
-procedure TTestCase_FirebirdAPI.getConfigManager;
+procedure TTestCase_FirebirdAPI.Test_getConfigManager;
 begin
   var c := master.getConfigManager.getFirebirdConf;
   status('Version: ' + c.getVersion(fbstatus).ToHexString);
