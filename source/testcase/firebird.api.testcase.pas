@@ -84,7 +84,6 @@ begin
   prov := nil;
   master := nil;
   FreeLibrary(FHandle);
-  FEngines.Free;
   inherited;
 end;
 
