@@ -3055,12 +3055,19 @@ begin
         if TCmdLineParams_App.HasTestName and (TCmdLineParams_App.GetTestName <> sEmbeds.Names[j]) then Continue;
 
         var Engines := TFirebirdEngines.Create(sEmbeds.ValueFromIndex[j]);
-        for var E in Engines do begin
-          sParams := GetParams('', aParams) + sLineBreak + Engines.GetProviders(E);
+        if Engines.Count = 0 then
           Result.Add(
-            TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i],
-            sDrivers.Names[i], sEmbeds.ValueFromIndex[j], sParams)
-          );
+            TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i]
+          , sDrivers.Names[i], sEmbeds.ValueFromIndex[j], GetParams('', aParams))
+          )
+        else begin
+          for var E in Engines do begin
+            sParams := GetParams('', aParams) + sLineBreak + Engines.GetProviders(E);
+            Result.Add(
+              TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i]
+            , sDrivers.Names[i], sEmbeds.ValueFromIndex[j], sParams)
+            );
+          end;
         end;
       end;
     end;
