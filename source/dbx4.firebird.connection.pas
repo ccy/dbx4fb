@@ -74,7 +74,7 @@ uses
 constructor TDBXConnection_Firebird.Create(const aDriver: IDBXDriver);
 begin
   inherited Create;
-  FFirebirdLibrary := (aDriver as IDBXDriver_Firebird).NewLibrary;
+  FFirebirdLibrary := (aDriver as IDBXDriver_Firebird).GetLibrary;
 end;
 
 function TDBXConnection_Firebird.BeginTransaction(

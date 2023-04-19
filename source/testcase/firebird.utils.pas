@@ -49,7 +49,7 @@ end;
 class function TFBLibrary.Get(aVendorLib: string): IFirebirdLibrary;
 begin
   if not FCatalog.TryGetValue(aVendorLib, Result) then begin
-    Result := TFirebirdLibraryFactory.New(aVendorLib, True);
+    Result := TFirebirdLibrary.New(aVendorLib);
     FCatalog.Add(aVendorLib, Result);
   end;
 end;

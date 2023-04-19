@@ -15,7 +15,7 @@ type
 
   IDBXDriver_Firebird = interface(IDBXDriver)
   ['{03E21683-9F8E-4E7F-BC09-A48A0673392A}']
-    function NewLibrary: IFirebirdLibrary;
+    function GetLibrary: IFirebirdLibrary;
   end;
 
   IDBXConnection_Firebird = interface(IDBXConnection)

@@ -3,17 +3,13 @@ unit dbx4.firebird.driver;
 interface
 
 uses
-  System.Classes, Data.DBXCommon, Data.DBXPlatform,
+  Data.DBXCommon, Data.DBXPlatform,
   dbx4.base, dbx4.firebird.base, firebird.client;
 
 type
   TDBXDriver_Firebird = class(TDBXBase, IDBXDriver, IDBXDriver_Firebird)
   private
-    FHandle: THandle;
-    FVendorLib: WideString;
-    FServerCharSet: WideString;
-    FPath: IInterface;
-    procedure LoadDriver;
+    FLibrary: IFirebirdLibrary;
   protected
     function Close: TDBXErrorCode; override;
     function GetErrorMessage(LastErrorCode: TDBXErrorCode; ErrorMessage:
@@ -21,7 +17,7 @@ type
     function GetErrorMessageLength(LastErrorCode: TDBXErrorCode; out ErrorLen:
         TInt32): TDBXErrorCode; override;
     function Loaded: boolean;
-    function NewLibrary: IFirebirdLibrary;
+    function GetLibrary: IFirebirdLibrary;
   public
     constructor Create(const Count: TInt32; Names, Values: TWideStringArray);
   end;
@@ -29,29 +25,12 @@ type
 implementation
 
 uses
-  Winapi.Windows, System.Generics.Collections, System.SysUtils, Data.SqlConst;
+  System.SysUtils, Data.SqlConst;
 
 function TDBXDriver_Firebird.Close: TDBXErrorCode;
-var F: string;
-    i: integer;
-    L: IFirebirdLibrary;
 begin
-  SetLength(F, 1000);
-  i := GetModuleFileName(FHandle, PChar(F), 1000);
-  Assert(i > 0);
-  SetLength(F, i);
-
-  L := TFirebirdLibraryFactory.New(FHandle);
-  L.CORE_4508;
-
-  if not FreeLibrary(FHandle) then
-    Result := TDBXErrorCodes.DriverInitFailed
-  else begin
-    L.CORE_2186(F);
-    Result := TDBXErrorCodes.None;
-  end;
-
-  FPath := nil;
+  FLibrary := nil;
+  Result := TDBXErrorCodes.None;
 end;
 
 constructor TDBXDriver_Firebird.Create(const Count: TInt32; Names,
@@ -59,14 +38,16 @@ constructor TDBXDriver_Firebird.Create(const Count: TInt32; Names,
 var i: integer;
 begin
   inherited Create;
-  FServerCharSet := 'NONE';
+  var ServerCharSet := 'NONE';
+  var VendorLib := 'fbclient.dll';
   for i := 0 to Count - 1 do begin
     if Names[i] = SQLSERVER_CHARSET_KEY then
-      FServerCharSet := Values[i]
+      ServerCharSet := Values[i]
     else if Names[i] = TDBXPropertyNames.VendorLib then
-      FVendorLib := Values[i];
+      VendorLib := Values[i];
   end;
-  LoadDriver;
+
+  FLibrary := TFirebirdLibrary.New(VendorLib, ServerCharSet);
 end;
 
 function TDBXDriver_Firebird.GetErrorMessage(LastErrorCode: TDBXErrorCode;
@@ -83,28 +64,12 @@ end;
 
 function TDBXDriver_Firebird.Loaded: boolean;
 begin
-  Result := FHandle <> 0;
+  Result := Assigned(FLibrary) and FLibrary.Loaded;
 end;
 
-function TDBXDriver_Firebird.NewLibrary: IFirebirdLibrary;
+function TDBXDriver_Firebird.GetLibrary: IFirebirdLibrary;
 begin
-  Result := TFirebirdLibraryFactory.New(FHandle, FServerCharSet);
-end;
-
-procedure TDBXDriver_Firebird.LoadDriver;
-var sDir: string;
-    V: string;
-begin
-  FPath := TFirebirdLibraryRootPath.CreateFromLibrary(FVendorLib);
-
-  sDir := GetCurrentDir;
-  try
-    SetCurrentDir(ExtractFilePath(FVendorLib));
-    V := FVendorLib;
-    FHandle := LoadLibrary(PChar(V));
-  finally
-    SetCurrentDir(sDir);
-  end;
+  Result := FLibrary;
 end;
 
 end.
