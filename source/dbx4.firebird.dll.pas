@@ -490,11 +490,6 @@ begin
   Result := (IDBXRow(Handle) as IDBXWritableRow).SetWideString(Ordinal, Value, Length);
 end;
 
-function DBX_SupportWaitOnLocksInIsolationLevel: Boolean; stdcall;
-begin
-  Result := True;
-end;
-
 exports
   DBXBase_Close,
   DBXBase_GetErrorMessage,
@@ -558,7 +553,6 @@ exports
   DBXWritableRow_SetTimeStamp,
   DBXWritableRow_SetTimeStampOffset,
   DBXWritableRow_SetUInt8,
-  DBXWritableRow_SetWideString,
-  DBX_SupportWaitOnLocksInIsolationLevel;
+  DBXWritableRow_SetWideString;
 
 end.
