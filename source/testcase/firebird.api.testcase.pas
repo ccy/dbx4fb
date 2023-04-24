@@ -25,6 +25,7 @@ type
     procedure Test_attachServiceManager;
     procedure Test_createDatabase;
     procedure Test_getConfigManager;
+    procedure Test_getPlan;
   end;
 
 implementation
@@ -104,6 +105,33 @@ begin
 
   var s := master.getConfigManager.getDirectory(IConfigManager.DIR_PLUGINS, 0);
   status('Directory plugins: ' + s);
+end;
+
+procedure TTestCase_FirebirdAPI.Test_getPlan;
+begin
+  var p := util.getXpbBuilder(fbstatus, IXpbBuilder.DPB, nil, 0);
+  try
+    p.insertString(fbstatus, isc_dpb_config, FEngines.GetProviders);
+    var a := prov.attachDatabase(fbstatus, 'employee', p.getBufferLength(fbstatus), p.getBuffer(fbstatus));
+    try
+      var t := a.startTransaction(fbstatus, 0, nil);
+      try
+        var s := 'select * from rdb$database';
+        var st := a.prepare(fbstatus, t, s.Length, s, SQL_DIALECT_CURRENT, IStatement.PREPARE_PREFETCH_DETAILED_PLAN);
+        try
+          status(st.getPlan(fbstatus, true, 0));
+        finally
+          st.free(fbstatus);
+        end;
+      finally
+        t.commit(fbstatus);
+      end;
+    finally
+      a.detach(fbstatus);
+    end;
+  finally
+    p.dispose;
+  end;
 end;
 
 procedure TTestCase_FirebirdAPI.Test_attachDatabase;
