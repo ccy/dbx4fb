@@ -5,7 +5,7 @@ interface
 uses
   System.Classes, Data.DBXCommon, Data.DBXDynalink, Data.DBXPlatform,
   dbx4.base, dbx4.firebird.base, dbx4.firebird.connection, dbx4.firebird.reader,
-  firebird.client, firebird.dsql, firebird.ibase.h;
+  firebird.client, firebird.delphi, firebird.dsql, firebird.ibase.h;
 
 type
   TMetaDataProvider_Firebird = class(TInterfacedObject, IMetaDataProvider)
@@ -44,6 +44,7 @@ type
     FTrimChar: Boolean;
     FParameterRows: TList;
     function GetParameterRows: TList;
+    function GetTimeZoneOffset(aFBTimeZoneID: Word): TTimeZoneOffset;
     function NewMetaDataProvider(const aSQLDA: TXSQLDA): IMetaDataProvider;
   protected
     function Close: TDBXErrorCode; override;
@@ -64,7 +65,8 @@ uses
   System.StrUtils, System.SysUtils, System.WideStrings, Data.FMTBcd,
   Data.SqlTimSt,
   dbx4.firebird.metadata, dbx4.firebird.row, firebird.blr.h, firebird.charsets,
-  firebird.consts_pub.h, firebird.iberror.h, firebird.ods.h, firebird.sqlda_pub.h, firebird.dsc.h;
+  firebird.consts_pub.h, firebird.dsc.h, firebird.iberror.h, firebird.ods.h,
+  firebird.sqlda_pub.h;
 
 constructor TMetaDataProvider_Firebird.Create(const aSQLDA: TXSQLDA);
 begin
@@ -384,6 +386,12 @@ begin
   end;
 end;
 
+function TDBXCommand_Firebird.GetTimeZoneOffset(
+  aFBTimeZoneID: Word): TTimeZoneOffset;
+begin
+  Result := FConnection.GetTimeZoneOffset(aFBTimeZoneID);
+end;
+
 function TDBXCommand_Firebird.NewMetaDataProvider(
   const aSQLDA: TXSQLDA): IMetaDataProvider;
 begin
@@ -401,7 +409,7 @@ var S, P, Q: string;
 begin
   Assert(FDSQL = nil);
 
-  FDSQL := TFirebird_DSQL.Create(GetFirebirdLibrary, FTransactionPool, FServerCharSet, FCommandType = TDBXCommandTypes.DbxStoredProcedure);
+  FDSQL := TFirebird_DSQL.Create(GetFirebirdLibrary, FTransactionPool, GetTimeZoneOffset, FServerCharSet, FCommandType = TDBXCommandTypes.DbxStoredProcedure);
 
   FDSQL.Open(StatusVector, FDBHandle, FTransactionPool.CurrentTransaction);
   if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
@@ -414,7 +422,7 @@ begin
            'FROM RDB$PROCEDURE_PARAMETERS ' +
    Format('WHERE (RDB$PROCEDURE_NAME = ''%s'') AND (RDB$PARAMETER_TYPE = 0)', [AnsiDequotedStr(SQL, '"')]);
 
-    L := TFirebird_DSQL.Create(GetFirebirdLibrary, FTransactionPool);
+    L := TFirebird_DSQL.Create(GetFirebirdLibrary, FTransactionPool, GetTimeZoneOffset);
     L.Open(StatusVector, FDBHandle, nil);
     L.Prepare(StatusVector, Q, FSQLDialect);
     L.Execute(StatusVector);

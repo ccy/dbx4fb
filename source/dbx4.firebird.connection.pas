@@ -3,10 +3,10 @@ unit dbx4.firebird.connection;
 interface
 
 uses
-  System.SysUtils, Data.DBXCommon, Data.DBXDynalink, Data.DBXPlatform,
+  System.Generics.Collections, System.SysUtils, Data.DBXCommon, Data.DBXDynalink,
+  Data.DBXPlatform,
   dbx4.base, dbx4.firebird.base, firebird.client, firebird.consts_pub.h,
-  firebird.ibase.h, firebird.types_pub.h,
-  firebird.delphi;
+  firebird.delphi, firebird.ibase.h, firebird.types_pub.h;
 
 type
   TFirebirdClientDebuggerListener_DBXCallBack = class(TInterfacedObject, IFirebirdLibraryDebuggerListener)
@@ -39,6 +39,7 @@ type
     FWaitOnLocks: Boolean;
     FWaitOnLocksTimeOut: Integer;
     FProviders: string;
+    FTimeZones: TDictionary<Word, TTimeZoneOffset>;
     procedure SetupTimeZones(AddTimeZone: TAddTimeZone);
   protected
     function BeginTransaction(out TransactionHandle: TDBXTransactionHandle;
@@ -52,6 +53,7 @@ type
     function GetIsDelphi2007Connection: boolean;
     function GetServerCharSet: WideString;
     function GetSQLDialect: integer;
+    function GetTimeZoneOffset(aFBTimeZoneID: Word): TTimeZoneOffset;
     function GetTransactionPool: TFirebirdTransactionPool;
     function GetTrimChar: Boolean;
     function GetVendorProperty(Name: TDBXWideString; Value: TDBXWideStringBuilder;
@@ -63,6 +65,7 @@ type
         DBXTraceCallback): TDBXErrorCode;
   public
     constructor Create(const aDriver: IDBXDriver);
+    procedure BeforeDestruction; override;
   end;
 
 implementation
@@ -75,6 +78,12 @@ constructor TDBXConnection_Firebird.Create(const aDriver: IDBXDriver);
 begin
   inherited Create;
   FFirebirdLibrary := (aDriver as IDBXDriver_Firebird).GetLibrary;
+end;
+
+procedure TDBXConnection_Firebird.BeforeDestruction;
+begin
+  FreeAndNil(FTimeZones);
+  inherited;
 end;
 
 function TDBXConnection_Firebird.BeginTransaction(
@@ -121,7 +130,7 @@ begin
   end else
     Result := TDBXErrorCodes.None;
 
-  FFirebirdLibrary.SetupTimeZoneHandler(nil);
+  FreeAndNil(FTimeZones);
 end;
 
 function TDBXConnection_Firebird.Commit(
@@ -211,8 +220,6 @@ begin
   T.WaitOnLocks := FWaitOnLocks;
   T.WaitOnLocksTimeOut := FWaitOnLocksTimeOut;
   FTransactionPool := TFirebirdTransactionPool.Create(FFirebirdLibrary, GetDBHandle, T);
-
-  FFirebirdLibrary.SetupTimeZoneHandler(SetupTimeZones);
 end;
 
 function TDBXConnection_Firebird.GetDBHandle: pisc_db_handle;
@@ -238,6 +245,17 @@ end;
 function TDBXConnection_Firebird.GetSQLDialect: integer;
 begin
   Result := FSQLDialect;
+end;
+
+function TDBXConnection_Firebird.GetTimeZoneOffset(
+  aFBTimeZoneID: Word): TTimeZoneOffset;
+begin
+  if FTimeZones = nil then begin
+    FTimeZones := TDictionary<Word, TTimeZoneOffset>.Create;
+    SetupTimeZones(FTimeZones.Add);
+  end;
+  if not FTimeZones.TryGetValue(aFBTimeZoneID, Result) then
+    Result := TTimeZoneOffset.Default;
 end;
 
 function TDBXConnection_Firebird.GetTransactionPool: TFirebirdTransactionPool;
