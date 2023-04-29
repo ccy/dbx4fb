@@ -11,6 +11,7 @@ type
   TDBXRow_Firebird = class(TDBXBase_Firebird, IDBXRow, IDBXWritableRow)
   private
     FConnection: IDBXConnection;
+    FStatusVector: IStatusVector;
     FDBHandle: pisc_db_handle;
     FDSQL: IFirebird_DSQL;
     FMetaData: IMetaDataProvider;
@@ -98,20 +99,23 @@ type
   protected
     function Close: TDBXErrorCode; override;
     function GetFirebirdLibrary: IFirebirdLibrary; override;
+    function StatusVector: IStatusVector; override;
   public
-    constructor Create(const aConnection: IDBXConnection; const aDBHandle:
-        pisc_db_handle; const aMetaData: IMetaDataProvider; const aDSQL:
-        IFirebird_DSQL; const aTrimChar: boolean);
+    constructor Create(const aConnection: IDBXConnection; aStatusVector:
+        IStatusVector; const aDBHandle: pisc_db_handle; const aMetaData:
+        IMetaDataProvider; const aDSQL: IFirebird_DSQL; const aTrimChar: boolean);
   end;
 
 implementation
 
-constructor TDBXRow_Firebird.Create(const aConnection: IDBXConnection; const
-    aDBHandle: pisc_db_handle; const aMetaData: IMetaDataProvider; const aDSQL:
-    IFirebird_DSQL; const aTrimChar: boolean);
+constructor TDBXRow_Firebird.Create(const aConnection: IDBXConnection;
+    aStatusVector: IStatusVector; const aDBHandle: pisc_db_handle; const
+    aMetaData: IMetaDataProvider; const aDSQL: IFirebird_DSQL; const aTrimChar:
+    boolean);
 begin
   inherited Create;
   FConnection := aConnection;
+  FStatusVector := aStatusVector;
   FDBHandle := aDBHandle;
   FMetaData := aMetaData;
   FDSQL := aDSQL;
@@ -183,12 +187,11 @@ function TDBXRow_Firebird.GetByteLength(Ordinal: TInt32; out Length: Int64; out
 var i: Cardinal;
     B: Boolean;
 begin
-  Get_oVar(Ordinal).GetBlobSize(StatusVector, FDBHandle, FDSQL.Transaction, i, B);
-  if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
-
-  IsNull := B;
-  Length := i;
-  Result := TDBXErrorCodes.None;
+  if CheckSuccess(Get_oVar(Ordinal).GetBlobSize(StatusVector, FDBHandle, FDSQL.Transaction, i, B), TDBXErrorCodes.VendorError, Result) then begin
+    IsNull := B;
+    Length := i;
+    Result := TDBXErrorCodes.None;
+  end;
 end;
 
 function TDBXRow_Firebird.GetBytes(Ordinal: TInt32; Offset: Int64; Value:
@@ -198,12 +201,12 @@ var B: Boolean;
 begin
   Assert(Offset = 0);
   Assert(ValueOffSet = 0);
-  Get_oVar(Ordinal).GetBlob(StatusVector, FDBHandle, FDSQL.Transaction, Value, B, Length);
-  if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
 
-  ReturnLength := Length;
-  IsNull := B;
-  Result := TDBXErrorCodes.None;
+  if CheckSuccess(Get_oVar(Ordinal).GetBlob(StatusVector, FDBHandle, FDSQL.Transaction, Value, B, Length), TDBXErrorCodes.VendorError, Result) then begin
+    ReturnLength := Length;
+    IsNull := B;
+    Result := TDBXErrorCodes.None;
+  end;
 end;
 
 function TDBXRow_Firebird.GetDate(Ordinal: TInt32; out Value: PDate; out
@@ -540,6 +543,11 @@ function TDBXRow_Firebird.SetWideString(Ordinal: TInt32;
 begin
   FDSQL.i_SQLDA[Ordinal].SetWideString(Value, Length, False);
   Result := TDBXErrorCodes.None;
+end;
+
+function TDBXRow_Firebird.StatusVector: IStatusVector;
+begin
+  Result := FStatusVector;
 end;
 
 end.

@@ -113,8 +113,7 @@ begin
     Exit;
   end;
 
-  N.Start(StatusVector);
-  if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
+  if not CheckSuccess(N.Start(StatusVector), TDBXErrorCodes.VendorError, Result) then Exit(Result);
 
   TransactionHandle := nil;
   TFirebirdTransaction(TransactionHandle) := N;
@@ -124,20 +123,17 @@ end;
 function TDBXConnection_Firebird.Close: TDBXErrorCode;
 begin
   FreeAndNil(FTransactionPool);
-  if FDBHandle <> nil then begin
-    FFirebirdLibrary.isc_detach_database(StatusVector.pValue, GetDBHandle);
-    StatusVector.CheckResult(Result, TDBXErrorCodes.ConnectionFailed);
-  end else
+  if Assigned(FDBHandle) then
+    Result := CheckSuccess(FFirebirdLibrary.isc_detach_database(StatusVector.pValue, GetDBHandle), TDBXErrorCodes.ConnectionFailed)
+  else
     Result := TDBXErrorCodes.None;
-
   FreeAndNil(FTimeZones);
 end;
 
 function TDBXConnection_Firebird.Commit(
   TransactionHandle: TDBXTransactionHandle): TDBXErrorCode;
 begin
-  FTransactionPool.Commit(StatusVector, TFirebirdTransaction(TransactionHandle));
-  StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError);
+  Result := CheckSuccess(FTransactionPool.Commit(StatusVector, TFirebirdTransaction(TransactionHandle)), TDBXErrorCodes.VendorError);
 end;
 
 function TDBXConnection_Firebird.Connect(Count: TInt32; Names, Values:
@@ -207,8 +203,8 @@ begin
     sServerName := AnsiString(FHostName) + ':' + AnsiString(sServerName);
 
   FDBHandle := nil;
-  FFirebirdLibrary.isc_attach_database(StatusVector.pValue, Length(sServerName), PISC_SCHAR(sServerName), GetDBHandle, Length(DPB), PISC_SCHAR(DPB));
-  StatusVector.CheckResult(Result, TDBXErrorCodes.ConnectionFailed);
+  if not CheckSuccess(FFirebirdLibrary.isc_attach_database(StatusVector.pValue, Length(sServerName), PISC_SCHAR(sServerName), GetDBHandle, Length(DPB), PISC_SCHAR(DPB)), TDBXErrorCodes.ConnectionFailed, Result) then
+    Exit(Result);
 
   Assert(FTransactionPool = nil);
   T.Init;
@@ -300,8 +296,7 @@ end;
 function TDBXConnection_Firebird.Rollback(
   TransactionHandle: TDBXTransactionHandle): TDBXErrorCode;
 begin
-  FTransactionPool.RollBack(StatusVector, TFirebirdTransaction(TransactionHandle));
-  StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError);
+  Result := CheckSuccess(FTransactionPool.RollBack(StatusVector, TFirebirdTransaction(TransactionHandle)), TDBXErrorCodes.VendorError);
 end;
 
 function TDBXConnection_Firebird.SetCallbackEvent(CallbackHandle:

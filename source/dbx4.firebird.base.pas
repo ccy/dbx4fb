@@ -38,13 +38,13 @@ type
   private
     FStatusVector: IStatusVector;
   protected // IDBXBase_Firebird
-    function GetFirebirdLibrary: IFirebirdLibrary; virtual;
+    function GetFirebirdLibrary: IFirebirdLibrary; virtual; abstract;
   protected
     function GetErrorMessage(LastErrorCode: TDBXErrorCode; ErrorMessage:
         TDBXWideStringBuilder): TDBXErrorCode; override;
     function GetErrorMessageLength(LastErrorCode: TDBXErrorCode; out ErrorLen:
         TInt32): TDBXErrorCode; override;
-    function StatusVector: IStatusVector;
+    function StatusVector: IStatusVector; virtual;
     function NotSupported: TDBXErrorCode;
   end;
 
@@ -67,16 +67,9 @@ begin
   Result := TDBXErrorCodes.None;
 end;
 
-function TDBXBase_Firebird.GetFirebirdLibrary: IFirebirdLibrary;
-begin
-  Result := nil;
-end;
-
 function TDBXBase_Firebird.NotSupported: TDBXErrorCode;
 begin
-  StatusVector.pValue[0] := 1;
-  StatusVector.pValue[1] := isc_wish_list;
-
+  StatusVector.SetError([isc_wish_list]);
   Result := TDBXErrorCodes.NotSupported;
 end;
 

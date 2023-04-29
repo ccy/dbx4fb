@@ -92,13 +92,12 @@ begin
   FDSQL := aDSQL;
   FTrimChar := aTrimChar;
 
-  FRow := TDBXRow_Firebird.Create(FConnection, FDBHandle, FMetaData, FDSQL, FTrimChar);
+  FRow := TDBXRow_Firebird.Create(FConnection, StatusVector, FDBHandle, FMetaData, FDSQL, FTrimChar);
 end;
 
 function TDBXReader_Firebird_DSQL.Close: TDBXErrorCode;
 begin
-  Result := FDSQL.Close(StatusVector);
-  StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError);
+  Result := CheckSuccess(FDSQL.Close(StatusVector), TDBXErrorCodes.VendorError);
 end;
 
 function TDBXReader_Firebird_DSQL.Next: TDBXErrorCode;
@@ -106,7 +105,7 @@ var R: integer;
 begin
   R := FDSQL.Fetch(StatusVector);
   if (R <> 0) and (R <> 100) then
-    StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError)
+    Result := CheckSuccess(R, TDBXErrorCodes.VendorError)
   else if R = 100 then
     Result := TDBXErrorCodes.EOF
   else

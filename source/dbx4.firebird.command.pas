@@ -313,16 +313,12 @@ end;
 
 function TDBXCommand_Firebird.Close: TDBXErrorCode;
 var i: integer;
-    e: TFBIntType;
     o: TDBXRowHandle;
 begin
   if Assigned(FDSQL) then begin
-    FDSQL.Close(StatusVector);
-    if StatusVector.CheckFirebirdError(e) then begin
-      if e <> isc_network_error then
-        if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then
-          Exit;
-    end;
+    var e := FDSQL.Close(StatusVector);
+    if (e <> isc_arg_end) and (e <> isc_network_error) then
+      Exit(TDBXErrorCodes.VendorError);
   end;
   for i := 0 to GetParameterRows.Count - 1 do begin
     o := GetParameterRows[i];
@@ -339,7 +335,7 @@ begin
   var M: IMetaDataProvider := nil;
   if Assigned(FDSQL) then
     M := NewMetaDataProvider(FDSQL.o_SQLDA);
-  var o: IDBXBase := TDBXRow_Firebird.Create(FConnection, FDBHandle, M, FDSQL, (FConnection as IDBXConnection_Firebird).TrimChar);
+  var o: IDBXBase := TDBXRow_Firebird.Create(FConnection, StatusVector, FDBHandle, M, FDSQL, (FConnection as IDBXConnection_Firebird).TrimChar);
 
   IDBXBase(aRow) := o;
   GetParameterRows.Add(aRow);
@@ -352,8 +348,8 @@ var M: IMetaDataProvider;
 begin
   Assert(Assigned(FDSQL));
 
-  FDSQL.Execute(StatusVector);
-  if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
+  if not CheckSuccess(FDSQL.Execute(StatusVector), TDBXErrorCodes.VendorError, Result) then
+    Exit(Result);
 
   M := NewMetaDataProvider(FDSQL.o_SQLDA);
   Reader := TDBXReader_Firebird_DSQL.Create(FConnection, FDBHandle, M, FDSQL, FTrimChar);
@@ -376,14 +372,17 @@ function TDBXCommand_Firebird.GetRowsAffected(
   out Rows: Int64): TDBXErrorCode;
 var R: Cardinal;
 begin
+  Rows := 0;
+  Result := TDBXErrorCodes.None;
   if Assigned(FDSQL) then begin
-    FDSQL.GetRowsAffected(StatusVector, R);
-    Rows := R;
-    if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
-  end else begin
-    Rows := 0;
-    Result := TDBXErrorCodes.None;
+    if CheckSuccess(FDSQL.GetRowsAffected(StatusVector, R), TDBXErrorCodes.VendorError, Result) then
+      Rows := R
+    else
+      Exit(Result);
   end;
+
+  if CheckSuccess(FDSQL.GetRowsAffected(StatusVector, R), TDBXErrorCodes.VendorError, Result) then
+    Rows := R;
 end;
 
 function TDBXCommand_Firebird.GetTimeZoneOffset(
@@ -411,8 +410,8 @@ begin
 
   FDSQL := TFirebird_DSQL.Create(GetFirebirdLibrary, FTransactionPool, GetTimeZoneOffset, FServerCharSet, FCommandType = TDBXCommandTypes.DbxStoredProcedure);
 
-  FDSQL.Open(StatusVector, FDBHandle, FTransactionPool.CurrentTransaction);
-  if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
+  if not CheckSuccess(FDSQL.Open(StatusVector, FDBHandle, FTransactionPool.CurrentTransaction), TDBXErrorCodes.VendorError, Result) then
+    Exit(Result);
 
   S := SQL;
 
@@ -449,14 +448,15 @@ begin
     S := 'EXECUTE PROCEDURE ' + S + P;
   end;
 
-  FDSQL.Prepare(StatusVector, S, FSQLDialect, Count);
+  if not CheckSuccess(FDSQL.Prepare(StatusVector, S, FSQLDialect, Count), TDBXErrorCodes.VendorError, Result) then
+    Exit(Result);
 
   var M := NewMetaDataProvider(FDSQL.o_SQLDA);
 
   for var o in GetParameterRows do
     (IDBXBase(o) as IDBXRow).SetDSQL(FDSQL, M);
 
-  if not StatusVector.CheckResult(Result, TDBXErrorCodes.VendorError) then Exit;
+  Result := TDBXErrorCodes.None;
 end;
 
 end.

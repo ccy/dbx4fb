@@ -4,7 +4,7 @@ interface
 
 uses
   System.SysUtils, Data.DBXCommon, Data.DBXDynalink, Data.DBXPlatform,
-  Data.FMTBcd, Data.SqlTimSt,
+  Data.FMTBcd, Data.SqlTimSt, firebird.types_pub.h, firebird.iberror.h,
   firebird.delphi, firebird.dsql;
 
 type
@@ -32,6 +32,10 @@ type
 
   TDBXBase = class abstract(TInterfacedObject, IDBXBase)
   protected
+    function CheckSuccess(aFBStatus: ISC_STATUS; aMapDBXError: TDBXErrorCode):
+        TDBXErrorCode; overload;
+    function CheckSuccess(aFBStatus: ISC_STATUS; aMapDBXError: TDBXErrorCode; out
+        aDBXError: TDBXErrorCode): Boolean; overload;
     function Close: TDBXErrorCode; virtual; abstract;
     function GetErrorMessage(LastErrorCode: TDBXErrorCode; ErrorMessage:
         TDBXWideStringBuilder): TDBXErrorCode; virtual; abstract;
@@ -141,5 +145,26 @@ type
   end;
 
 implementation
+
+function TDBXBase.CheckSuccess(aFBStatus: ISC_STATUS; aMapDBXError:
+    TDBXErrorCode; out aDBXError: TDBXErrorCode): Boolean;
+begin
+  if aFBStatus = isc_arg_end then begin
+    aDBXError := TDBXErrorCodes.None;
+    Result := True;
+  end else begin
+    aDBXError := aMapDBXError;
+    Result := False;
+  end;
+end;
+
+function TDBXBase.CheckSuccess(aFBStatus: ISC_STATUS; aMapDBXError:
+    TDBXErrorCode): TDBXErrorCode;
+begin
+  if aFBStatus = isc_arg_end then
+    Result := TDBXErrorCodes.None
+  else
+    Result := aMapDBXError;
+end;
 
 end.
