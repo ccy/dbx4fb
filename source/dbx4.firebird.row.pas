@@ -3,8 +3,9 @@ unit dbx4.firebird.row;
 interface
 
 uses
-  System.SysUtils, Data.DBXCommon, Data.DBXPlatform, Data.FmtBcd, Data.SqlTimSt,
-  dbx4.base, dbx4.firebird.base, firebird.client, firebird.dsql, firebird.ibase.h;
+  System.SysUtils, Data.DBXCommon, Data.DBXPlatform, Data.FMTBcd, Data.SqlTimSt,
+  dbx4.base, dbx4.firebird.base,
+  firebird.client, firebird.dsql, firebird.types_pub.h;
 
 type
   TDBXRow_Firebird = class(TDBXBase_Firebird, IDBXRow, IDBXWritableRow)

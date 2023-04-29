@@ -4,7 +4,7 @@ interface
 
 uses
   Data.DBXCommon, Data.DBXPlatform,
-  dbx4.base, firebird.client, firebird.ibase.h;
+  dbx4.base, firebird.client, firebird.types_pub.h;
 
 type
   IDBXBase_Firebird = interface(IDBXBase)

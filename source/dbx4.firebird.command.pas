@@ -5,7 +5,7 @@ interface
 uses
   System.Classes, Data.DBXCommon, Data.DBXDynalink, Data.DBXPlatform,
   dbx4.base, dbx4.firebird.base, dbx4.firebird.connection, dbx4.firebird.reader,
-  firebird.client, firebird.delphi, firebird.dsql, firebird.ibase.h;
+  firebird.client, firebird.delphi, firebird.dsql, firebird.types_pub.h;
 
 type
   TMetaDataProvider_Firebird = class(TInterfacedObject, IMetaDataProvider)
@@ -64,9 +64,9 @@ implementation
 uses
   System.StrUtils, System.SysUtils, System.WideStrings, Data.FMTBcd,
   Data.SqlTimSt,
-  dbx4.firebird.metadata, dbx4.firebird.row, firebird.blr.h, firebird.charsets,
-  firebird.consts_pub.h, firebird.dsc.h, firebird.iberror.h, firebird.ods.h,
-  firebird.sqlda_pub.h;
+  dbx4.firebird.metadata, dbx4.firebird.row,
+  firebird.blr.h, firebird.charsets.h, firebird.consts_pub.h, firebird.dsc.h,
+  firebird.iberror.h, firebird.ods.h, firebird.sqlda_pub.h;
 
 constructor TMetaDataProvider_Firebird.Create(const aSQLDA: TXSQLDA);
 begin

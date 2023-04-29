@@ -4,7 +4,8 @@ interface
 
 uses
   System.SysUtils, Data.DBXCommon, Data.DBXPlatform,
-  dbx4.base, dbx4.firebird.base, firebird.client, firebird.dsql, firebird.ibase.h;
+  dbx4.base, dbx4.firebird.base,
+  firebird.client, firebird.dsql, firebird.types_pub.h;
 
 type
   TDBXReader_Firebird = class abstract(TDBXBase_Firebird)
