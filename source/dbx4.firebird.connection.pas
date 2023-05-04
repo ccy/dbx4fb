@@ -186,7 +186,7 @@ begin
       if not TryStrToBool(Values[i], FIsDelphi2007Connection) then
         FIsDelphi2007Connection := False;
     end else if SameText(Names[i], TFirebird.FB_Config_Providers) then
-      FProviders := TFirebird.FB_Config_Providers + '=' + Values[i];
+      FProviders := Values[i];
   end;
 
   DPB := AnsiChar(isc_dpb_version1) +

@@ -4,8 +4,8 @@
 
 	<taskdef resource="net/sf/antcontrib/antlib.xml"/>
 
-	<fail unless="program" message="missing 'program' property. Example: ant -Dprogram=d:\win32\debug\dbxfbTests.exe -Ddrivers=Y:\firebird" />
-	<fail unless="drivers" message="missing 'drivers' property. Example: ant -Dprogram=d:\win32\debug\dbxfbTests.exe -Ddrivers=Y:\firebird" />
+	<fail unless="program" message="missing 'program' property. Example: ant -Dprogram=..\..\project\win32\debug\dbxfbTests.exe -Ddrivers=Y:\firebird" />
+	<fail unless="drivers" message="missing 'drivers' property. Example: ant -Dprogram=..\..\project\win32\debug\dbxfbTests.exe -Ddrivers=Y:\firebird" />
 
 	<property environment="env" />
 	<property name="program.conf" location="dbxfbTests.ini" />
@@ -34,9 +34,13 @@
 			<param name="suite" value="3" />
 		</antcall>
 
-        <antcall target="dbx.test">
-			<param name="test" value="server_1" />
-		</antcall>
+		<for param="i" begin="1" end="2" parallel="true" keepgoing="true">
+			<sequential>
+				<antcall target="dbx.test">
+					<param name="test" value="server_@{i}" />
+				</antcall>
+			</sequential>
+		</for>
 	</target>
 
 	<target name="dbx.test">

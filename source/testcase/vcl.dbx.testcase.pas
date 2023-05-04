@@ -571,10 +571,7 @@ end;
 
 class function TTestSuite_DBX.GetServerSectionName: string;
 begin
-  Result := 'server.' +
-            {$ifdef Win32}'x86'{$endif}
-            {$ifdef Win64}'x64'{$endif}
-            ;
+  Result := 'server';
 end;
 
 class function TTestSuite_DBX.GetServerVersion(aLibraryName, aParams:

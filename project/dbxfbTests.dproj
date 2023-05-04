@@ -200,7 +200,7 @@
         <DCCReference Include="..\source\testcase\vcl.dbx.cmdlines.pas"/>
         <DCCReference Include="..\source\testcase\vcl.dbx.main.pas"/>
         <DCCReference Include="..\source\testcase\vcl.dbx.testcase.pas"/>
-        <DCCReference Include="..\source\testcase\firebird.api.testcase.pas"/>
+        <DCCReference Include="..\source\testcase\firebird.client.testcase.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
