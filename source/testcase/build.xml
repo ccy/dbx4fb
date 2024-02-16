@@ -73,7 +73,7 @@
 	</target>
 
 	<target name="t.platform.testcount">
-		<condition property="p.embedded.end" value="47" else="32">
+		<condition property="p.embedded.end" value="48" else="33">
 			<or>
 				<equals arg1="${p.platform}" arg2="Win32" casesensitive="false" />
 			</or>
