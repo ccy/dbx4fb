@@ -3,5 +3,14 @@
 *.dsk
 *.tvsconfig
 *.stat
+*.res
+*.tvsconfig
+*.dres
+*.tlb
+*.sds
+*.stat
+*.dsv
+__recovery
+__history
 Win32/
 Win64/

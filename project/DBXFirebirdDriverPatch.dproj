@@ -2,7 +2,7 @@
     <PropertyGroup>
         <ProjectGuid>{8E4E9991-43EC-4B95-BA0C-8B279566194F}</ProjectGuid>
         <MainSource>DBXFirebirdDriverPatch.dpk</MainSource>
-        <ProjectVersion>19.5</ProjectVersion>
+        <ProjectVersion>20.1</ProjectVersion>
         <FrameworkType>None</FrameworkType>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
