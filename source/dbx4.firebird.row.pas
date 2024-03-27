@@ -166,10 +166,11 @@ end;
 
 function TDBXRow_Firebird.GetBoolean(Ordinal: TInt32; out Value: PWordBool; out
     IsNull: LongBool): TDBXErrorCode;
+const BooleanToSmallInt: array[Boolean] of Int16 = (0, 1);
 var V, B: boolean;
 begin
   Get_oVar(Ordinal).GetBoolean(@V, B);
-  Value^ := V;
+  PSmallInt(Value)^ := BooleanToSmallInt[V];
   IsNull := B;
   Result := TDBXErrorCodes.None;
 end;

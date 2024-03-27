@@ -221,6 +221,8 @@ type{$M+}
     FDataSet: TSQLDataSet;
     FDSP: TDataSetProvider;
     FCDS: TClientDataSet;
+    function DefaultBooleanField: string;
+    function DefaultBooleanValue: string;
   protected
     procedure SetUp; override;
     procedure TearDown; override;
@@ -231,6 +233,7 @@ type{$M+}
     procedure Test_MalformString;
     procedure Test_UTF8_EmptyString;
     procedure Test_MalformString_UTF8;
+    procedure Test_Boolean;
   end;
 
   TTestCase_DBX_Server_Embed = class(TTestCase, ITestCase_DBX2)
@@ -2782,6 +2785,22 @@ begin
   end;
 end;
 
+function TTestCase_DBX_DataSnap.DefaultBooleanField: string;
+begin
+  if GetTestData.GetODS >= ODS_12_0 then
+    Result := ', F_BOOLEAN BOOLEAN'
+  else
+    Result := '';
+end;
+
+function TTestCase_DBX_DataSnap.DefaultBooleanValue: string;
+begin
+  if GetTestData.GetODS >= ODS_12_0 then
+    Result := ', NULL'
+  else
+    Result := '';
+end;
+
 procedure TTestCase_DBX_DataSnap.SetUp;
 var S: string;
     L: TStringList;
@@ -2797,8 +2816,9 @@ begin
   end;
 
   S := 'CREATE TABLE T_DATASET( ' +
-       '   FIELD VARCHAR(100), ' +
-       '   F_VARCHAR_UTF8 VARCHAR(100) CHARACTER SET UTF8 ' +
+       '  FIELD VARCHAR(100)' +
+       ', F_VARCHAR_UTF8 VARCHAR(100) CHARACTER SET UTF8 ' +
+       DefaultBooleanField +
        ')';
   FConnection.ExecuteDirect(S);
 
@@ -2820,6 +2840,35 @@ begin
   FDataSet.Free;
   FConnection.ExecuteDirect('DROP TABLE T_DATASET');
   inherited;
+end;
+
+procedure TTestCase_DBX_DataSnap.Test_Boolean;
+begin
+  for var o in [False, True] do begin
+    FCDS.SetProvider(FDSP);
+    FCDS.Open;
+    FCDS.AppendRecord(['A', 'A', o]);
+    CheckEquals(0, FCDS.ApplyUpdates(0));
+
+    FCDS.Close;
+    FCDS.SetProvider(FDSP);
+    FCDS.Open;
+    CheckEquals(o, FCDS.FindField('F_Boolean').AsBoolean);
+
+    FCDS.Edit;
+    FCDS.FindField('F_Boolean').AsBoolean := o;
+    FCDS.Post;
+    CheckEquals(0, FCDS.ChangeCount);
+
+    FCDS.Edit;
+    FCDS.FindField('F_Boolean').AsBoolean := not o;
+    FCDS.Post;
+    CheckEquals(1, FCDS.ChangeCount);
+
+    FCDS.Delete;
+    CheckEquals(0, FCDS.ApplyUpdates(0));
+    FCDS.Close;
+  end;
 end;
 
 procedure TTestCase_DBX_DataSnap.Test_MalformString;
@@ -2844,7 +2893,7 @@ begin
        ')';
   FConnection.ExecuteDirect(S);
 
-  S := 'INSERT INTO T_DATASET VALUES(''ABC'', ''UTF8'')';
+  S := 'INSERT INTO T_DATASET VALUES(''ABC'', ''UTF8''' + DefaultBooleanValue + ')';
   FConnection.ExecuteDirect(S);
 
   try
