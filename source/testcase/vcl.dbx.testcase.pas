@@ -315,12 +315,12 @@ type{$M+}
 implementation
 
 uses
-  Winapi.Windows, System.DateUtils, System.IniFiles, System.IOUtils, System.Math,
-  System.StrUtils, System.WideStrings, Data.DbxFirebird, Data.DBXMetaDataProvider,
-  Data.SqlConst, Data.SqlTimSt,
+  Winapi.Windows, System.DateUtils, System.Generics.Collections, System.IniFiles,
+  System.IOUtils, System.Math, System.StrUtils, System.WideStrings,
+  Data.DbxFirebird, Data.DBXMetaDataProvider, Data.SqlConst, Data.SqlTimSt,
   Data.DBXFirebird.AutoUnloadDriver, Data.DBXFirebirdMetaDataReader.RSP37064,
-  Data.DBXFirebirdMetaDataReader.RSP37065, firebird.client, firebird.ods.h,
-  firebird.utils, vcl.dbx.cmdlines;
+  Data.DBXFirebirdMetaDataReader.RSP37065,
+  firebird.client, firebird.ods.h, firebird.utils, vcl.dbx.cmdlines;
 
 type
   TSQLTimeStampHelper = record helper for TSQLTimeStamp
@@ -3380,16 +3380,15 @@ begin
 end;
 
 procedure TTestCase_DBX_TSQLStoredProc.Test_GetProcedureNames;
-var S: string;
-    L: TStringList;
+var L: TStringList;
     i: integer;
 begin
   for i := 0 to 9 do begin
-    S := Format('CREATE PROCEDURE A%d ', [i]) +
+    var s := Format('CREATE PROCEDURE A%d ', [i]) +
          'AS ' +
          'BEGIN ' +
          'END ';
-    FConnection.ExecuteDirect(S);
+    FConnection.ExecuteDirect(s);
   end;
 
   L := TStringList.Create;
@@ -3399,10 +3398,21 @@ begin
     for i := 0 to 9 do
       CheckEquals(Format('A%d', [i]), L[i]);
 
-    if GetTestData.GetODS >= ODS_13_0 then begin
-      i := L.Count - 2;
-      CheckEquals('DATABASE_VERSION', L[i]);
-      CheckEquals('TRANSITIONS', L[i + 1]);
+    var iODS := GetTestData.GetODS;
+    var A: TArray<string> := [];
+    if iODS >= ODS_13_0 then
+      A := A + ['DATABASE_VERSION', 'TRANSITIONS'];
+
+    if iODS >= ODS_13_1 then
+      A := A + ['CANCEL_BLOB', 'CANCEL_SESSION', 'CLOSE_HANDLE'
+      , 'DISCARD', 'FINISH_SESSION', 'FLUSH', 'IS_WRITABLE', 'NEW_BLOB'
+      , 'OPEN_BLOB', 'PAUSE_SESSION', 'READ_DATA', 'RESUME_SESSION'
+      , 'SEEK', 'SET_FLUSH_INTERVAL', 'START_SESSION'
+      ];
+    TArray.Sort<string>(A);
+    for var s in A do begin
+      CheckEquals(s, L[i]);
+      Inc(i);
     end;
   finally
     L.Free;

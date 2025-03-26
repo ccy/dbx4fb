@@ -24,6 +24,7 @@ The driver support these Firebird version:
 - [Firebird 2.5](https://firebirdsql.org/en/firebird-2-5/)
 - [Firebird 3.0](https://firebirdsql.org/en/firebird-3-0/)
 - [Firebird 4.0](https://firebirdsql.org/en/firebird-4-0/)
+- [Firebird 5.0](https://firebirdsql.org/en/firebird-5-0/)
 
 # Donation
 
