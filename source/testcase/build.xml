@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<project name="DBX Test Cases" default="build" basedir=".">
-
+<project name="DBX Test Cases" default="build" xmlns:if="ant:if" xmlns:unless="ant:unless">
 	<taskdef resource="net/sf/antcontrib/antlib.xml"/>
 
 	<fail unless="program" message="missing 'program' property. Example: ant -Dprogram=..\..\project\win32\debug\dbxfbTests.exe -Ddrivers=Y:\firebird" />
@@ -11,9 +10,22 @@
 	<property name="program.conf" location="dbxfbTests.ini" />
 
 	<target name="build" depends="t.platform,t.platform.testcount">
+        <for param="i" begin="1" end="${p.embedded.end}" parallel="true" keepgoing="true">
+            <sequential>
+                <antcall target="dbx.test">
+                    <param name="execute_fb_400_402" value="@{execute_fb_400_402}" />
+                    <param name="index" value="@{i}" />
+                    <param name="test" value="embedded_@{i}" />
+                    <param name="suite" value="1" />
+                </antcall>
+            </sequential>
+        </for>
+
 		<for param="i" begin="1" end="${p.embedded.end}" parallel="true" keepgoing="true">
 			<sequential>
 				<antcall target="dbx.test">
+                    <param name="execute_fb_400_402" value="true" />
+                    <param name="index" value="@{i}" />
 					<param name="test" value="embedded_@{i}" />
 					<param name="suite" value="1" />
 				</antcall>
@@ -43,7 +55,7 @@
 		</for>
 	</target>
 
-	<target name="dbx.test">
+	<target name="dbx.test" depends="commit#d0e33f1" if="p.execute">
 		<tempfile property="p.script" destdir="${env.TEMP}" suffix=".cmd"/>
 
 		<condition property="p.config" value="" else="release">
@@ -64,6 +76,31 @@
 
 		<delete file="${p.script}" />
 	</target>
+
+    <target name="commit#d0e33f1" description="https://github.com/FirebirdSQL/firebird/issues/7347 commit d0e33f1: Use Windows private namespace for kernel objects used in server-to-server IPC">
+        <condition property="is.win32">
+          <contains string="${program}" substring="win32" casesensitive="false" />
+        </condition>
+
+        <condition property="is.win64">
+          <contains string="${program}" substring="win64" casesensitive="false" />
+        </condition>
+
+        <condition property="p.execute">
+            <xor>
+                <isfalse value="${execute_fb_400_402}" />
+                <or>
+                    <equals if:set="is.win32" arg1="${index}" arg2="44" />  <!-- Firebird 4.0.0 -->
+                    <equals if:set="is.win32" arg1="${index}" arg2="45" />  <!-- Firebird 4.0.1 -->
+                    <equals if:set="is.win32" arg1="${index}" arg2="46" />  <!-- Firebird 4.0.2 -->
+
+                    <equals if:set="is.win64" arg1="${index}" arg2="29" />  <!-- Firebird 4.0.0 -->
+                    <equals if:set="is.win64" arg1="${index}" arg2="30" />  <!-- Firebird 4.0.1 -->
+                    <equals if:set="is.win64" arg1="${index}" arg2="31" />  <!-- Firebird 4.0.2 -->
+                </or>
+            </xor>
+        </condition>
+    </target>
 
 	<target name="t.platform">
 		<fail unless="program" />
