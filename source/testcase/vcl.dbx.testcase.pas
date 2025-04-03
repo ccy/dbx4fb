@@ -2844,6 +2844,8 @@ end;
 
 procedure TTestCase_DBX_DataSnap.Test_Boolean;
 begin
+  if GetTestData.GetODS < ODS_12_0 then Exit;
+
   for var o in [False, True] do begin
     FCDS.SetProvider(FDSP);
     FCDS.Open;
