@@ -25,7 +25,7 @@ implementation
 
 uses
   Winapi.Windows, System.Generics.Collections,
-  firebird.client, firebird.consts_pub.h, firebird.ibase.h, firebird.inf_pub.h,
+  Firebird, firebird.client, firebird.ibase.h, firebird.inf_pub.h,
   firebird.sqlda_pub.h, firebird.types_pub.h;
 
 type
@@ -72,6 +72,7 @@ end;
 function FB_GetVersion(VendorLib, Host, UserName, Password: string):
     TFBVersion;
 begin
+  const isc_spb_version = isc_spb_current_version;
   var P: TBytes := [isc_spb_version, isc_spb_current_version];
   if not UserName.IsEmpty then P := P + [isc_dpb_user_name, Length(UserName)] + TEncoding.ANSI.GetBytes(UserName);
   if not Password.IsEmpty then P := P + [isc_dpb_password, Length(Password)] + TEncoding.ANSI.GetBytes(Password);

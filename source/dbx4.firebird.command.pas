@@ -64,9 +64,9 @@ implementation
 uses
   System.StrUtils, System.SysUtils, System.WideStrings, Data.FMTBcd,
   Data.SqlTimSt,
-  dbx4.firebird.metadata, dbx4.firebird.row,
-  firebird.blr.h, firebird.charsets.h, firebird.consts_pub.h, firebird.dsc.h,
-  firebird.iberror.h, firebird.ods.h, firebird.sqlda_pub.h;
+  Firebird, dbx4.firebird.metadata, dbx4.firebird.row, firebird.blr.h,
+  firebird.charsets.h, firebird.dsc.h, firebird.iberror.h, firebird.ods.h,
+  firebird.sqlda_pub.h;
 
 constructor TMetaDataProvider_Firebird.Create(const aSQLDA: TXSQLDA);
 begin

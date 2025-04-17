@@ -5,8 +5,8 @@ interface
 uses
   System.Generics.Collections, System.SysUtils, Data.DBXCommon, Data.DBXDynalink,
   Data.DBXPlatform,
-  dbx4.base, dbx4.firebird.base, firebird.client, firebird.consts_pub.h,
-  firebird.delphi, firebird.ibase.h, firebird.types_pub.h;
+  Firebird, dbx4.base, dbx4.firebird.base, firebird.client, firebird.delphi,
+  firebird.ibase.h, firebird.types_pub.h;
 
 type
   TFirebirdClientDebuggerListener_DBXCallBack = class(TInterfacedObject, IFirebirdLibraryDebuggerListener)
