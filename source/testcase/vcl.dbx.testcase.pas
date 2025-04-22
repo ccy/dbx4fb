@@ -21,7 +21,6 @@ type{$M+}
   TTestData_SQLConnection = class(TInterfacedObject, ITestData)
   private
     FDriverName: string;
-    FGetDriverFunc: string;
     FLibraryName: string;
     FName: string;
     FParams: WideString;
@@ -35,18 +34,17 @@ type{$M+}
     function GetServerVersion: string;
     procedure Setup(const aConnection: TSQLConnection);
   public
-    constructor Create(const aDriverName, aLibraryName, aGetDriverFunc, aVendorLib,
-        aParams: string);
+    constructor Create(const aDriverName, aLibraryName, aVendorLib, aParams:
+        string);
     procedure BeforeDestruction; override;
   end;
 
   TTestSuite_DBX = class abstract
+  const
+    DefaultLibraryName = 'dbx4fb.dll';
   protected
-    class function GetDriverSectionName: string;
     class function GetEmbeddedSectionName: string;
     class function GetServerSectionName: string;
-    class function GetVendorSectionName: string;
-    class procedure CheckTestDataFile;
     class function GetTestDataFileName: string;
     class function GetParams(const aHostName, aExtraParams: string): string;
     class function GetServerVersion(aLibraryName, aParams: string): string;
@@ -389,14 +387,12 @@ begin
 end;
 
 constructor TTestData_SQLConnection.Create(const aDriverName, aLibraryName,
-    aGetDriverFunc, aVendorLib, aParams: string);
+    aVendorLib, aParams: string);
 begin
   inherited Create;
   FDriverName := aDriverName;
 
   FLibraryName := ExpandFileNameString(aLibraryName);
-
-  FGetDriverFunc := aGetDriverFunc;
 
   FVendorLib := ExpandFileNameString(aVendorLib);
   FParams := aParams;
@@ -427,23 +423,16 @@ begin
 
     var v := FB_GetVersion(FVendorLib, L.Values[HOSTNAME_KEY], L.Values[szUSERNAME], L.Values[szPASSWORD]);
     sImpl := v.&Implementation;
-    if L.Values[HOSTNAME_KEY] = '' then
-      sDatabase := IncludeTrailingPathDelimiter('%TEMP%')
-    else if ContainsText(sImpl, 'Windows') then begin
-
-      if Pos('dbxint', FLibraryName) > 0 then // Interbase Driver need hostname string in database parameter
-        sDatabase := L.Values[HOSTNAME_KEY] + ':';
-
-      if AnsiStartsText('localhost', L.Values[HOSTNAME_KEY]) then
-        sDatabase := sDatabase + IncludeTrailingPathDelimiter('%TEMP%')
-      else
-        sDatabase := sDatabase + 'c:\';
-    end else if ContainsText(sImpl, 'Linux') then
-      sDatabase := sDatabase + '/tmp/'
-    else
-      Assert(False);
+    var sPathSeparator := '';
+    if ContainsText(sImpl, 'Linux') then begin
+      sDatabase := '/tmp';
+      sPathSeparator := '/';
+    end else begin
+      sDatabase := TPath.GetPublicPath;
+      sPathSeparator := '\';
+    end;
     Randomize;
-    sDatabase := sDatabase + 'T_' + GetTickCount.ToString + IntToStr(Random(High(Integer)));
+    sDatabase := TPath.Combine(sDatabase, 'T_' + GetTickCount.ToString + IntToStr(Random(High(Integer)))).Replace('\', sPathSeparator, [rfReplaceAll]);
 
     FServerVersion := v.ServerStr;
 
@@ -487,49 +476,17 @@ begin
   aConnection.DriverName := FDriverName;
 {$if RTLVersion <= 23}
   aConnection.LibraryName := FLibraryName;
-  aConnection.GetDriverFunc := FGetDriverFunc;
+  aConnection.GetDriverFunc := 'getSQLDriverFIREBIRD';
   aConnection.VendorLib := FVendorLib;
 {$ifend}
   aConnection.Params.Text := FParams;
 {$if RtlVersion >= 24}
   aConnection.Params.Values[TDBXPropertyNames.LibraryName] := FLibraryName;
-  aConnection.Params.Values[TDBXPropertyNames.GetDriverFunc] := FGetDriverFunc;
   aConnection.Params.Values[TDBXPropertyNames.VendorLib] := FVendorLib;
   var s := TFirebirdEngines.GetProviders(FVendorLib);
   if not s.IsEmpty then
     aConnection.Params.Values[TFirebird.FB_Config_Providers] := s;
 {$ifend}
-end;
-
-class procedure TTestSuite_DBX.CheckTestDataFile;
-var F: TIniFile;
-    sDriver: string;
-begin
-  if not FileExists(GetTestDataFileName) then begin
-    F := TIniFile.Create(GetTestDataFileName);
-    try
-      sDriver := 'dbx4fb.dll';
-      F.WriteString(GetDriverSectionName, 'getSQLDriverFIREBIRD', sDriver);
-      F.WriteString('embedded', 'embedded_1', 'fbembed.dll');
-      F.WriteString('server', 'server_1', 'localhost');
-      F.WriteString('vendor', 'default', 'fbclient.1.5.5.dll');
-      F.UpdateFile;
-    finally
-      F.Free;
-    end;
-  end;
-
-  SetEnvironmentVariable('drivers', PChar(TCmdLineParams_App.Drivers));
-end;
-
-class function TTestSuite_DBX.GetDriverSectionName: string;
-begin
-  Result := 'driver'
-            {$ifdef DEBUG} + '.debug'
-            {$else}
-              {$ifdef Win32} + '.x86'{$endif}
-              {$ifdef Win64} + '.x64'{$endif}
-            {$endif};
 end;
 
 class function TTestSuite_DBX.GetEmbeddedSectionName: string;
@@ -562,14 +519,6 @@ end;
 class function TTestSuite_DBX.GetTestDataFileName: string;
 begin
   Result := TCmdLineParams_App.ConfigFile;
-end;
-
-class function TTestSuite_DBX.GetVendorSectionName: string;
-begin
-  Result := 'vendor.' +
-            {$ifdef Win32}'x86'{$endif}
-            {$ifdef Win64}'x64'{$endif}
-            ;
 end;
 
 class function TTestSuite_DBX.GetServerSectionName: string;
@@ -3070,8 +3019,7 @@ end;
 
 class function TTestSuite_DBX1.NewTestDataList(const aParams: string): IInterfaceList;
 var F: TIniFile;
-    sDrivers, sServers, sEmbeds: TStringList;
-    i: integer;
+    sServers, sEmbeds: TStringList;
     j: Integer;
     sParams: string;
     sVer: string;
@@ -3079,48 +3027,41 @@ begin
   Result := TInterfaceList.Create;
 
   F := TIniFile.Create(GetTestDataFileName);
-  sDrivers := TStringList.Create;
   sServers := TStringList.Create;
   sEmbeds := TStringList.Create;
   try
-    F.ReadSectionValues(GetDriverSectionName, sDrivers);
     F.ReadSectionValues(GetServerSectionName, sServers);
     F.ReadSectionValues(GetEmbeddedSectionName, sEmbeds);
-    for i := 0 to sDrivers.Count - 1 do begin
-      for j := 0 to sServers.Count - 1 do begin
-        if TCmdLineParams_App.HasTestName and (TCmdLineParams_App.GetTestName <> sServers.Names[j]) then Continue;
 
-        sParams := GetParams(sServers.ValueFromIndex[j], aParams);
+    for j := 0 to sServers.Count - 1 do begin
+      if TCmdLineParams_App.HasTestName and (TCmdLineParams_App.GetTestName <> sServers.Names[j]) then Continue;
 
-        sVer := GetServerVersion(F.ReadString(GetEmbeddedSectionName, 'default', ''), sParams);
+      sParams := GetParams(sServers.ValueFromIndex[j], aParams);
+      var DefaultClient := F.ReadString(GetEmbeddedSectionName, 'default', '');
+      sVer := GetServerVersion(DefaultClient, sParams);
 
+      Result.Add(
+        TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, DefaultLibraryName, DefaultClient, sParams)
+      );
+    end;
+    for j := 0 to sEmbeds.Count - 1 do begin
+      if TCmdLineParams_App.HasTestName and (TCmdLineParams_App.GetTestName <> sEmbeds.Names[j]) then Continue;
+
+      var Engines := TFirebirdEngines.Create(sEmbeds.ValueFromIndex[j]);
+      if Engines.Count = 0 then
         Result.Add(
-          TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i],
-          sDrivers.Names[i], F.ReadString(GetVendorSectionName, sVer, sVer), sParams)
-        );
-      end;
-      for j := 0 to sEmbeds.Count - 1 do begin
-        if TCmdLineParams_App.HasTestName and (TCmdLineParams_App.GetTestName <> sEmbeds.Names[j]) then Continue;
-
-        var Engines := TFirebirdEngines.Create(sEmbeds.ValueFromIndex[j]);
-        if Engines.Count = 0 then
+          TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, DefaultLibraryName, sEmbeds.ValueFromIndex[j], GetParams('', aParams))
+        )
+      else begin
+        for var E in Engines do begin
+          sParams := GetParams('', aParams) + sLineBreak + Engines.GetProviders(E);
           Result.Add(
-            TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i]
-          , sDrivers.Names[i], sEmbeds.ValueFromIndex[j], GetParams('', aParams))
-          )
-        else begin
-          for var E in Engines do begin
-            sParams := GetParams('', aParams) + sLineBreak + Engines.GetProviders(E);
-            Result.Add(
-              TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i]
-            , sDrivers.Names[i], sEmbeds.ValueFromIndex[j], sParams)
-            );
-          end;
+            TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, DefaultLibraryName, sEmbeds.ValueFromIndex[j], sParams)
+          );
         end;
       end;
     end;
   finally
-    sDrivers.Free;
     sServers.Free;
     sEmbeds.Free;
     F.Free;
@@ -3134,9 +3075,11 @@ var L: IInterfaceList;
 begin
   T := TTestSuite.Create('TSQLConnection: ' + StringReplace(aParams, #13#10, ' , ', [rfReplaceAll]));
   L := NewTestDataList(aParams);
-  for i := 0 to L.Count - 1 do
-    T.AddSuite(Suite(L[i] as ITestData));
-  TestFrameWork.RegisterTest(T);
+  if L.Count > 0 then begin
+    for i := 0 to L.Count - 1 do
+      T.AddSuite(Suite(L[i] as ITestData));
+    TestFrameWork.RegisterTest(T);
+  end;
 end;
 
 class procedure TTestSuite_DBX1.Setup;
@@ -3175,37 +3118,31 @@ end;
 class function TTestSuite_DBX2.NewTestDataList(const aParams: string = ''):
     TArray<TArray<ITestData>>;
 var F: TIniFile;
-    sDrivers, sServers: TStringList;
-    i: integer;
+    sServers: TStringList;
     j: Integer;
     sParams1, sParams2: string;
 begin
   F := TIniFile.Create(GetTestDataFileName);
-  sDrivers := TStringList.Create;
   sServers := TStringList.Create;
   try
-    F.ReadSectionValues(GetDriverSectionName, sDrivers);
     F.ReadSectionValues(GetServerSectionName, sServers);
-    for i := 0 to sDrivers.Count - 1 do begin
-      for j := 0 to sServers.Count - 1 do begin
-        sParams1 := GetParams(sServers.ValueFromIndex[j], aParams);
-        var sDefaultVendorLib := ExpandFileNameString(F.ReadString(GetEmbeddedSectionName, 'default', ''));
+    for j := 0 to sServers.Count - 1 do begin
+      sParams1 := GetParams(sServers.ValueFromIndex[j], aParams);
+      var sDefaultVendorLib := ExpandFileNameString(F.ReadString(GetEmbeddedSectionName, 'default', ''));
 
-        var R: TArray<ITestData> := [TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i], sDrivers.Names[i], sDefaultVendorLib, sParams1)];
+      var R: TArray<ITestData> := [TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, DefaultLibraryName, sDefaultVendorLib, sParams1)];
 
-        for var Engine in TDirectory.GetFiles(
-          IncludeTrailingPathDelimiter(TPath.GetDirectoryName(sDefaultVendorLib)) + 'plugins'
-        , 'engine*.dll'
-        ) do begin
-          sParams2 := GetParams('', aParams) + sLineBreak + string.Join('=', [TFirebird.FB_Config_Providers, TPath.GetFileNameWithoutExtension(Engine)]);
-          R := R + [TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, sDrivers.ValueFromIndex[i], sDrivers.Names[i], sDefaultVendorLib, sParams2)];
-        end;
-
-        Result := Result + [R];
+      for var Engine in TDirectory.GetFiles(
+        IncludeTrailingPathDelimiter(TPath.GetDirectoryName(sDefaultVendorLib)) + 'plugins'
+      , 'engine*.dll'
+      ) do begin
+        sParams2 := GetParams('', aParams) + sLineBreak + string.Join('=', [TFirebird.FB_Config_Providers, TPath.GetFileNameWithoutExtension(Engine)]);
+        R := R + [TTestData_SQLConnection.Create(TDBXProductNames.FirebirdProduct, DefaultLibraryName, sDefaultVendorLib, sParams2)];
       end;
+
+      Result := Result + [R];
     end;
   finally
-    sDrivers.Free;
     sServers.Free;
     F.Free;
   end;
@@ -3827,7 +3764,6 @@ begin
 end;
 
 initialization
-  TTestSuite_DBX.CheckTestDataFile;
   if TCmdLineParams_App.TestSuite1 then TTestSuite_DBX1.Setup;
   if TCmdLineParams_App.TestSuite2 then TTestSuite_DBX2.Setup;
 end.

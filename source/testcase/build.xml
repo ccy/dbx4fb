@@ -6,61 +6,67 @@
 	<fail unless="program" message="missing 'program' property. Example: ant -Dprogram=..\..\project\win32\debug\dbxfbTests.exe -Ddrivers=Y:\firebird" />
 	<fail unless="drivers" message="missing 'drivers' property. Example: ant -Dprogram=..\..\project\win32\debug\dbxfbTests.exe -Ddrivers=Y:\firebird" />
 
-	<property environment="env" />
+    <property environment="env"/>
 	<property name="program.conf" location="dbxfbTests.ini" />
+    <property name="embedded.count" value="52" />
+    <property name="server.count" value="2" />
 
-	<target name="build" depends="t.platform,t.platform.testcount">
-        <for param="i" begin="1" end="${p.embedded.end}" parallel="true" keepgoing="true">
+	<target name="build" depends="suite_1,suite_2,suite_3" />
+
+    <target name="suite_1" depends="getTestCases">
+        <for param="e" list="false,true" parallel="false" keepgoing="true">
             <sequential>
-                <antcall target="dbx.test">
-                    <param name="execute_fb_400_402" value="@{execute_fb_400_402}" />
-                    <param name="index" value="@{i}" />
-                    <param name="test" value="embedded_@{i}" />
-                    <param name="suite" value="1" />
-                </antcall>
+                <for param="i" list="${TestCases}" parallel="true" keepgoing="true">
+                    <sequential>
+                        <antcall target="dbx.test">
+                            <param name="suite" value="1" />
+                            <param name="test" value="@{i}" />
+                            <param name="execute_fb_310_402" value="@{e}" />
+                        </antcall>
+                    </sequential>
+                </for>
             </sequential>
         </for>
+    </target>
 
-		<for param="i" begin="1" end="${p.embedded.end}" parallel="true" keepgoing="true">
+    <target name="suite_2" depends="getTestCases">
+        <!-- Use Firebird 5 and above to avoid error: Shared memory area is probably already created by another engine instance in another Windows session -->
+        <for param="i" list="${TestCases}" parallel="true" keepgoing="true">
 			<sequential>
 				<antcall target="dbx.test">
-                    <param name="execute_fb_400_402" value="true" />
-                    <param name="index" value="@{i}" />
-					<param name="test" value="embedded_@{i}" />
-					<param name="suite" value="1" />
-				</antcall>
-			</sequential>
-		</for>
-
-		<for param="i" begin="${p.embedded_2.begin}" end="${p.embedded.end}" parallel="true" keepgoing="true">
-			<sequential>
-				<antcall target="dbx.test">
-					<param name="test" value="embedded_@{i}" />
 					<param name="suite" value="2" />
+					<param name="test" value="@{i}" />
+                    <param name="execute_fb_310_402" value="true" />
 				</antcall>
 			</sequential>
 		</for>
+    </target>
 
+    <target name="suite_3">
 		<antcall target="dbx.test">
 			<param name="test" value="default" />
 			<param name="suite" value="3" />
 		</antcall>
+    </target>
 
-		<for param="i" begin="1" end="2" parallel="true" keepgoing="true">
-			<sequential>
-				<antcall target="dbx.test">
-					<param name="test" value="server_@{i}" />
-				</antcall>
-			</sequential>
-		</for>
-	</target>
+    <target name="getTestCases">
+        <var name="TestCases" value="default"/>
+
+        <for param="i" begin="1" end="${embedded.count}">
+            <sequential>
+                <var name="TestCases" value="${TestCases},embedded_@{i}"/>
+            </sequential>
+        </for>
+
+        <for param="i" begin="1" end="${server.count}">
+            <sequential>
+                <var name="TestCases" value="${TestCases},server_@{i}"/>
+            </sequential>
+        </for>
+    </target>
 
 	<target name="dbx.test" depends="commit#d0e33f1" if="p.execute">
-		<tempfile property="p.script" destdir="${env.TEMP}" suffix=".cmd"/>
-
-		<condition property="p.config" value="" else="release">
-			<equals arg1="${p.tag.program}" arg2="d11" />
-		</condition>
+        <tempfile property="p.script" destdir="${env.TEMP}" suffix=".cmd"/>
 
 		<condition property="p.suite" value="-suite ${suite}" else="">
 			<isset property="suite" />
@@ -78,49 +84,19 @@
 	</target>
 
     <target name="commit#d0e33f1" description="https://github.com/FirebirdSQL/firebird/issues/7347 commit d0e33f1: Use Windows private namespace for kernel objects used in server-to-server IPC">
-        <condition property="is.win32">
-          <contains string="${program}" substring="win32" casesensitive="false" />
-        </condition>
-
-        <condition property="is.win64">
-          <contains string="${program}" substring="win64" casesensitive="false" />
-        </condition>
-
         <condition property="p.execute">
             <xor>
-                <isfalse value="${execute_fb_400_402}" />
+                <isfalse value="${execute_fb_310_402}" />
                 <or>
-                    <equals if:set="is.win32" arg1="${index}" arg2="44" />  <!-- Firebird 4.0.0 -->
-                    <equals if:set="is.win32" arg1="${index}" arg2="45" />  <!-- Firebird 4.0.1 -->
-                    <equals if:set="is.win32" arg1="${index}" arg2="46" />  <!-- Firebird 4.0.2 -->
-
-                    <equals if:set="is.win64" arg1="${index}" arg2="29" />  <!-- Firebird 4.0.0 -->
-                    <equals if:set="is.win64" arg1="${index}" arg2="30" />  <!-- Firebird 4.0.1 -->
-                    <equals if:set="is.win64" arg1="${index}" arg2="31" />  <!-- Firebird 4.0.2 -->
+                    <equals arg1="${test}" arg2="embedded_41" />  <!-- Firebird 3.0.10 -->
+                    <equals arg1="${test}" arg2="embedded_42" />  <!-- Firebird 3.0.11 -->
+                    <equals arg1="${test}" arg2="embedded_43" />  <!-- Firebird 3.0.12 -->
+                    <equals arg1="${test}" arg2="embedded_44" />  <!-- Firebird 4.0.0 -->
+                    <equals arg1="${test}" arg2="embedded_45" />  <!-- Firebird 4.0.1 -->
+                    <equals arg1="${test}" arg2="embedded_46" />  <!-- Firebird 4.0.2 -->
                 </or>
             </xor>
         </condition>
     </target>
-
-	<target name="t.platform">
-		<fail unless="program" />
-		<condition property="p.platform" value="Win32" else="Win64">
-			<contains string="${program}" substring="win32" casesensitive="false" />
-		</condition>
-	</target>
-
-	<target name="t.platform.testcount">
-		<condition property="p.embedded.end" value="52" else="37">
-			<or>
-				<equals arg1="${p.platform}" arg2="Win32" casesensitive="false" />
-			</or>
-		</condition>
-
-		<condition property="p.embedded_2.begin" value="31" else="16">
-			<or>
-				<equals arg1="${p.platform}" arg2="Win32" casesensitive="false" />
-			</or>
-		</condition>
-	</target>
 
 </project>

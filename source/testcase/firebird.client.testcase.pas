@@ -783,8 +783,9 @@ begin
 end;
 
 initialization
+  if not TCmdLineParams_App.TestSuite3 then Exit;
   RegisterTest(TODS_TestCase.Suite);
   RegisterTest(TPageSize_TestCase.Suite);
   RegisterTest(TTestCase_FirebirdConnectionString.Suite);
-  if TCmdLineParams_App.TestSuite3 then RegisterTest(TTestCase_FirebirdAPI.Suite);
+  RegisterTest(TTestCase_FirebirdAPI.Suite);
 end.
