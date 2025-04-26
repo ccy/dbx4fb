@@ -32,8 +32,7 @@ type
     procedure Test(Value: string; aProtocol: TFirebirdConnectionStringProtocol;
         Host, Port, Database, ServiceMgrPrefix: string);
   published
-    procedure Test_ParseURL;
-    procedure Test_xnet_tra;
+    procedure Test_local;
     procedure Test_wnet_tra;
     procedure Test_tcp_tra;
     procedure Test_inet;
@@ -101,41 +100,6 @@ begin
   Check(TPageSize.Create(16385) = ps16384);
 end;
 
-procedure TTestCase_FirebirdConnectionString.Test_ParseURL;
-begin
-  var Match := function(a, b: TArray<string>): Boolean
-  begin
-    if Length(a) <> Length(b) then Exit(False);
-
-    for var i := Low(a) to High(a) do
-      if a[i] <> b[i] then Exit(False);
-
-    Exit(True);
-  end;
-
-  Check(Match(TFirebirdConnectionString.ParseURL('inet://'),                                 ['']));
-  Check(Match(TFirebirdConnectionString.ParseURL('inet:///'),                                ['', '']));
-  Check(Match(TFirebirdConnectionString.ParseURL('inet:///employee'),                        ['', 'employee']));
-  Check(Match(TFirebirdConnectionString.ParseURL('inet://linuxhost'),                        ['linuxhost']));
-  Check(Match(TFirebirdConnectionString.ParseURL('inet://linuxhost:3051'),                   ['linuxhost', '3051', '']));
-  Check(Match(TFirebirdConnectionString.ParseURL('inet://linuxhost:gds_db'),                 ['linuxhost', 'gds_db', '']));
-  Check(Match(TFirebirdConnectionString.ParseURL('inet://linuxhost/'),                       ['linuxhost', '']));
-  Check(Match(TFirebirdConnectionString.ParseURL('inet://linuxhost:3050/'),                  ['linuxhost', '3050', '']));
-  Check(Match(TFirebirdConnectionString.ParseURL('inet://linuxhost:gds_db/'),                ['linuxhost', 'gds_db', '']));
-  Check(Match(TFirebirdConnectionString.ParseURL('inet://linuxhost/mnt/db/my'),              ['linuxhost', '/mnt/db/my']));
-  Check(Match(TFirebirdConnectionString.ParseURL('inet://linuxhost/mnt/db/my/'),             ['linuxhost', '/mnt/db/my/']));
-  Check(Match(TFirebirdConnectionString.ParseURL('inet://linuxhost:3050/my'),                ['linuxhost', '3050', 'my']));
-  Check(Match(TFirebirdConnectionString.ParseURL('inet://linuxhost:3050/mnt/db/my'),         ['linuxhost', '3050', '/mnt/db/my']));
-  Check(Match(TFirebirdConnectionString.ParseURL('inet://linuxhost:gds_db/mnt/db/my.fdb'),   ['linuxhost', 'gds_db', '/mnt/db/my.fdb']));
-  Check(Match(TFirebirdConnectionString.ParseURL('inet://d:\db\my.fdb'),                     ['', 'd:\db\my.fdb']));
-  Check(Match(TFirebirdConnectionString.ParseURL('inet:///d:\db\my.fdb'),                    ['', 'd:\db\my.fdb']));
-  Check(Match(TFirebirdConnectionString.ParseURL('inet://d:/db/my.fdb'),                     ['', 'd:/db/my.fdb']));
-  Check(Match(TFirebirdConnectionString.ParseURL('inet:///d:/db/my.fdb'),                    ['', 'd:/db/my.fdb']));
-  Check(Match(TFirebirdConnectionString.ParseURL('inet://winserver/d:/db/my.fdb'),           ['winserver', 'd:/db/my.fdb']));
-  Check(Match(TFirebirdConnectionString.ParseURL('inet://winserver:gds_db/d:/db/my.fdb'),    ['winserver', 'gds_db', 'd:/db/my.fdb']));
-  Check(Match(TFirebirdConnectionString.ParseURL('inet:///mnt/db/my.fdb'),                   ['', '/mnt/db/my.fdb']));
-end;
-
 procedure TTestCase_FirebirdConnectionString.Test_tcp_tra;
 begin
   var p := tcp_tra;
@@ -148,7 +112,15 @@ begin
   Test('winserver/gds_db:c:\db\my.fdb', p, 'winserver', 'gds_db', 'c:\db\my.fdb',   'winserver/gds_db:');
   Test('winserver/13832:c:\db\my.fdb',  p, 'winserver', '13832',  'c:\db\my.fdb',   'winserver/13832:');
   Test('127.0.0.1:d:\db\my.fdb',        p, '127.0.0.1', '',       'd:\db\my.fdb',   '127.0.0.1:');
+  Test('127.0.0.1/3050:d:\db\my.fdb',   p, '127.0.0.1', '3050',   'd:\db\my.fdb',   '127.0.0.1/3050:');
+  Test('localhost',                     p, 'localhost', '',       '',               'localhost:');
+  Test('localhost/3050',                p, 'localhost', '3050',   '',               'localhost/3050:');
   Test('localhost:/opt/db/my.fdb',      p, 'localhost', '',       '/opt/db/my.fdb', 'localhost:');
+  Test('localhost/3050:/opt/db/my.fdb', p, 'localhost', '3050',   '/opt/db/my.fdb', 'localhost/3050:');
+  Test('[::1]',                         p, '[::1]',     '',       '',               '[::1]:');
+  Test('[::1]/3050',                    p, '[::1]',     '3050',   '',               '[::1]/3050:');
+  Test('[::1]:/opt/db/my.fdb',          p, '[::1]',     '',       '/opt/db/my.fdb', '[::1]:');
+  Test('[::1]/3050:/opt/db/my.fdb',     p, '[::1]',     '3050',   '/opt/db/my.fdb', '[::1]/3050:');
 end;
 
 procedure TTestCase_FirebirdConnectionString.Test(Value: string; aProtocol:
@@ -156,28 +128,30 @@ procedure TTestCase_FirebirdConnectionString.Test(Value: string; aProtocol:
     string);
 begin
   var a: TFirebirdConnectionString := Value;
-  Check(aProtocol = a.Protocol);
-  CheckEquals(Host, a.Host);
-  CheckEquals(Port, a.Port);
-  CheckEquals(Database, a.Database);
-  CheckEquals(Value, a);
-  CheckEquals(ServiceMgrPrefix + TFirebird.service_mgr, a.AsServiceManager);
+  Check(aProtocol = a.Protocol,     'Protocol: ' + Value);
+  CheckEquals(Host, a.Host,         'Host: ' + Value);
+  CheckEquals(Port, a.Port,         'Port: ' + Value);
+  CheckEquals(Database, a.Database, 'Database: ' + Value);
+  CheckEquals(Value, a,             'Value: ' + Value);
+  CheckEquals(ServiceMgrPrefix + TFirebird.service_mgr, a.AsServiceManager,  'Service Manager: ' + Value);
 end;
 
 procedure TTestCase_FirebirdConnectionString.Test_inet;
+const Delim: array[Boolean] of string = ('/', '');
 begin
   for var r in [inet, inet4, inet6] do begin
     var ps := r.ToString(True);
 
-    Test(ps + 'linux',                       r, 'linux', '',      '',                ps + 'linux/');
-    Test(ps + 'linux:10311',                 r, 'linux', '10311', '',                ps + 'linux:10311/');
-    Test(ps + 'linux/employee',              r, 'linux', '',      'employee',        ps + 'linux/');
-    Test(ps + 'linux:13050/emp',             r, 'linux', '13050', 'emp',             ps + 'linux:13050/');
-    Test(ps + 'linux:13050/mnt/db/emp',      r, 'linux', '13050', '/mnt/db/emp',     ps + 'linux:13050/');
-    Test(ps + 'linux:3051/d:/db/emp.fdb',    r, 'linux', '3051',  'd:/db/emp.fdb',   ps + 'linux:3051/');
-    Test(ps + 'd:/db/emp.fdb',               r, '',      '',      'd:/db/emp.fdb',   ps);
-    Test(ps + 'd:\db\emp.fdb',               r, '',      '',      'd:\db\emp.fdb',   ps);
-    Test(ps + '/mnt/db/emp.fdb',             r, '',      '',      '/mnt/db/emp.fdb', ps);
+    for var Host in ['127.0.0.1', 'localhost', 'example.com', '[::1]', '[fe80:baba:caca:dada:fafa::1]'] do begin
+      for var Port in ['', ':3050'] do begin
+        for var DB in ['', 'employee', 'a:\employee', 'a:/employee', 'data/employee', '/data/employee'] do begin
+          var aPort := Port;
+          if not aPort.IsEmpty then
+            aPort := aPort.Substring(1);
+          Test(ps + Host + Port + Delim[DB.IsEmpty] + DB, r, Host, aPort, DB, ps + Host + Port + '/');
+        end;
+      end;
+    end;
   end;
 end;
 
@@ -211,17 +185,13 @@ begin
   Test('\\.@MyAppInstance\c:\db\my.fdb',         p, '.@MyAppInstance',         '', 'c:\db\my.fdb', ps + '.@MyAppInstance\');
 end;
 
-procedure TTestCase_FirebirdConnectionString.Test_xnet_tra;
+procedure TTestCase_FirebirdConnectionString.Test_local;
 begin
-  var p := xnet_tra;
-
-  Test('',                p, '', '', '',                '');
-  Test('employee',        p, '', '', 'employee',        '');
-  Test('d:\db\my.fdb',    p, '', '', 'd:\db\my.fdb',    '');
-  Test('d:/db/my.fdb',    p, '', '', 'd:/db/my.fdb',    '');
-  Test('/mnt/employee',   p, '', '', '/mnt/employee',   '');
-  Test('/mnt/emp.fdb',    p, '', '', '/mnt/emp.fdb',    '');
-  Test('/mnt/db/emp.fdb', p, '', '', '/mnt/db/emp.fdb', '');
+  for var d in [
+    '', 'employee.db', 'employee.fdb', 'd:\db\my.fdb', 'd:/db/my.fdb'
+  , '/mnt/employee', '/mnt/emp.fdb', '/mnt/db/emp.fdb'
+  ] do
+    Test(d, local, '', '', d, '');
 end;
 
 class function TTestCase_FirebirdAPI.GetEmbeddedSectionName: string;

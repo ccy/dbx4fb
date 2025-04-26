@@ -77,8 +77,8 @@ begin
   if not UserName.IsEmpty then P := P + [isc_dpb_user_name, Length(UserName)] + TEncoding.ANSI.GetBytes(UserName);
   if not Password.IsEmpty then P := P + [isc_dpb_password, Length(Password)] + TEncoding.ANSI.GetBytes(Password);
 
-  var svcName := AnsiString(TFirebird.service_mgr);
-  if not Host.IsEmpty then svcName := AnsiString(Host) + ':' + svcName;
+  var c: TFirebirdConnectionString := Host;
+  var svcName := AnsiString(c.AsServiceManager);
 
   var svc: isc_svc_handle := nil;
 
@@ -123,8 +123,9 @@ end;
 procedure FB_CreateDatabase(VendorLib, Host, Database, UserName, Password,
     aProviders: string);
 begin
-  var fileName := AnsiString(ExpandFileNameString(Database));
-  if not Host.IsEmpty then fileName := AnsiString(Host) + ':' + fileName;
+  var c: TFirebirdConnectionString := Host;
+  c.Database := ExpandFileNameString(Database);
+  var fileName := AnsiString(c.Value);
 
   var P := BuildDPB(UserName, Password, aProviders);
 
@@ -142,8 +143,9 @@ end;
 
 procedure FB_DropDatabase(VendorLib, Host, Database, UserName, Password: string);
 begin
-  var fileName := AnsiString(ExpandFileNameString(Database));
-  if not Host.IsEmpty then fileName := AnsiString(Host) + ':' + fileName;
+  var c: TFirebirdConnectionString := Host;
+  c.Database := ExpandFileNameString(Database);
+  var fileName := AnsiString(c.Value);
 
   var P := BuildDPB(UserName, Password, TFirebirdEngines.GetProviders(VendorLib));
 
@@ -164,8 +166,9 @@ function FB_GetODS(VendorLib, Host, Database, UserName, Password: string):
 begin
   Result := 0;
 
-  var fileName := AnsiString(ExpandFileNameString(Database));
-  if not Host.IsEmpty then fileName := AnsiString(Host) + ':' + fileName;
+  var c: TFirebirdConnectionString := Host;
+  c.Database := ExpandFileNameString(Database);
+  var fileName := AnsiString(c.Value);
 
   var P := BuildDPB(UserName, Password, TFirebirdEngines.GetProviders(VendorLib));
 

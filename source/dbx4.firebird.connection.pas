@@ -198,9 +198,9 @@ begin
   if not FProviders.IsEmpty then
     DPB := DPB + AnsiChar(isc_dpb_config) + AnsiChar(Length(FProviders)) + AnsiString(FProviders);
 
-  sServerName := AnsiString(FDatabase);
-  if FHostName <> '' then
-    sServerName := AnsiString(FHostName) + ':' + AnsiString(sServerName);
+  var c: TFirebirdConnectionString := FHostName;
+  c.Database := FDatabase;
+  sServerName := AnsiString(c.Value);
 
   FDBHandle := nil;
   if not CheckSuccess(FFirebirdLibrary.isc_attach_database(StatusVector.pValue, Length(sServerName), PISC_SCHAR(sServerName), GetDBHandle, Length(DPB), PISC_SCHAR(DPB)), TDBXErrorCodes.ConnectionFailed, Result) then

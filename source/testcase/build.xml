@@ -9,14 +9,14 @@
     <property environment="env"/>
 	<property name="program.conf" location="dbxfbTests.ini" />
     <property name="embedded.count" value="52" />
-    <property name="server.count" value="2" />
+    <property name="server.count" value="18" />
 
 	<target name="build" depends="suite_1,suite_2,suite_3" />
 
     <target name="suite_1" depends="getTestCases">
         <for param="e" list="false,true" parallel="false" keepgoing="true">
             <sequential>
-                <for param="i" list="${TestCases}" parallel="true" keepgoing="true">
+                <for param="i" list="${TestCases}" parallel="true" keepgoing="true" threadCount="${env.NUMBER_OF_PROCESSORS}">
                     <sequential>
                         <antcall target="dbx.test">
                             <param name="suite" value="1" />
@@ -31,7 +31,7 @@
 
     <target name="suite_2" depends="getTestCases">
         <!-- Use Firebird 5 and above to avoid error: Shared memory area is probably already created by another engine instance in another Windows session -->
-        <for param="i" list="${TestCases}" parallel="true" keepgoing="true">
+        <for param="i" list="${TestCases}" parallel="true" keepgoing="true" threadCount="${env.NUMBER_OF_PROCESSORS}">
 			<sequential>
 				<antcall target="dbx.test">
 					<param name="suite" value="2" />
