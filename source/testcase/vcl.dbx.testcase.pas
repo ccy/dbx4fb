@@ -704,14 +704,28 @@ end;
 procedure TTestCase_DBX_General.Test_RoleName;
 var sUser: string;
 begin
-  if not FileExists(FConnection.Params.Values[DATABASENAME_KEY]) then Exit;
+  if GetTestData.GetODS < ODS_12_0 then Exit;
+
+  Randomize;
+  var Passed := False;
+  repeat
+    try
+      sUser := 'U' + Random(High(Integer)).ToString;
+      FConnection.ExecuteDirect(Format('CREATE USER %s password ''password'' grant ADMIN ROLE', [sUser]));
+      FConnection.ExecuteDirect(Format('GRANT RDB$ADMIN TO %s', [sUser]));
+      Passed := True;
+    except
+      on E: Exception do begin
+        FConnection.Close;
+        Passed := False;
+        Status('CREATE ' + sUser + ' ' + E.Message);
+        Sleep(1000);
+      end;
+    end;
+  until Passed;
 
   FConnection.ExecuteDirect('CREATE TABLE T_RoleName(AutoKey INTEGER)');
-
-  sUser := 'U' + GetTickCount.ToString;
-  FConnection.ExecuteDirect(Format('CREATE USER %s password ''password'' grant ADMIN ROLE', [sUser]));
   try
-    FConnection.ExecuteDirect(Format('GRANT RDB$ADMIN TO %s', [sUser]));
     FConnection.Close;
     FConnection.Params.Values[szUSERNAME] := sUser;
     FConnection.Params.Values[szPASSWORD] := 'password';
@@ -720,8 +734,21 @@ begin
 
     FConnection.Execute('SELECT * FROM T_RoleName', nil);
   finally
-    FConnection.ExecuteDirect(Format('DROP USER %s', [sUser]));
     FConnection.ExecuteDirect('DROP TABLE T_RoleName');
+    Passed := False;
+    repeat
+      try
+        FConnection.ExecuteDirect(Format('DROP USER %s', [sUser]));
+        Passed := True;
+      except
+        on E: Exception do begin
+          FConnection.Close;
+          Passed := False;
+          Status('DROP ' + sUser + ' ' + E.Message);
+          Sleep(1000);
+        end;
+      end;
+    until Passed;
   end;
 end;
 
