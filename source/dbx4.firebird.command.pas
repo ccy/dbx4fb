@@ -351,8 +351,10 @@ begin
   if not CheckSuccess(FDSQL.Execute(StatusVector), TDBXErrorCodes.VendorError, Result) then
     Exit(Result);
 
-  M := NewMetaDataProvider(FDSQL.o_SQLDA);
+  if FDSQL.IsStatementType(isc_info_sql_stmt_ddl) then
+    Exit(CheckSuccess(FDSQL.Close(StatusVector), TDBXErrorCodes.VendorError));
 
+  M := NewMetaDataProvider(FDSQL.o_SQLDA);
   Reader := TDBXReader_Firebird_DSQL.Create(FConnection, FDBHandle, M, FDSQL, FTrimChar);
   Result := TDBXErrorCodes.None;
 end;
