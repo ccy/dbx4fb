@@ -352,6 +352,7 @@ begin
     Exit(Result);
 
   M := NewMetaDataProvider(FDSQL.o_SQLDA);
+
   Reader := TDBXReader_Firebird_DSQL.Create(FConnection, FDBHandle, M, FDSQL, FTrimChar);
   Result := TDBXErrorCodes.None;
 end;
@@ -368,9 +369,8 @@ begin
   Result := FParameterRows;
 end;
 
-function TDBXCommand_Firebird.GetRowsAffected(
-  out Rows: Int64): TDBXErrorCode;
-var R: Cardinal;
+function TDBXCommand_Firebird.GetRowsAffected(out Rows: Int64): TDBXErrorCode;
+var R: UInt64;
 begin
   Rows := 0;
   Result := TDBXErrorCodes.None;
