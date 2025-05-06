@@ -27,6 +27,11 @@ type
     procedure Test_Create;
   end;
 
+  TFirebirdEngine_TestCase = class(TTestCase)
+  published
+    procedure Test_version;
+  end;
+
   TTestCase_FirebirdConnectionString = class(TTestCase)
   private
     procedure Test(Value: string; aProtocol: TFirebirdConnectionStringProtocol;
@@ -98,6 +103,25 @@ begin
   Check(TPageSize.Create(16383) = ps8192);
   Check(TPageSize.Create(16384) = ps16384);
   Check(TPageSize.Create(16385) = ps16384);
+end;
+
+procedure TFirebirdEngine_TestCase.Test_version;
+begin
+  var E: TFirebirdEngine;
+
+  E := 'LI-V3.0.12.33787 Firebird 3.0';
+  CheckTrue(E.Platform = pfLinux);
+  CheckEquals(E.Major, 3);
+  CheckEquals(E.Minor, 0);
+  CheckEquals(E.Release, 12);
+  CheckEquals(E.Build, 33787);
+
+  E := 'WI-V5.0.2.1613 Firebird 5.0';
+  CheckTrue(E.Platform = pfWindows);
+  CheckEquals(E.Major, 5);
+  CheckEquals(E.Minor, 0);
+  CheckEquals(E.Release, 2);
+  CheckEquals(E.Build, 1613);
 end;
 
 procedure TTestCase_FirebirdConnectionString.Test_tcp_tra;
@@ -316,7 +340,7 @@ begin
         api.Reset.SetConnectionString(EmployeeDB, FProviders[i]).AttachDatabase.detach(st);
         status('Expected fail: ' + FProviders[i]);
       except
-        on E: Exception do status(E.Message + ' '+ FEngines[i].FileName);
+//        on E: Exception do status(E.Message + ' '+ FEngines[i].FileName);
       end;
     end;
   end;
@@ -756,6 +780,7 @@ initialization
   if not TCmdLineParams_App.TestSuite3 then Exit;
   RegisterTest(TODS_TestCase.Suite);
   RegisterTest(TPageSize_TestCase.Suite);
+  RegisterTest(TFirebirdEngine_TestCase.Suite);
   RegisterTest(TTestCase_FirebirdConnectionString.Suite);
   RegisterTest(TTestCase_FirebirdAPI.Suite);
 end.
