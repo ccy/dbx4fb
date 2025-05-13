@@ -60,6 +60,7 @@ type
     procedure ShowBurpData(a: TBurpData);
   protected
     class function GetEmbeddedSectionName: string;
+    class function GetNumberOfProcessors: Integer;
   public
     procedure SetUp; override;
     procedure TearDown; override;
@@ -226,6 +227,13 @@ begin
             ;
 end;
 
+class function TTestCase_FirebirdAPI.GetNumberOfProcessors: Integer;
+begin
+  var e := GetEnvironmentVariable('NUMBER_OF_PROCESSORS');
+  if not TryStrToInt(e, Result) then
+    Result := 2;
+end;
+
 function TTestCase_FirebirdAPI.GetTempFileName(aProvidersOrHost: string):
     string;
 begin
@@ -376,7 +384,7 @@ begin
     var fbk := GetTempFileName(p);
     var fbkStream := TMemoryStream.Create;
     try
-      api.Reset.SetConnectionString(fdb, p);
+      api.Reset.SetConnectionString(fdb, p).SetParallelWorkers(GetNumberOfProcessors);
       if bOwnDB then api.CreateDatabase;
 
       var BackupODS := api.GetDatabaseInfo.ODS;
@@ -406,6 +414,7 @@ begin
              .SetPageSize(TPageSize.Create(PageSize))
              .SetPageBuffers(PageBuffers)
              .SetForcedWrite(ForceWrite)
+             .SetParallelWorkers(GetNumberOfProcessors)
              .Restore(fbk, LogBuffer);
           var Info := api.GetDatabaseInfo;
           Check(PageSize = Info.page_size);
@@ -422,6 +431,7 @@ begin
             .SetPageSize(TPageSize.Create(PageSize))
             .SetPageBuffers(PageBuffers)
             .SetForcedWrite(ForceWrite)
+            .SetParallelWorkers(GetNumberOfProcessors)
             .Restore(
             function(var Buffer; Count: Word): Word
             begin
@@ -446,6 +456,7 @@ begin
               .SetPageSize(TPageSize.Create(PageSize))
               .SetPageBuffers(PageBuffers)
               .SetForcedWrite(ForceWrite)
+              .SetParallelWorkers(GetNumberOfProcessors)
               .Restore(
               function(var Buffer; Count: Word): Word
               begin
