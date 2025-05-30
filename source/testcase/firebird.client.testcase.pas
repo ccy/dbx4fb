@@ -368,6 +368,7 @@ begin
   for var p in FProviders do begin
     var Engine: TFirebirdEngine;
     var bIsEngine := FEngines.GetEngineByProviders(p, Engine);
+    var bParallel := not bIsEngine or (Engine.ODS > ODS_13_0);
 
     var fdb := EmployeeDB;
     var bOwnDB := False;
@@ -384,7 +385,8 @@ begin
     var fbk := GetTempFileName(p);
     var fbkStream := TMemoryStream.Create;
     try
-      api.Reset.SetConnectionString(fdb, p).SetParallelWorkers(GetNumberOfProcessors);
+      api.Reset.SetConnectionString(fdb, p);
+      if bParallel then api.SetParallelWorkers(GetNumberOfProcessors);
       if bOwnDB then api.CreateDatabase;
 
       var BackupODS := api.GetDatabaseInfo.ODS;
@@ -409,12 +411,12 @@ begin
 
           // restore with file
           var res := GetTempFileName(p);
-          api.Reset
-             .SetConnectionString(res, p)
+          api.Reset;
+          if bParallel then api.SetParallelWorkers(GetNumberOfProcessors);
+          api.SetConnectionString(res, p)
              .SetPageSize(TPageSize.Create(PageSize))
              .SetPageBuffers(PageBuffers)
              .SetForcedWrite(ForceWrite)
-             .SetParallelWorkers(GetNumberOfProcessors)
              .Restore(fbk, LogBuffer);
           var Info := api.GetDatabaseInfo;
           Check(PageSize = Info.page_size);
@@ -426,12 +428,12 @@ begin
 
           // restore with stdin
           fbkStream.Position := 0;
-          api.Reset
-            .SetConnectionString(res, p)
+          api.Reset;
+          if bParallel then api.SetParallelWorkers(GetNumberOfProcessors);
+          api.SetConnectionString(res, p)
             .SetPageSize(TPageSize.Create(PageSize))
             .SetPageBuffers(PageBuffers)
             .SetForcedWrite(ForceWrite)
-            .SetParallelWorkers(GetNumberOfProcessors)
             .Restore(
             function(var Buffer; Count: Word): Word
             begin
@@ -451,12 +453,12 @@ begin
             if BackupODS > RestoreEngine.ODS then Continue;
             res := GetTempFileName(FEngines.GetProviders(RestoreEngine));
             fbkStream.Position := 0;
-            api.Reset
-              .SetConnectionString(res, FEngines.GetProviders(RestoreEngine))
+            api.Reset;
+            if bParallel then api.SetParallelWorkers(GetNumberOfProcessors);
+            api.SetConnectionString(res, FEngines.GetProviders(RestoreEngine))
               .SetPageSize(TPageSize.Create(PageSize))
               .SetPageBuffers(PageBuffers)
               .SetForcedWrite(ForceWrite)
-              .SetParallelWorkers(GetNumberOfProcessors)
               .Restore(
               function(var Buffer; Count: Word): Word
               begin
