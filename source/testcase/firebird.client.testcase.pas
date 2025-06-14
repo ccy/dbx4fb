@@ -240,7 +240,7 @@ begin
   var TmpPath := TPath.GetTempPath;
   if not aProvidersOrHost.StartsWith(TFirebird.FB_Config_Providers, True) then begin
     api.Reset.SetConnectionString('', aProvidersOrHost);
-    var n := api.GetServiceInfo;
+    var n := api.GetServiceInfo(False);
 
     if n.IsWindows then
       TmpPath := 'c:\users\public\'
@@ -591,7 +591,7 @@ begin
     for var i := Low(a) to High(a) do
       a[i] := api.AttachDatabase;
 
-    var n := api.GetServiceInfo;
+    var n := api.GetServiceInfo(True);
 
     for var i := Low(a) to High(a) do
       a[i].detach(st);
