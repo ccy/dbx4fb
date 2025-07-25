@@ -8,7 +8,7 @@
 
     <property environment="env"/>
 	<property name="program.conf" location="dbxfbTests.ini" />
-    <property name="embedded.count" value="52" />
+    <property name="embedded.count" value="55" />
     <property name="server.count" value="18" />
 
 	<target name="build" depends="suite_1,suite_2,suite_3" />
@@ -91,9 +91,10 @@
                     <equals arg1="${test}" arg2="embedded_41" />  <!-- Firebird 3.0.10 -->
                     <equals arg1="${test}" arg2="embedded_42" />  <!-- Firebird 3.0.11 -->
                     <equals arg1="${test}" arg2="embedded_43" />  <!-- Firebird 3.0.12 -->
-                    <equals arg1="${test}" arg2="embedded_44" />  <!-- Firebird 4.0.0 -->
-                    <equals arg1="${test}" arg2="embedded_45" />  <!-- Firebird 4.0.1 -->
-                    <equals arg1="${test}" arg2="embedded_46" />  <!-- Firebird 4.0.2 -->
+                    <equals arg1="${test}" arg2="embedded_44" />  <!-- Firebird 3.0.13 -->
+                    <equals arg1="${test}" arg2="embedded_45" />  <!-- Firebird 4.0.0 -->
+                    <equals arg1="${test}" arg2="embedded_46" />  <!-- Firebird 4.0.1 -->
+                    <equals arg1="${test}" arg2="embedded_47" />  <!-- Firebird 4.0.2 -->
                 </or>
             </xor>
         </condition>
