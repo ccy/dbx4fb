@@ -873,11 +873,11 @@ var D: TDataSet;
 begin
   if GetTestData.GetODS < ODS_13_0 then Exit;
 
-  var A := TArray<string>.Create('GMT', 'ACT', 'AET', 'AGT', 'ART', 'AST');
+  var A := TArray<string>.Create('GMT', 'ACT', 'AET', 'AGT', 'ART', 'AST', 'Asia/Kuala_Lumpur');
   for var s in A do begin
     FConnection.Execute(Format('SELECT LOCALTIMESTAMP, CURRENT_TIMESTAMP at time zone ''%s'' FROM RDB$DATABASE', [s]), nil, D);
     try
-      status(s + ' ' + D.Fields[0].AsString + ' ' + D.Fields[1].AsString);
+      CheckEquals(D.Fields[0].AsDateTime, SQLTimeStampOffsetToDateTime(D.Fields[1].AsSQLTimeStampOffset), 0.00000000001);
     finally
       D.Free;
     end;
@@ -2265,6 +2265,7 @@ begin
           T.Fractions := 0;
           Param.AsSQLTimeStampOffset := T;
         end
+      , procedure begin Param.AsDate := Date; end
       , procedure begin Param.AsDateTime := Now; end
       , procedure begin Param.AsString := VarSQLTimeStampOffsetCreate(Date); end
       , procedure begin Param.AsString := VarSQLTimeStampOffsetCreate(Now); end
@@ -2289,7 +2290,8 @@ begin
       CheckTrue(Param.AsSQLTimeStampOffset = Field.AsSQLTimeStampOffset);
       CheckEquals(Param.AsString, Field.AsString);
       CheckEquals(Param.AsWideString, Field.AsWideString);
-    end;
+    end else
+      CheckTrue(Param.AsSQLTimeStampOffset = Field.AsSQLTimeStampOffset);
 
     Test_Required;
   end;
