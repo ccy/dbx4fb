@@ -39,6 +39,7 @@ type
     FWaitOnLocks: Boolean;
     FWaitOnLocksTimeOut: Integer;
     FProviders: string;
+    Fsession_time_zone: string;
     FTimeZones: TDictionary<Word, TTimeZoneOffset>;
     procedure SetupTimeZones(AddTimeZone: TAddTimeZone);
   protected
@@ -71,7 +72,7 @@ type
 implementation
 
 uses
-  Winapi.Windows, Data.SqlConst,
+  Winapi.Windows, System.DateUtils, Data.SqlConst,
   firebird.dsql;
 
 constructor TDBXConnection_Firebird.Create(const aDriver: IDBXDriver);
@@ -186,7 +187,9 @@ begin
       if not TryStrToBool(Values[i], FIsDelphi2007Connection) then
         FIsDelphi2007Connection := False;
     end else if SameText(Names[i], TFirebird.FB_Config_Providers) then
-      FProviders := Values[i];
+      FProviders := Values[i]
+    else if SameText(Names[i], TFirebird.isc_dpb_session_time_zone_str) then
+      Fsession_time_zone := Values[i];
   end;
 
   DPB := AnsiChar(isc_dpb_version1) +
@@ -197,6 +200,13 @@ begin
 
   if not FProviders.IsEmpty then
     DPB := DPB + AnsiChar(isc_dpb_config) + AnsiChar(Length(FProviders)) + AnsiString(FProviders);
+
+  if Fsession_time_zone.IsEmpty then begin
+    Fsession_time_zone := TTimeZone.Local.Abbreviation.Replace('GMT', '');
+    if Fsession_time_zone.Length = 0 then Fsession_time_zone := '+00:00';
+    if Fsession_time_zone.Length = 3 then Fsession_time_zone := Fsession_time_zone + ':00';
+  end;
+  DPB := DPB + AnsiChar(isc_dpb_session_time_zone) + AnsiChar(Length(Fsession_time_zone)) + AnsiString(Fsession_time_zone);
 
   var c: TFirebirdConnectionString := FHostName;
   c.Database := FDatabase;

@@ -121,6 +121,7 @@ type{$M+}
     procedure Test_RoleName;
     procedure Test_UTF8_EmptyString;
     procedure Test_Time_Zone;
+    procedure Test_session_time_zone;
   end;
 
   TTestCase_DBX_Transaction = class(TTestCase_DBX)
@@ -877,6 +878,27 @@ begin
     FConnection.Execute(Format('SELECT LOCALTIMESTAMP, CURRENT_TIMESTAMP at time zone ''+%d:00'' FROM rdb$database', [i]), nil, D);
     try
       CheckEquals(D.Fields[0].AsDateTime, SQLTimeStampOffsetToDateTime(D.Fields[1].AsSQLTimeStampOffset), 0.00000000001);
+    finally
+      D.Free;
+    end;
+  end;
+end;
+
+procedure TTestCase_DBX_General.Test_session_time_zone;
+var D: TDataSet;
+begin
+  if GetTestData.GetODS < ODS_13_0 then Exit;
+
+  for var i := 0 to 14 do begin
+    FConnection.Close;
+    FConnection.Params.Values[TFirebird.isc_dpb_session_time_zone_str] := Format('+%d:00', [i]);
+    FConnection.Open;
+    FConnection.Execute('SELECT CURRENT_TIMESTAMP, rdb$get_context(''SYSTEM'', ''SESSION_TIMEZONE'') FROM rdb$database', nil, D);
+    try
+      var T := D.Fields[0].AsSQLTimeStampOffset;
+      CheckEquals(0, T.TimeZoneMinute);
+      CheckEquals(i, T.TimeZoneHour);
+      CheckEquals(0, SecondsBetween(Now, SQLTimeStampOffsetToDateTime(T)));
     finally
       D.Free;
     end;
