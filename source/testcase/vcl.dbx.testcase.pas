@@ -873,9 +873,8 @@ var D: TDataSet;
 begin
   if GetTestData.GetODS < ODS_13_0 then Exit;
 
-  var A := TArray<string>.Create('GMT', 'ACT', 'AET', 'AGT', 'ART', 'AST', 'Asia/Kuala_Lumpur');
-  for var s in A do begin
-    FConnection.Execute(Format('SELECT LOCALTIMESTAMP, CURRENT_TIMESTAMP at time zone ''%s'' FROM RDB$DATABASE', [s]), nil, D);
+  for var i := 0 to 14 do begin
+    FConnection.Execute(Format('SELECT LOCALTIMESTAMP, CURRENT_TIMESTAMP at time zone ''+%d:00'' FROM rdb$database', [i]), nil, D);
     try
       CheckEquals(D.Fields[0].AsDateTime, SQLTimeStampOffsetToDateTime(D.Fields[1].AsSQLTimeStampOffset), 0.00000000001);
     finally
